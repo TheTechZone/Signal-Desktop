@@ -47,6 +47,7 @@ import {
   reduceStorySendStatus,
   resolveStorySendStatus,
 } from '../../util/resolveStorySendStatus';
+import { BodyRange } from '../../types/Util';
 
 export const getStoriesState = (state: StateType): StoriesStateType =>
   state.stories;
@@ -309,7 +310,7 @@ export const getStoryReplies = createSelector(
       return {
         author: getAvatarData(conversation),
         ...pick(reply, ['body', 'deletedForEveryone', 'id', 'timestamp']),
-        bodyRanges: bodyRanges?.map(bodyRange => {
+        bodyRanges: bodyRanges?.filter(BodyRange.isMention).map(bodyRange => {
           const mentionConvo = conversationSelector(bodyRange.mentionUuid);
 
           return {

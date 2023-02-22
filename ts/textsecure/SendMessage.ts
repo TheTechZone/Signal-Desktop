@@ -56,7 +56,7 @@ import {
   SendMessageProtoError,
   HTTPError,
 } from './Errors';
-import type { BodyRangesType, StoryContextType } from '../types/Util';
+import { BodyRange, BodyRangeMention, BodyRangesType, StoryContextType } from '../types/Util';
 import type {
   LinkPreviewImage,
   LinkPreviewMetadata,
@@ -191,7 +191,8 @@ export type MessageOptionsType = {
   reaction?: ReactionType;
   deletedForEveryoneTimestamp?: number;
   timestamp: number;
-  mentions?: BodyRangesType;
+  // mentions?: BodyRangesType;
+  mentions?: ReadonlyArray<BodyRangeMention>;
   groupCallUpdate?: GroupCallUpdateType;
   storyContext?: StoryContextType;
 };
@@ -204,7 +205,8 @@ export type GroupSendOptionsType = {
   groupCallUpdate?: GroupCallUpdateType;
   groupV1?: GroupV1InfoType;
   groupV2?: GroupV2InfoType;
-  mentions?: BodyRangesType;
+  // mentions?: BodyRangesType;
+  mentions?: ReadonlyArray<BodyRangeMention>;
   messageText?: string;
   preview?: ReadonlyArray<LinkPreviewType>;
   profileKey?: Uint8Array;
@@ -255,7 +257,8 @@ class Message {
 
   deletedForEveryoneTimestamp?: number;
 
-  mentions?: BodyRangesType;
+  // mentions?: BodyRangesType;
+  mentions?: ReadonlyArray<BodyRangeMention>;
 
   groupCallUpdate?: GroupCallUpdateType;
 
@@ -479,7 +482,7 @@ class Message {
 
     if (this.quote) {
       const { QuotedAttachment } = Proto.DataMessage.Quote;
-      const { BodyRange, Quote } = Proto.DataMessage;
+      const { BodyRange: ProtoBodyRange, Quote } = Proto.DataMessage;
 
       proto.quote = new Quote();
       const { quote } = proto;
@@ -511,10 +514,11 @@ class Message {
       );
       const bodyRanges: BodyRangesType = this.quote.bodyRanges || [];
       quote.bodyRanges = bodyRanges.map(range => {
-        const bodyRange = new BodyRange();
+        const bodyRange = new ProtoBodyRange();
         bodyRange.start = range.start;
         bodyRange.length = range.length;
-        if (range.mentionUuid !== undefined) {
+        // if (range.mentionUuid !== undefined) {
+        if (BodyRange.isMention(range)) {
           bodyRange.mentionUuid = range.mentionUuid;
         }
         return bodyRange;

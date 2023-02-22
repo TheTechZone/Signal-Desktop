@@ -11,7 +11,7 @@ import * as GoogleChrome from '../../util/GoogleChrome';
 
 import { MessageBody } from './MessageBody';
 import type { AttachmentType, ThumbnailType } from '../../types/Attachment';
-import type { HydratedBodyRangesType, LocalizerType } from '../../types/Util';
+import { BodyRange, HydratedBodyRangeMention, HydratedBodyRangesType, LocalizerType } from '../../types/Util';
 import type {
   ConversationColorType,
   CustomColorType,
@@ -366,8 +366,9 @@ export class Quote extends React.Component<Props, State> {
     } = this.props;
 
     if (text && !isGiftBadge) {
-      const quoteText = bodyRanges
-        ? getTextWithMentions(bodyRanges, text)
+      const draftBodyRanges = bodyRanges?.filter<HydratedBodyRangeMention>(BodyRange.isMention);
+      const quoteText = draftBodyRanges
+        ? getTextWithMentions(draftBodyRanges, text)
         : text;
 
       return (

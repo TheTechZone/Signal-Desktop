@@ -115,8 +115,8 @@ import {
   isUniversalTimerNotification,
   isUnsupportedMessage,
   isVerifiedChange,
-  processBodyRanges,
   isConversationMerge,
+  extractHydratedMentions,
 } from '../state/selectors/message';
 import {
   isInCall,
@@ -849,20 +849,6 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
     return { text: '' };
   }
 
-  getRawText(): string {
-    const body = (this.get('body') || '').trim();
-    const { attributes } = this;
-
-    const bodyRanges = processBodyRanges(attributes, {
-      conversationSelector: findAndFormatContact,
-    });
-    if (bodyRanges) {
-      return getTextWithMentions(bodyRanges, body);
-    }
-
-    return body;
-  }
-
   getAuthorText(): string | undefined {
     // if it's outgoing, it must be self-authored
     const selfAuthor = isOutgoing(this.attributes)
@@ -919,7 +905,8 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
 
     let modifiedText = text;
 
-    const bodyRanges = processBodyRanges(attributes, {
+    // const bodyRanges = processBodyRanges(attributes, {
+    const bodyRanges = extractHydratedMentions(attributes, {
       conversationSelector: findAndFormatContact,
     });
 

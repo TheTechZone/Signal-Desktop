@@ -83,7 +83,7 @@ import {
   deriveAccessKey,
 } from '../Crypto';
 import * as Bytes from '../Bytes';
-import type { BodyRangesType, DraftBodyRangesType } from '../types/Util';
+import { BodyRange, BodyRangesType, DraftBodyRangesType } from '../types/Util';
 import { getTextWithMentions } from '../util/getTextWithMentions';
 import { migrateColor } from '../util/migrateColor';
 import { isNotNil } from '../util/isNotNil';
@@ -5401,7 +5401,8 @@ export class ConversationModel extends window.Backbone
 
       const ourUuid = window.textsecure.storage.user.getUuid()?.toString();
       const mentionsMe = (message.get('bodyRanges') || []).some(
-        range => range.mentionUuid && range.mentionUuid === ourUuid
+        // range => range.mentionUuid && range.mentionUuid === ourUuid
+        range => BodyRange.isMention(range) && range.mentionUuid === ourUuid
       );
       if (!mentionsMe) {
         return;

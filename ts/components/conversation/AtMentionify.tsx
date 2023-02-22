@@ -4,10 +4,11 @@
 import React from 'react';
 import { sortBy } from 'lodash';
 import { Emojify } from './Emojify';
-import type {
+import {
   BodyRangesType,
-  HydratedBodyRangeType,
   HydratedBodyRangesType,
+  BodyRange,
+  HydratedBodyRangeMention,
 } from '../../types/Util';
 
 export type Props = {
@@ -35,9 +36,11 @@ export function AtMentionify({
   let match = MENTIONS_REGEX.exec(text);
   let last = 0;
 
-  const rangeStarts = new Map<number, HydratedBodyRangeType>();
+  const rangeStarts = new Map<number, HydratedBodyRangeMention>();
   bodyRanges.forEach(range => {
-    rangeStarts.set(range.start, range);
+    if (BodyRange.isMention(range)) {
+      rangeStarts.set(range.start, range);
+    }
   });
 
   const results = [];
@@ -101,19 +104,63 @@ export function AtMentionify({
 // string, therefore we're unable to mark it up with DOM nodes prior to handing
 // it off to them. This function will encode the "start" position into the text
 // string so we can later pull it off when rendering the @mention.
+// AtMentionify.preprocessMentions = (
+//   text: string,
+//   bodyRanges?: BodyRangesType
+// ): string => {
+//   debugger;
+//   if (!bodyRanges || !bodyRanges.length) {
+//     return text;
+//   }
+
+//   // Sorting by the start index to ensure that we always replace last -> first.
+//   return "<b>" + sortBy(bodyRanges, 'start').reduceRight((str, range) => {
+//     const textBegin = str.substr(0, range.start);
+//     const encodedMention = `\uFFFC@${range.start}`;
+//     const textEnd = str.substr(range.start + range.length, str.length);
+//     return `${textBegin}${encodedMention}${textEnd}`;
+//   }, text) + "</b>";
+// };
+
+/** A marker will consume (delete) a certain number of characters and insert a replacement */
+type BodyRangeMarker = {
+  idx: number,
+  consume: number,
+  replacement: string,
+}
+
 AtMentionify.preprocessMentions = (
   text: string,
   bodyRanges?: BodyRangesType
 ): string => {
-  if (!bodyRanges || !bodyRanges.length) {
+  if (!bodyRanges) {
     return text;
   }
+  const markers: ReadonlyArray<BodyRangeMarker> = bodyRanges.flatMap(range => {
+    if (BodyRange.isMention(range)) {
+      return [{
+        idx: range.start,
+        consume: range.length,
+        replacement: `\uFFFC@${range.start}`
+      }];
+    }
+    return [
+      {
+        idx: range.start,
+        consume: 0,
+        replacement: '<b>',
+      },
+      {
+        idx: range.start + range.length,
+        consume: 0,
+        replacement: '</b>'
+      },
+    ];
+  });
 
-  // Sorting by the start index to ensure that we always replace last -> first.
-  return sortBy(bodyRanges, 'start').reduceRight((str, range) => {
-    const textBegin = str.substr(0, range.start);
-    const encodedMention = `\uFFFC@${range.start}`;
-    const textEnd = str.substr(range.start + range.length, str.length);
-    return `${textBegin}${encodedMention}${textEnd}`;
+  return sortBy(markers, 'idx').reduceRight<string>((str, {idx, consume, replacement}) => {
+    const textBegin = str.substring(0, idx);
+    const textEnd = str.substring(idx + consume, str.length);
+    return `${textBegin}${replacement}${textEnd}`;
   }, text);
-};
+}

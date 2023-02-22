@@ -6,27 +6,81 @@ import type { UUIDStringType } from './UUID';
 
 // Cold storage of body ranges
 
+/*
+type BodyRangeMention = {
+  start: number;
+  length: number;
+  mentionUuid: string;
+}
+
+type BodyRangeStyle = {
+  start: number;
+  length: number;
+  style: string;
+}
+*/
+
+/*
 export type BodyRangeType = {
   start: number;
   length: number;
   mentionUuid: string;
 };
+*/
+
+/*
+export type BodyRangeType = {
+  start: number;
+  length: number;
+} & ({ mentionUuid: string } | { style: string });
+*/
+type BodyRangeBase = {
+  start: number;
+  length: number;
+}
+
+export type BodyRangeMention = BodyRangeBase & {
+  mentionUuid: string;
+}
+
+export type BodyRangeStyle = BodyRangeBase & {
+  style: string;
+}
+
+export type BodyRangeType = BodyRangeMention | BodyRangeStyle
 
 export type BodyRangesType = ReadonlyArray<BodyRangeType>;
 
+export namespace BodyRange {
+  // export function isMention (bodyRange: HydratedBodyRangeType): bodyRange is DraftBodyRangeMention;
+  export function isMention (bodyRange: HydratedBodyRangeType): bodyRange is HydratedBodyRangeMention;
+  export function isMention (bodyRange: BodyRangeType): bodyRange is BodyRangeMention;
+  export function isMention <T extends BodyRangeType, X extends (BodyRangeMention & T)>(bodyRange: T): bodyRange is X {
+  // export function isMention(bodyRange: BodyRangeType): bodyRange is BodyRangeMention {
+    return 'mentionUuid' as const satisfies keyof BodyRangeMention in bodyRange;
+  }
+  export function isStyle (bodyRange: BodyRangeType): bodyRange is BodyRangeStyle {
+    return 'style' as const satisfies keyof BodyRangeStyle in bodyRange;
+  }
+}
+
 // Used exclusive in CompositionArea and related conversation_view.tsx calls.
 
-export type DraftBodyRangeType = BodyRangeType & {
+// export type DraftBodyRangeType = BodyRangeType & {
+export type DraftBodyRangeMention = BodyRangeMention & {
   replacementText: string;
 };
 
-export type DraftBodyRangesType = ReadonlyArray<DraftBodyRangeType>;
+// export type DraftBodyRangesType = ReadonlyArray<DraftBodyRangeType>;
+export type DraftBodyRangesType = ReadonlyArray<DraftBodyRangeMention>;
 
 // Fully hydrated body range to be used in UI components.
 
-export type HydratedBodyRangeType = DraftBodyRangeType & {
+export type HydratedBodyRangeMention = DraftBodyRangeMention & {
   conversationID: string;
-};
+}
+
+export type HydratedBodyRangeType = HydratedBodyRangeMention | BodyRangeStyle;
 
 export type HydratedBodyRangesType = ReadonlyArray<HydratedBodyRangeType>;
 
