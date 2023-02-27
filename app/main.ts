@@ -120,7 +120,7 @@ import type { LoggerType } from '../ts/types/Logging';
 
 const animationSettings = systemPreferences.getAnimationSettings();
 
-if (OS.isMacOS() && !isProduction(app.getVersion())) {
+if (OS.isMacOS()) {
   systemPreferences.setUserDefault(
     'SquirrelMacEnableDirectContentsWrite',
     'boolean',
@@ -1268,7 +1268,7 @@ async function showSettingsWindow() {
     frame: true,
     resizable: false,
     title: getResolvedMessagesLocale().i18n('signalDesktopPreferences'),
-    titleBarStyle: nonMainTitleBarStyle,
+    titleBarStyle: mainTitleBarStyle,
     titleBarOverlay,
     autoHideMenuBar: true,
     backgroundColor: await getBackgroundColor(),
