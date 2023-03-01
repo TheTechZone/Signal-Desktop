@@ -3,7 +3,11 @@
 
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { BodyRange, DraftBodyRangesType, HydratedBodyRangeMention } from '../../types/Util';
+import {
+  BodyRange,
+  DraftBodyRangesType,
+  HydratedBodyRangeMention,
+} from '../../types/Util';
 import type { ForwardMessagePropsType } from '../ducks/globalModals';
 import type { StateType } from '../reducer';
 import * as log from '../../logging/log';
@@ -45,7 +49,10 @@ function renderMentions(
   });
 
   if (bodyRanges && bodyRanges.length) {
-    return getTextWithMentions(bodyRanges.filter<HydratedBodyRangeMention>(BodyRange.isMention), text);
+    return getTextWithMentions(
+      bodyRanges.filter<HydratedBodyRangeMention>(BodyRange.isMention),
+      text
+    );
   }
 
   return text;

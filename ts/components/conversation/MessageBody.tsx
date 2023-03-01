@@ -8,7 +8,7 @@ import type { AttachmentType } from '../../types/Attachment';
 import { canBeDownloaded } from '../../types/Attachment';
 import type { SizeClassType } from '../emoji/lib';
 import { getSizeClass } from '../emoji/lib';
-import { AtMentionify } from './AtMentionify';
+// import { AtMentionify } from './AtMentionify';
 import { Emojify } from './Emojify';
 import { AddNewLines } from './AddNewLines';
 import { Linkify } from './Linkify';
@@ -19,6 +19,8 @@ import type {
   LocalizerType,
   RenderTextCallbackType,
 } from '../../types/Util';
+import { BodyRange } from '../../types/Util';
+import { MessageRenderer, MessageTextRenderer } from './MessageTextRenderer';
 
 export type Props = {
   author?: string;
@@ -80,10 +82,13 @@ export function MessageBody({
     textAttachment?.pending || hasReadMore ? `${text}...` : text;
 
   const sizeClass = disableJumbomoji ? undefined : getSizeClass(text);
+  /*
   const processedText = AtMentionify.preprocessMentions(
     textWithSuffix,
     bodyRanges
   );
+  */
+  const processedText = textWithSuffix;
 
   const renderNewLines: RenderTextCallbackType = ({
     text: textWithNewLines,
@@ -156,7 +161,7 @@ export function MessageBody({
           :{' '}
         </>
       )}
-      {disableLinks ? (
+      {/* {disableLinks ? (
         renderEmoji({
           i18n,
           text: processedText,
@@ -177,7 +182,14 @@ export function MessageBody({
             });
           }}
         />
-      )}
+      )} */}
+
+      <MessageTextRenderer
+        messageText={processedText}
+        bodyRanges={bodyRanges ?? []}
+        direction={direction}
+      />
+
       {pendingContent}
       {onIncreaseTextLength ? (
         <button

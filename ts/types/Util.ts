@@ -1,8 +1,12 @@
 // Copyright 2018 Signal Messenger, LLC
 // SPDX-License-Identifier: AGPL-3.0-only
 
+/* eslint-disable @typescript-eslint/no-namespace */
+
 import type { IntlShape } from 'react-intl';
 import type { UUIDStringType } from './UUID';
+
+import { SignalService as Proto } from '../protobuf';
 
 // Cold storage of body ranges
 
@@ -37,30 +41,42 @@ export type BodyRangeType = {
 type BodyRangeBase = {
   start: number;
   length: number;
-}
+};
 
 export type BodyRangeMention = BodyRangeBase & {
   mentionUuid: string;
-}
+};
 
 export type BodyRangeStyle = BodyRangeBase & {
-  style: string;
-}
+  style: Proto.DataMessage.BodyRange.Style;
+};
 
-export type BodyRangeType = BodyRangeMention | BodyRangeStyle
+export type BodyRangeType = BodyRangeMention | BodyRangeStyle;
 
 export type BodyRangesType = ReadonlyArray<BodyRangeType>;
 
 export namespace BodyRange {
-  // export function isMention (bodyRange: HydratedBodyRangeType): bodyRange is DraftBodyRangeMention;
-  export function isMention (bodyRange: HydratedBodyRangeType): bodyRange is HydratedBodyRangeMention;
-  export function isMention (bodyRange: BodyRangeType): bodyRange is BodyRangeMention;
-  export function isMention <T extends BodyRangeType, X extends (BodyRangeMention & T)>(bodyRange: T): bodyRange is X {
-  // export function isMention(bodyRange: BodyRangeType): bodyRange is BodyRangeMention {
-    return 'mentionUuid' as const satisfies keyof BodyRangeMention in bodyRange;
+  export type Style = Proto.DataMessage.BodyRange.Style;
+  export const { Style } = Proto.DataMessage.BodyRange;
+
+  export function isMention(
+    bodyRange: HydratedBodyRangeType
+  ): bodyRange is HydratedBodyRangeMention;
+  export function isMention(
+    bodyRange: BodyRangeType
+  ): bodyRange is BodyRangeMention;
+  export function isMention<
+    T extends BodyRangeType,
+    X extends BodyRangeMention & T
+  >(bodyRange: T): bodyRange is X {
+    return (
+      ('mentionUuid' as const satisfies keyof BodyRangeMention) in bodyRange
+    );
   }
-  export function isStyle (bodyRange: BodyRangeType): bodyRange is BodyRangeStyle {
-    return 'style' as const satisfies keyof BodyRangeStyle in bodyRange;
+  export function isStyle(
+    bodyRange: BodyRangeType
+  ): bodyRange is BodyRangeStyle {
+    return ('style' as const satisfies keyof BodyRangeStyle) in bodyRange;
   }
 }
 
@@ -78,7 +94,7 @@ export type DraftBodyRangesType = ReadonlyArray<DraftBodyRangeMention>;
 
 export type HydratedBodyRangeMention = DraftBodyRangeMention & {
   conversationID: string;
-}
+};
 
 export type HydratedBodyRangeType = HydratedBodyRangeMention | BodyRangeStyle;
 

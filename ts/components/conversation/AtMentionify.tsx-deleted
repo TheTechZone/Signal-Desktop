@@ -55,9 +55,10 @@ export function AtMentionify({
 
     if (range) {
       results.push(
-        <span
-          className={`MessageBody__at-mention MessageBody__at-mention--${direction}`}
-          key={range.start}
+        <AtMention
+          id={range.conversationID}
+          name={range.replacementText}
+          direction={direction}
           onClick={() => {
             if (showConversation) {
               showConversation({ conversationId: range.conversationID });
@@ -72,16 +73,34 @@ export function AtMentionify({
               showConversation({ conversationId: range.conversationID });
             }
           }}
-          tabIndex={0}
-          role="link"
-          data-id={range.conversationID}
-          data-title={range.replacementText}
-        >
-          <bdi>
-            @
-            <Emojify text={range.replacementText} />
-          </bdi>
-        </span>
+        />
+        // <span
+        //   className={`MessageBody__at-mention MessageBody__at-mention--${direction}`}
+        //   key={range.start}
+        //   onClick={() => {
+        //     if (showConversation) {
+        //       showConversation({ conversationId: range.conversationID });
+        //     }
+        //   }}
+        //   onKeyUp={e => {
+        //     if (
+        //       e.target === e.currentTarget &&
+        //       e.keyCode === 13 &&
+        //       showConversation
+        //     ) {
+        //       showConversation({ conversationId: range.conversationID });
+        //     }
+        //   }}
+        //   tabIndex={0}
+        //   role="link"
+        //   data-id={range.conversationID}
+        //   data-title={range.replacementText}
+        // >
+        //   <bdi>
+        //     @
+        //     <Emojify text={range.replacementText} />
+        //   </bdi>
+        // </span>
       );
     }
 
@@ -123,44 +142,51 @@ export function AtMentionify({
 // };
 
 /** A marker will consume (delete) a certain number of characters and insert a replacement */
-type BodyRangeMarker = {
-  idx: number,
-  consume: number,
-  replacement: string,
-}
+// type BodyRangeMarker = {
+//   idx: number;
+//   consume: number;
+//   replacement: string;
+// };
 
-AtMentionify.preprocessMentions = (
-  text: string,
-  bodyRanges?: BodyRangesType
-): string => {
-  if (!bodyRanges) {
-    return text;
-  }
-  const markers: ReadonlyArray<BodyRangeMarker> = bodyRanges.flatMap(range => {
-    if (BodyRange.isMention(range)) {
-      return [{
-        idx: range.start,
-        consume: range.length,
-        replacement: `\uFFFC@${range.start}`
-      }];
-    }
-    return [
-      {
-        idx: range.start,
-        consume: 0,
-        replacement: '<b>',
-      },
-      {
-        idx: range.start + range.length,
-        consume: 0,
-        replacement: '</b>'
-      },
-    ];
-  });
+// AtMentionify.preprocessMentions = (
+//   text: string,
+//   bodyRanges?: BodyRangesType
+// ): string => {
+//   return text;
 
-  return sortBy(markers, 'idx').reduceRight<string>((str, {idx, consume, replacement}) => {
-    const textBegin = str.substring(0, idx);
-    const textEnd = str.substring(idx + consume, str.length);
-    return `${textBegin}${replacement}${textEnd}`;
-  }, text);
-}
+//   if (!bodyRanges) {
+//     return text;
+//   }
+//   const markers: ReadonlyArray<BodyRangeMarker> = bodyRanges.flatMap(range => {
+//     if (BodyRange.isMention(range)) {
+//       return [
+//         {
+//           idx: range.start,
+//           consume: range.length,
+//           replacement: `\uFFFC@${range.start}`,
+//         },
+//       ];
+//     }
+//     return [
+//       {
+//         idx: range.start,
+//         consume: 0,
+//         replacement: '<b>',
+//       },
+//       {
+//         idx: range.start + range.length,
+//         consume: 0,
+//         replacement: '</b>',
+//       },
+//     ];
+//   });
+
+//   return sortBy(markers, 'idx').reduceRight<string>(
+//     (str, { idx, consume, replacement }) => {
+//       const textBegin = str.substring(0, idx);
+//       const textEnd = str.substring(idx + consume, str.length);
+//       return `${textBegin}${replacement}${textEnd}`;
+//     },
+//     text
+//   );
+// };
