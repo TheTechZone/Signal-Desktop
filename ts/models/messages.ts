@@ -905,7 +905,6 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
 
     let modifiedText = text;
 
-    // const bodyRanges = processBodyRanges(attributes, {
     const bodyRanges = extractHydratedMentions(attributes, {
       conversationSelector: findAndFormatContact,
     });

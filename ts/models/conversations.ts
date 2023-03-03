@@ -5409,7 +5409,6 @@ export class ConversationModel extends window.Backbone
 
       const ourUuid = window.textsecure.storage.user.getUuid()?.toString();
       const mentionsMe = (message.get('bodyRanges') || []).some(
-        // range => range.mentionUuid && range.mentionUuid === ourUuid
         range => BodyRange.isMention(range) && range.mentionUuid === ourUuid
       );
       if (!mentionsMe) {

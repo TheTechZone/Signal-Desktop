@@ -56,7 +56,7 @@ export class ErrorBoundary extends React.PureComponent<Props, State> {
           <div className={`${CSS_MODULE}__icon`} />
         </div>
         <div className={`${CSS_MODULE}__message`}>
-          {i18n('ErrorBoundaryNotification__text')} {error}
+          {i18n('ErrorBoundaryNotification__text')}
         </div>
       </div>
     );

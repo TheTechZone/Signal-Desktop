@@ -196,7 +196,6 @@ export type MessageOptionsType = {
   reaction?: ReactionType;
   deletedForEveryoneTimestamp?: number;
   timestamp: number;
-  // mentions?: BodyRangesType;
   mentions?: ReadonlyArray<BodyRangeMention>;
   groupCallUpdate?: GroupCallUpdateType;
   storyContext?: StoryContextType;
@@ -210,7 +209,6 @@ export type GroupSendOptionsType = {
   groupCallUpdate?: GroupCallUpdateType;
   groupV1?: GroupV1InfoType;
   groupV2?: GroupV2InfoType;
-  // mentions?: BodyRangesType;
   mentions?: ReadonlyArray<BodyRangeMention>;
   messageText?: string;
   preview?: ReadonlyArray<LinkPreviewType>;
@@ -262,7 +260,6 @@ class Message {
 
   deletedForEveryoneTimestamp?: number;
 
-  // mentions?: BodyRangesType;
   mentions?: ReadonlyArray<BodyRangeMention>;
 
   groupCallUpdate?: GroupCallUpdateType;
@@ -522,9 +519,11 @@ class Message {
         const bodyRange = new ProtoBodyRange();
         bodyRange.start = range.start;
         bodyRange.length = range.length;
-        // if (range.mentionUuid !== undefined) {
         if (BodyRange.isMention(range)) {
           bodyRange.mentionUuid = range.mentionUuid;
+        }
+        if (BodyRange.isStyle(range)) {
+          bodyRange.style = range.style;
         }
         return bodyRange;
       });

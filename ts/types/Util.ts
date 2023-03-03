@@ -54,12 +54,10 @@ export namespace BodyRange {
 
 // Used exclusive in CompositionArea and related conversation_view.tsx calls.
 
-// export type DraftBodyRangeType = BodyRangeType & {
 export type DraftBodyRangeMention = BodyRangeMention & {
   replacementText: string;
 };
 
-// export type DraftBodyRangesType = ReadonlyArray<DraftBodyRangeType>;
 export type DraftBodyRangesType = ReadonlyArray<DraftBodyRangeMention>;
 
 // Fully hydrated body range to be used in UI components.

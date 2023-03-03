@@ -472,7 +472,6 @@ async function getMessageSendData({
   contact?: Array<ContactWithHydratedAvatar>;
   deletedForEveryoneTimestamp: undefined | number;
   expireTimer: undefined | DurationInSeconds;
-  // mentions: undefined | BodyRangesType;
   mentions: undefined | ReadonlyArray<BodyRangeMention>;
   messageTimestamp: number;
   preview: Array<LinkPreviewType>;
