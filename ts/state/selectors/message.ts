@@ -45,12 +45,12 @@ import type { UUIDStringType } from '../../types/UUID';
 
 import type { EmbeddedContactType } from '../../types/EmbeddedContact';
 import { embeddedContactSelector } from '../../types/EmbeddedContact';
-import {
+import type {
   AssertProps,
-  BodyRange,
   HydratedBodyRangeMention,
   HydratedBodyRangesType,
 } from '../../types/Util';
+import { BodyRange } from '../../types/Util';
 import type { LinkPreviewType } from '../../types/message/LinkPreviews';
 import { getMentionsRegex } from '../../types/Message';
 import { CallMode } from '../../types/Calling';

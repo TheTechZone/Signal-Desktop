@@ -3,11 +3,11 @@
 
 import React from 'react';
 import { useSelector } from 'react-redux';
-import {
-  BodyRange,
+import type {
   DraftBodyRangesType,
   HydratedBodyRangeMention,
 } from '../../types/Util';
+import { BodyRange } from '../../types/Util';
 import type { ForwardMessagePropsType } from '../ducks/globalModals';
 import type { StateType } from '../reducer';
 import * as log from '../../logging/log';

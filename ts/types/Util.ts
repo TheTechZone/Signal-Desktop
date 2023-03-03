@@ -10,35 +10,7 @@ import { SignalService as Proto } from '../protobuf';
 
 // Cold storage of body ranges
 
-/*
-type BodyRangeMention = {
-  start: number;
-  length: number;
-  mentionUuid: string;
-}
-
-type BodyRangeStyle = {
-  start: number;
-  length: number;
-  style: string;
-}
-*/
-
-/*
-export type BodyRangeType = {
-  start: number;
-  length: number;
-  mentionUuid: string;
-};
-*/
-
-/*
-export type BodyRangeType = {
-  start: number;
-  length: number;
-} & ({ mentionUuid: string } | { style: string });
-*/
-type BodyRangeBase = {
+export type BodyRangeBase = {
   start: number;
   length: number;
 };

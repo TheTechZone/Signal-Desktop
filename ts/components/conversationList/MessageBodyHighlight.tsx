@@ -6,22 +6,23 @@ import React from 'react';
 
 import { MESSAGE_TEXT_CLASS_NAME } from './BaseConversationListItem';
 import { AtMentionify } from '../conversation/AtMentionify';
-import { MessageBody } from '../conversation/MessageBody';
 import { Emojify } from '../conversation/Emojify';
 import { AddNewLines } from '../conversation/AddNewLines';
 
 import type { SizeClassType } from '../emoji/lib';
 
 import type {
-  HydratedBodyRangesType,
+  HydratedBodyRangeMention,
+  HydratedBodyRangeType,
   LocalizerType,
   RenderTextCallbackType,
 } from '../../types/Util';
+import { BodyRange } from '../../types/Util';
 
 const CLASS_NAME = `${MESSAGE_TEXT_CLASS_NAME}__message-search-result-contents`;
 
 export type Props = {
-  bodyRanges: HydratedBodyRangesType;
+  bodyRanges: ReadonlyArray<HydratedBodyRangeType>;
   text: string;
   i18n: LocalizerType;
 };
@@ -52,12 +53,19 @@ export class MessageBodyHighlight extends React.Component<Props> {
     key,
   }) => {
     const { bodyRanges } = this.props;
+    const mentionBodyRanges = bodyRanges.filter<HydratedBodyRangeMention>(
+      BodyRange.isMention
+    );
     return (
       <AddNewLines
         key={key}
         text={textWithNewLines}
         renderNonNewLine={({ text, key: innerKey }) => (
-          <AtMentionify bodyRanges={bodyRanges} key={innerKey} text={text} />
+          <AtMentionify
+            bodyRanges={mentionBodyRanges}
+            key={innerKey}
+            text={text}
+          />
         )}
       />
     );
@@ -76,13 +84,7 @@ export class MessageBodyHighlight extends React.Component<Props> {
 
     if (!match) {
       return (
-        <MessageBody
-          bodyRanges={bodyRanges}
-          disableJumbomoji
-          disableLinks
-          text={text}
-          i18n={i18n}
-        />
+        <Emojify text={processedText} renderNonEmoji={this.renderNewLines} />
       );
     }
 

@@ -1,18 +1,23 @@
+// Copyright 2023 Signal Messenger, LLC
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /* eslint-disable @typescript-eslint/no-namespace */
 
-import type { ReactFragment } from 'react';
 import React from 'react';
-import { noop } from 'lodash';
-import { linkify } from './Linkify';
+import type { ReactNode } from 'react';
+import emojiRegex from 'emoji-regex';
+import { linkify, SUPPORTED_PROTOCOLS } from './Linkify';
 
-import type { HydratedBodyRangeType } from '../../types/Util';
+import type { BodyRangeBase, HydratedBodyRangeType } from '../../types/Util';
 import { BodyRange as BodyRangeType } from '../../types/Util';
 import { AtMention } from './AtMention';
+import { isLinkSneaky } from '../../types/LinkPreview';
+import { Emojify } from './Emojify';
+import { AddNewLines } from './AddNewLines';
+import type { SizeClassType } from '../emoji/lib';
+import * as log from '../../logging/log';
 
-type BodyRangeBase = {
-  start: number;
-  length: number;
-};
+const EMOJI_REGEXP = emojiRegex();
 
 type Mention = {
   mentionUuid: string;
@@ -20,7 +25,7 @@ type Mention = {
   replacementText: string;
 };
 type Link = {
-  href: string;
+  url: string;
 };
 type Formatting = {
   style: BodyRangeType.Style;
@@ -28,6 +33,10 @@ type Formatting = {
 
 type BodyRange = BodyRangeBase & (Mention | Link | Formatting);
 
+/**
+ * A range that can contain other nested ranges
+ * Inner range start fields are relative to the start of the containing range
+ */
 type RangeNodeBase = BodyRange & {
   ranges: ReadonlyArray<RangeNode>;
 };
@@ -39,7 +48,7 @@ namespace RangeNode {
   export function isLink<T extends Mention | Link | Formatting>(
     node: T
   ): node is T & Link {
-    return ('href' as const satisfies keyof Link) in node;
+    return ('url' as const satisfies keyof Link) in node;
   }
 
   export function isFormatting<T extends Mention | Link | Formatting>(
@@ -53,6 +62,165 @@ namespace RangeNode {
   ): node is T & Mention {
     return ('mentionUuid' as const satisfies keyof Mention) in node;
   }
+}
+
+type Props = {
+  messageText: string;
+  bodyRanges: ReadonlyArray<HydratedBodyRangeType>;
+  direction: 'incoming' | 'outgoing' | undefined;
+  disableLinks: boolean;
+  emojiSizeClass: SizeClassType | undefined;
+  onMentionTrigger: (conversationId: string) => void;
+};
+
+export function MessageTextRenderer({
+  messageText,
+  bodyRanges,
+  direction,
+  disableLinks,
+  onMentionTrigger,
+}: Props): JSX.Element {
+  // get the ranges that cannot be split up first
+  const links = disableLinks ? [] : extractLinks(messageText);
+
+  const rangesTree = bodyRanges.reduce<ReadonlyArray<RangeNode>>(
+    (acc, range) => insertRange(range, acc),
+    links.map(b => ({ ...b, ranges: [] }))
+  );
+
+  const processor = createRangeProcessor({
+    direction,
+    onMentionTrigger,
+  });
+
+  return processor.process(messageText, rangesTree);
+}
+
+function createRangeProcessor({
+  direction,
+  onMentionTrigger,
+}: {
+  direction: 'incoming' | 'outgoing' | undefined;
+  onMentionTrigger: ((conversationId: string) => void) | undefined;
+}) {
+  function renderMention(conversationId: string, name: string) {
+    return (
+      <AtMention
+        id={conversationId}
+        name={name}
+        direction={direction}
+        onClick={() => {
+          if (onMentionTrigger) {
+            onMentionTrigger(conversationId);
+          }
+        }}
+        onKeyUp={e => {
+          if (
+            e.target === e.currentTarget &&
+            e.keyCode === 13 &&
+            onMentionTrigger
+          ) {
+            onMentionTrigger(conversationId);
+          }
+        }}
+      />
+    );
+  }
+
+  function renderLink(
+    url: string,
+    text: string,
+    innerRanges: ReadonlyArray<RangeNode>
+  ) {
+    if (SUPPORTED_PROTOCOLS.test(url) && !isLinkSneaky(url)) {
+      return <a href={url}>{process(text, innerRanges)}</a>;
+    }
+    return renderText(text);
+  }
+
+  function renderFormatting(
+    text: string,
+    style: BodyRangeType.Style,
+    innerRanges: ReadonlyArray<RangeNode>
+  ) {
+    const inner = process(text, innerRanges);
+    switch (style) {
+      case BodyRangeType.Style.BOLD:
+        return (
+          <span className="MessageTextRenderer__formatting--bold">{inner}</span>
+        );
+      case BodyRangeType.Style.ITALIC:
+        return (
+          <span className="MessageTextRenderer__formatting--italic">
+            {inner}
+          </span>
+        );
+      case BodyRangeType.Style.MONOSPACE:
+        return (
+          <span className="MessageTextRenderer__formatting--monospace">
+            {inner}
+          </span>
+        );
+      case BodyRangeType.Style.STRIKETHROUGH:
+        return (
+          <span className="MessageTextRenderer__formatting--strikethrough">
+            {inner}
+          </span>
+        );
+      case BodyRangeType.Style.SPOILER:
+        return (
+          <span className="MessageTextRenderer__formatting--spoiler">
+            {inner}
+          </span>
+        );
+      default:
+        return inner;
+    }
+  }
+
+  function process(text: string, sortedRangeNodes: ReadonlyArray<RangeNode>) {
+    const result: Array<ReactNode> = [];
+
+    let offset = 0;
+
+    for (const rangeNode of sortedRangeNodes) {
+      // collect any previous text
+      if (rangeNode.start > offset) {
+        result.push(renderText(text.slice(offset, rangeNode.start)));
+      }
+      if (RangeNode.isLink(rangeNode)) {
+        const rangeText = text.slice(
+          rangeNode.start,
+          rangeNode.start + rangeNode.length
+        );
+        result.push(renderLink(rangeText, rangeNode.url, rangeNode.ranges));
+      }
+      if (RangeNode.isFormatting(rangeNode)) {
+        result.push(
+          renderFormatting(
+            text.slice(rangeNode.start, rangeNode.start + rangeNode.length),
+            rangeNode.style,
+            rangeNode.ranges
+          )
+        );
+      }
+      if (RangeNode.isMention(rangeNode)) {
+        result.push(
+          renderMention(rangeNode.conversationID, rangeNode.replacementText)
+        );
+      }
+      offset = rangeNode.start + rangeNode.length;
+    }
+
+    // collect any text after
+    result.push(renderText(text.slice(offset, text.length)));
+
+    return <>{result}</>;
+  }
+
+  return {
+    process,
+  };
 }
 
 /**
@@ -154,81 +322,28 @@ function insertRange(
     ];
   }
 
-  throw new Error('wtf');
+  log.error(`MessageTextRenderer: unhandled range ${range}`);
+  throw new Error('unhandled range');
 }
 
-function applyRangeNodes(
-  text: string,
-  sortedRangeNodes: ReadonlyArray<RangeNode>,
-  direction: 'incoming' | 'outgoing' | undefined
-): JSX.Element {
-  const result: Array<ReactFragment> = [];
-
-  let offset = 0;
-
-  for (const rangeNode of sortedRangeNodes) {
-    // collect any previous text
-    if (rangeNode.start > offset) {
-      result.push(<>{text.slice(offset, rangeNode.start)}</>);
-    }
-    if (RangeNode.isLink(rangeNode)) {
-      result.push(
-        <a href={rangeNode.href}>
-          {applyRangeNodes(
-            text.slice(rangeNode.start, rangeNode.start + rangeNode.length),
-            rangeNode.ranges,
-            direction
-          )}
-        </a>
-      );
-    }
-    if (RangeNode.isFormatting(rangeNode)) {
-      const inner = applyRangeNodes(
-        text.slice(rangeNode.start, rangeNode.start + rangeNode.length),
-        rangeNode.ranges,
-        direction
-      );
-      let element: JSX.Element = <>{inner}</>;
-      if (rangeNode.style === BodyRangeType.Style.BOLD) {
-        element = <span className="formatting--bold">{inner}</span>;
-      }
-      if (rangeNode.style === BodyRangeType.Style.ITALIC) {
-        element = <span className="formatting--italic">{inner}</span>;
-      }
-      if (rangeNode.style === BodyRangeType.Style.MONOSPACE) {
-        element = <span className="formatting--monospace">{inner}</span>;
-      }
-      if (rangeNode.style === BodyRangeType.Style.STRIKETHROUGH) {
-        element = <span className="formatting--strikethrough">{inner}</span>;
-      }
-      if (rangeNode.style === BodyRangeType.Style.SPOILER) {
-        element = <span className="formatting--spoiler">{inner}</span>;
-      }
-      if (element !== undefined) {
-        result.push(element);
-      }
-    }
-    if (RangeNode.isMention(rangeNode)) {
-      result.push(
-        <AtMention
-          id={rangeNode.conversationID}
-          name={rangeNode.replacementText}
-          direction={direction}
-          onClick={noop}
-          onKeyUp={noop}
-        />
-      );
-    }
-    offset = rangeNode.start + rangeNode.length;
-  }
-
-  result.push(text.slice(offset, text.length));
-
-  return <>{result}</>;
+/** Render text that doesn't not contain body ranges or is in between body ranges */
+function renderText(t: string) {
+  return (
+    <Emojify
+      text={t}
+      renderNonEmoji={({ text: innerText, key }) => (
+        <AddNewLines key={key} text={innerText} />
+      )}
+    />
+  );
 }
 
 export function extractLinks(messageText: string): ReadonlyArray<BodyRange> {
-  const matches = linkify.match(messageText);
+  // to support emojis immediately before links
+  // we replace emojis with a space for each byte
+  const matches = linkify.match(
+    messageText.replace(EMOJI_REGEXP, s => ' '.repeat(s.length))
+  );
 
   if (matches == null) {
     return [];
@@ -238,27 +353,7 @@ export function extractLinks(messageText: string): ReadonlyArray<BodyRange> {
     return {
       start: match.index,
       length: match.lastIndex - match.index,
-      href: match.url,
+      url: match.url,
     };
   });
-}
-
-type Props = {
-  messageText: string;
-  bodyRanges: ReadonlyArray<HydratedBodyRangeType>;
-  direction: 'incoming' | 'outgoing' | undefined;
-};
-
-export function MessageTextRenderer({
-  messageText,
-  bodyRanges,
-  direction,
-}: Props): JSX.Element {
-  // get the ranges that cannot be split up first
-  const rangesTree = bodyRanges.reduce<ReadonlyArray<RangeNode>>(
-    (acc, range) => insertRange(range, acc),
-    []
-  );
-
-  return applyRangeNodes(messageText, rangesTree, direction);
 }

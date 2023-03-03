@@ -6,11 +6,8 @@ import Delta from 'quill-delta';
 import type { LeafBlot, DeltaOperation } from 'quill';
 import type Op from 'quill-delta/dist/Op';
 
-import {
-  DraftBodyRangeMention,
-  DraftBodyRangesType,
-  BodyRange,
-} from '../types/Util';
+import type { DraftBodyRangeMention, DraftBodyRangesType } from '../types/Util';
+import { BodyRange } from '../types/Util';
 import type { MentionBlot } from './mentions/blot';
 
 export type MentionBlotValue = {
@@ -184,7 +181,6 @@ export const insertMentionOps = (
   // Unshift the mention and surrounding text to leave the ops ready for the next range
   sortableBodyRanges
     .sort((a, b) => b.start - a.start)
-    //.forEach(({ start, length, mentionUuid, replacementText }) => {
     .forEach(bodyRange => {
       if (!BodyRange.isMention(bodyRange)) {
         return;

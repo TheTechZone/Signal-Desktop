@@ -56,12 +56,12 @@ import {
   SendMessageProtoError,
   HTTPError,
 } from './Errors';
-import {
-  BodyRange,
+import type {
   BodyRangeMention,
   BodyRangesType,
   StoryContextType,
 } from '../types/Util';
+import { BodyRange } from '../types/Util';
 import type {
   LinkPreviewImage,
   LinkPreviewMetadata,

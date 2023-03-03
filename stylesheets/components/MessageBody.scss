@@ -59,19 +59,3 @@
     @include font-body-2-medium;
   }
 }
-
-.formatting--bold {
-  font-weight: 600;
-}
-.formatting--italic {
-  font-style: italic;
-}
-.formatting--monospace {
-  font-family: monospace;
-}
-.formatting--strikethrough {
-  text-decoration: line-through;
-  bdi {
-    text-decoration: line-through;
-  }
-}

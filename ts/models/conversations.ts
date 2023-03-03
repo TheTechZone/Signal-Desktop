@@ -83,7 +83,8 @@ import {
   deriveAccessKey,
 } from '../Crypto';
 import * as Bytes from '../Bytes';
-import { BodyRange, BodyRangesType, DraftBodyRangesType } from '../types/Util';
+import type { BodyRangesType, DraftBodyRangesType } from '../types/Util';
+import { BodyRange } from '../types/Util';
 import { getTextWithMentions } from '../util/getTextWithMentions';
 import { migrateColor } from '../util/migrateColor';
 import { isNotNil } from '../util/isNotNil';

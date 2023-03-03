@@ -6,21 +6,12 @@ import React from 'react';
 
 import type { AttachmentType } from '../../types/Attachment';
 import { canBeDownloaded } from '../../types/Attachment';
-import type { SizeClassType } from '../emoji/lib';
 import { getSizeClass } from '../emoji/lib';
-// import { AtMentionify } from './AtMentionify';
 import { Emojify } from './Emojify';
-import { AddNewLines } from './AddNewLines';
-import { Linkify } from './Linkify';
 
 import type { ShowConversationType } from '../../state/ducks/conversations';
-import type {
-  HydratedBodyRangesType,
-  LocalizerType,
-  RenderTextCallbackType,
-} from '../../types/Util';
-import { BodyRange } from '../../types/Util';
-import { MessageRenderer, MessageTextRenderer } from './MessageTextRenderer';
+import type { HydratedBodyRangesType, LocalizerType } from '../../types/Util';
+import { MessageTextRenderer } from './MessageTextRenderer';
 
 export type Props = {
   author?: string;
@@ -37,26 +28,6 @@ export type Props = {
   text: string;
   textAttachment?: Pick<AttachmentType, 'pending' | 'digest' | 'key'>;
 };
-
-const renderEmoji = ({
-  text,
-  key,
-  sizeClass,
-  renderNonEmoji,
-}: {
-  i18n: LocalizerType;
-  text: string;
-  key: number;
-  sizeClass?: SizeClassType;
-  renderNonEmoji: RenderTextCallbackType;
-}) => (
-  <Emojify
-    key={key}
-    text={text}
-    sizeClass={sizeClass}
-    renderNonEmoji={renderNonEmoji}
-  />
-);
 
 /**
  * This component makes it very easy to use all three of our message formatting
@@ -82,34 +53,6 @@ export function MessageBody({
     textAttachment?.pending || hasReadMore ? `${text}...` : text;
 
   const sizeClass = disableJumbomoji ? undefined : getSizeClass(text);
-  /*
-  const processedText = AtMentionify.preprocessMentions(
-    textWithSuffix,
-    bodyRanges
-  );
-  */
-  const processedText = textWithSuffix;
-
-  const renderNewLines: RenderTextCallbackType = ({
-    text: textWithNewLines,
-    key,
-  }) => {
-    return (
-      <AddNewLines
-        key={key}
-        text={textWithNewLines}
-        renderNonNewLine={({ text: innerText, key: innerKey }) => (
-          <AtMentionify
-            key={innerKey}
-            bodyRanges={bodyRanges}
-            direction={direction}
-            showConversation={showConversation}
-            text={innerText}
-          />
-        )}
-      />
-    );
-  };
 
   let pendingContent: React.ReactNode;
   if (hasReadMore) {
@@ -150,44 +93,21 @@ export function MessageBody({
       {author && (
         <>
           <span className="MessageBody__author">
-            {renderEmoji({
-              i18n,
-              text: author,
-              sizeClass,
-              key: 0,
-              renderNonEmoji: renderNewLines,
-            })}
+            <Emojify text={author} sizeClass={sizeClass} />
           </span>
           :{' '}
         </>
       )}
-      {/* {disableLinks ? (
-        renderEmoji({
-          i18n,
-          text: processedText,
-          sizeClass,
-          key: 0,
-          renderNonEmoji: renderNewLines,
-        })
-      ) : (
-        <Linkify
-          text={processedText}
-          renderNonLink={({ key, text: nonLinkText }) => {
-            return renderEmoji({
-              i18n,
-              text: nonLinkText,
-              sizeClass,
-              key,
-              renderNonEmoji: renderNewLines,
-            });
-          }}
-        />
-      )} */}
 
       <MessageTextRenderer
-        messageText={processedText}
+        messageText={textWithSuffix}
         bodyRanges={bodyRanges ?? []}
         direction={direction}
+        disableLinks={disableLinks ?? false}
+        emojiSizeClass={sizeClass}
+        onMentionTrigger={conversationId =>
+          showConversation?.({ conversationId })
+        }
       />
 
       {pendingContent}

@@ -1,0 +1,19 @@
+.MessageTextRenderer {
+  &__formatting {
+    &--bold {
+      font-weight: 600;
+    }
+    &--italic {
+      font-style: italic;
+    }
+    &--monospace {
+      font-family: monospace;
+    }
+    &--strikethrough {
+      text-decoration: line-through;
+      bdi {
+        text-decoration: line-through;
+      }
+    }
+  }
+}

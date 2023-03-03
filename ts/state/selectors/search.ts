@@ -28,10 +28,8 @@ import {
   getConversationSelector,
 } from './conversations';
 
-import {
-  BodyRange,
-  /* BodyRangeType, */ HydratedBodyRangeType,
-} from '../../types/Util';
+import type { HydratedBodyRangeType } from '../../types/Util';
+import { BodyRange } from '../../types/Util';
 import * as log from '../../logging/log';
 import { getOwn } from '../../util/getOwn';
 

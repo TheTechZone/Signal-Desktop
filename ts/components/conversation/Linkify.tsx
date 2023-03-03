@@ -319,7 +319,7 @@ export type Props = {
   renderNonLink?: RenderTextCallbackType;
 };
 
-const SUPPORTED_PROTOCOLS = /^(http|https):/i;
+export const SUPPORTED_PROTOCOLS = /^(http|https):/i;
 
 const defaultRenderNonLink: RenderTextCallbackType = ({ text }) => text;
 

@@ -11,12 +11,12 @@ import * as GoogleChrome from '../../util/GoogleChrome';
 
 import { MessageBody } from './MessageBody';
 import type { AttachmentType, ThumbnailType } from '../../types/Attachment';
-import {
-  BodyRange,
+import type {
   HydratedBodyRangeMention,
   HydratedBodyRangesType,
   LocalizerType,
 } from '../../types/Util';
+import { BodyRange } from '../../types/Util';
 import type {
   ConversationColorType,
   CustomColorType,
