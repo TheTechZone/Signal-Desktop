@@ -188,11 +188,11 @@ export const getCachedSelectorForMessageSearchResult = createSelector(
           snippet: message.snippet || '',
           bodyRanges: bodyRanges
             .filter(BodyRange.isMention)
-            .map((bodyRange): HydratedBodyRangeType => {
-              const conversation = conversationSelector(bodyRange.mentionUuid);
+            .map((mention): HydratedBodyRangeType => {
+              const conversation = conversationSelector(mention.mentionUuid);
 
               return {
-                ...bodyRange,
+                ...mention,
                 conversationID: conversation.id,
                 replacementText: conversation.title,
               };

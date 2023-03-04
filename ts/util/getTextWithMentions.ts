@@ -7,8 +7,8 @@ export function getTextWithMentions(
   mentions: ReadonlyArray<DraftBodyRangeMention>,
   text: string
 ): string {
-  const sortableBodyRanges: Array<DraftBodyRangeMention> = mentions.slice();
-  return sortableBodyRanges
+  const sortableMentions: Array<DraftBodyRangeMention> = mentions.slice();
+  return sortableMentions
     .sort((a, b) => b.start - a.start)
     .reduce((acc, { start, length, replacementText }) => {
       const left = acc.slice(0, start);

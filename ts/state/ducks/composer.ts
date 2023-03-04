@@ -1084,7 +1084,7 @@ const debouncedSaveDraft = debounce(saveDraft);
 function saveDraft(
   conversationId: string,
   messageText: string,
-  bodyRanges: ReadonlyArray<DraftBodyRangeMention>
+  mentions: ReadonlyArray<DraftBodyRangeMention>
 ) {
   const conversation = window.ConversationController.get(conversationId);
   if (!conversation) {
@@ -1117,7 +1117,7 @@ function saveDraft(
     conversation.set({
       active_at: activeAt,
       draft: messageText,
-      draftBodyRanges: bodyRanges,
+      draftBodyRanges: mentions,
       draftChanged: true,
       timestamp,
     });

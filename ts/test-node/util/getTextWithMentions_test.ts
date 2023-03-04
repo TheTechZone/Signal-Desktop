@@ -7,7 +7,7 @@ import { getTextWithMentions } from '../../util/getTextWithMentions';
 describe('getTextWithMentions', () => {
   describe('given mention replacements', () => {
     it('replaces them', () => {
-      const bodyRanges = [
+      const mentions = [
         {
           length: 1,
           mentionUuid: 'abcdef',
@@ -18,13 +18,13 @@ describe('getTextWithMentions', () => {
       ];
       const text = "Hey \uFFFC, I'm here";
       assert.strictEqual(
-        getTextWithMentions(bodyRanges, text),
+        getTextWithMentions(mentions, text),
         "Hey @fred, I'm here"
       );
     });
 
     it('sorts them to go from back to front', () => {
-      const bodyRanges = [
+      const mentions = [
         {
           length: 1,
           mentionUuid: 'blarg',
@@ -42,7 +42,7 @@ describe('getTextWithMentions', () => {
       ];
       const text = "\uFFFC says \uFFFC, I'm here";
       assert.strictEqual(
-        getTextWithMentions(bodyRanges, text),
+        getTextWithMentions(mentions, text),
         "@jerry says @fred, I'm here"
       );
     });
