@@ -1,16 +1,13 @@
 // Copyright 2020 Signal Messenger, LLC
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import type {
-  DraftBodyRangeMention,
-  DraftBodyRangesType,
-} from '../types/BodyRange';
+import type { DraftBodyRangeMention } from '../types/BodyRange';
 
 export function getTextWithMentions(
-  bodyRanges: DraftBodyRangesType,
+  mentions: ReadonlyArray<DraftBodyRangeMention>,
   text: string
 ): string {
-  const sortableBodyRanges: Array<DraftBodyRangeMention> = bodyRanges.slice();
+  const sortableBodyRanges: Array<DraftBodyRangeMention> = mentions.slice();
   return sortableBodyRanges
     .sort((a, b) => b.start - a.start)
     .reduce((acc, { start, length, replacementText }) => {

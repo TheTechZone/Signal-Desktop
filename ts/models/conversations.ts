@@ -83,7 +83,7 @@ import {
   deriveAccessKey,
 } from '../Crypto';
 import * as Bytes from '../Bytes';
-import type { DraftBodyRangesType } from '../types/BodyRange';
+import type { DraftBodyRangeMention } from '../types/BodyRange';
 import { BodyRange } from '../types/BodyRange';
 import { getTextWithMentions } from '../util/getTextWithMentions';
 import { migrateColor } from '../util/migrateColor';
@@ -1025,9 +1025,9 @@ export class ConversationModel extends window.Backbone
     const draft = this.get('draft');
 
     if (draft) {
-      const bodyRanges = this.get('draftBodyRanges') || [];
+      const mentions = this.get('draftBodyRanges') || [];
 
-      return getTextWithMentions(bodyRanges, draft);
+      return getTextWithMentions(mentions, draft);
     }
 
     const draftAttachments = this.get('draftAttachments') || [];
@@ -3661,7 +3661,7 @@ export class ConversationModel extends window.Backbone
   }
 
   private getDraftBodyRanges = memoizeByThis(
-    (): DraftBodyRangesType | undefined => {
+    (): ReadonlyArray<DraftBodyRangeMention> | undefined => {
       return this.get('draftBodyRanges');
     }
   );

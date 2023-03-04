@@ -65,8 +65,6 @@ export type DraftBodyRangeMention = BodyRange<
   }
 >;
 
-export type DraftBodyRangesType = ReadonlyArray<DraftBodyRangeMention>;
-
 // Fully hydrated body range to be used in UI components.
 
 export type HydratedBodyRangeMention = DraftBodyRangeMention & {

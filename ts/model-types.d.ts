@@ -6,7 +6,7 @@
 import * as Backbone from 'backbone';
 
 import type { GroupV2ChangeType } from './groups';
-import type { DraftBodyRangesType, RawBodyRange } from './types/BodyRange';
+import type { DraftBodyRangeMention, RawBodyRange } from './types/BodyRange';
 import type { CallHistoryDetailsFromDiskType } from './types/Calling';
 import type { CustomColorType, ConversationColorType } from './types/Colors';
 import type { DeviceType } from './textsecure/Types.d';
@@ -287,7 +287,7 @@ export type ConversationAttributesType = {
   firstUnregisteredAt?: number;
   draftChanged?: boolean;
   draftAttachments?: ReadonlyArray<AttachmentDraftType>;
-  draftBodyRanges?: DraftBodyRangesType;
+  draftBodyRanges?: ReadonlyArray<DraftBodyRangeMention>;
   draftTimestamp?: number | null;
   hideStory?: boolean;
   inbox_position?: number;

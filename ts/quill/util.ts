@@ -6,10 +6,7 @@ import Delta from 'quill-delta';
 import type { LeafBlot, DeltaOperation } from 'quill';
 import type Op from 'quill-delta/dist/Op';
 
-import type {
-  DraftBodyRangeMention,
-  DraftBodyRangesType,
-} from '../types/BodyRange';
+import type { DraftBodyRangeMention } from '../types/BodyRange';
 import { BodyRange } from '../types/BodyRange';
 import type { MentionBlot } from './mentions/blot';
 
@@ -65,7 +62,7 @@ export const getTextFromOps = (ops: Array<DeltaOperation>): string =>
 
 export const getTextAndMentionsFromOps = (
   ops: Array<Op>
-): [string, DraftBodyRangesType] => {
+): [string, ReadonlyArray<DraftBodyRangeMention>] => {
   const mentions: Array<DraftBodyRangeMention> = [];
 
   const text = ops
@@ -172,7 +169,7 @@ export const getDeltaToRemoveStaleMentions = (
 
 export const insertMentionOps = (
   incomingOps: Array<Op>,
-  bodyRanges: DraftBodyRangesType
+  bodyRanges: ReadonlyArray<DraftBodyRangeMention>
 ): Array<Op> => {
   const ops = [...incomingOps];
 

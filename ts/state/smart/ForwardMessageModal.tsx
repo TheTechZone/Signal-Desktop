@@ -4,7 +4,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import type {
-  DraftBodyRangesType,
+  DraftBodyRangeMention,
   HydratedBodyRangeMention,
 } from '../../types/BodyRange';
 import { BodyRange } from '../../types/BodyRange';
@@ -130,7 +130,7 @@ export function SmartForwardMessageModal(): JSX.Element | null {
       onEditorStateChange={(
         _conversationId: string | undefined,
         messageText: string,
-        _: DraftBodyRangesType,
+        _: ReadonlyArray<DraftBodyRangeMention>,
         caretLocation?: number
       ) => {
         if (!attachments.length) {

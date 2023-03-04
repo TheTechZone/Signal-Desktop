@@ -17,7 +17,7 @@ import type {
   InMemoryAttachmentDraftType,
 } from '../../types/Attachment';
 import type { BoundActionCreatorsMapObject } from '../../hooks/useBoundActions';
-import type { DraftBodyRangesType } from '../../types/BodyRange';
+import type { DraftBodyRangeMention } from '../../types/BodyRange';
 import type { ReplacementValuesType } from '../../types/Util';
 import type { LinkPreviewType } from '../../types/message/LinkPreviews';
 import type { MessageAttributesType } from '../../model-types.d';
@@ -333,7 +333,7 @@ function sendMultiMediaMessage(
   conversationId: string,
   options: {
     draftAttachments?: ReadonlyArray<AttachmentDraftType>;
-    mentions?: DraftBodyRangesType;
+    mentions?: ReadonlyArray<DraftBodyRangeMention>;
     message?: string;
     timestamp?: number;
     voiceNoteAttachment?: InMemoryAttachmentDraftType;
@@ -747,7 +747,7 @@ export function setComposerFocus(
 function onEditorStateChange(
   conversationId: string | undefined,
   messageText: string,
-  bodyRanges: DraftBodyRangesType,
+  mentions: ReadonlyArray<DraftBodyRangeMention>,
   caretLocation?: number
 ): NoopActionType {
   if (!conversationId) {
@@ -765,7 +765,7 @@ function onEditorStateChange(
     conversation.throttledBumpTyping();
   }
 
-  debouncedSaveDraft(conversationId, messageText, bodyRanges);
+  debouncedSaveDraft(conversationId, messageText, mentions);
 
   // If we have attachments, don't add link preview
   if (
@@ -1084,7 +1084,7 @@ const debouncedSaveDraft = debounce(saveDraft);
 function saveDraft(
   conversationId: string,
   messageText: string,
-  bodyRanges: DraftBodyRangesType
+  bodyRanges: ReadonlyArray<DraftBodyRangeMention>
 ) {
   const conversation = window.ConversationController.get(conversationId);
   if (!conversation) {

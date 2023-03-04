@@ -52,7 +52,7 @@ export class MessageBodyHighlight extends React.Component<Props> {
     key,
   }) => {
     const { bodyRanges } = this.props;
-    const mentionBodyRanges = bodyRanges.filter<HydratedBodyRangeMention>(
+    const mentions = bodyRanges.filter<HydratedBodyRangeMention>(
       BodyRange.isMention
     );
     return (
@@ -60,11 +60,7 @@ export class MessageBodyHighlight extends React.Component<Props> {
         key={key}
         text={textWithNewLines}
         renderNonNewLine={({ text, key: innerKey }) => (
-          <AtMentionify
-            bodyRanges={mentionBodyRanges}
-            key={innerKey}
-            text={text}
-          />
+          <AtMentionify mentions={mentions} key={innerKey} text={text} />
         )}
       />
     );
@@ -75,7 +71,11 @@ export class MessageBodyHighlight extends React.Component<Props> {
     const results: Array<JSX.Element> = [];
     const FIND_BEGIN_END = /<<left>>(.+?)<<right>>/g;
 
-    const processedText = AtMentionify.preprocessMentions(text, bodyRanges);
+    const mentions = bodyRanges.filter<HydratedBodyRangeMention>(
+      BodyRange.isMention
+    );
+
+    const processedText = AtMentionify.preprocessMentions(text, mentions);
 
     let match = FIND_BEGIN_END.exec(processedText);
     let last = 0;

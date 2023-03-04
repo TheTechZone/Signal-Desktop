@@ -9,7 +9,7 @@ import { shouldNeverBeCalled } from '../util/shouldNeverBeCalled';
 import type { InputApi } from './CompositionInput';
 import { CompositionInput } from './CompositionInput';
 import { EmojiButton } from './emoji/EmojiButton';
-import type { DraftBodyRangesType } from '../types/BodyRange';
+import type { DraftBodyRangeMention } from '../types/BodyRange';
 import type { ThemeType } from '../types/Util';
 import type { Props as EmojiButtonProps } from './emoji/EmojiButton';
 import type { PreferredBadgeSelectorType } from '../state/selectors/badges';
@@ -25,13 +25,13 @@ export type CompositionTextAreaProps = {
   onPickEmoji: (e: EmojiPickDataType) => void;
   onChange: (
     messageText: string,
-    bodyRanges: DraftBodyRangesType,
+    mentions: ReadonlyArray<DraftBodyRangeMention>,
     caretLocation?: number | undefined
   ) => void;
   onSetSkinTone: (tone: number) => void;
   onSubmit: (
     message: string,
-    mentions: DraftBodyRangesType,
+    mentions: ReadonlyArray<DraftBodyRangeMention>,
     timestamp: number
   ) => void;
   onTextTooLong: () => void;
@@ -90,7 +90,7 @@ export function CompositionTextArea({
     (
       _conversationId: string | undefined,
       newValue: string,
-      bodyRanges: DraftBodyRangesType,
+      mentions: ReadonlyArray<DraftBodyRangeMention>,
       caretLocation?: number | undefined
     ) => {
       const inputEl = inputApiRef.current;
@@ -113,11 +113,11 @@ export function CompositionTextArea({
           // was modifying text in the middle of the editor
           // a better solution would be to prevent the change to begin with, but
           // quill makes this VERY difficult
-          inputEl.setContents(newValueSized, bodyRanges, true);
+          inputEl.setContents(newValueSized, mentions, true);
         }
       }
       setCharacterCount(newCharacterCount);
-      onChange(newValue, bodyRanges, caretLocation);
+      onChange(newValue, mentions, caretLocation);
     },
     [maxLength, onChange]
   );

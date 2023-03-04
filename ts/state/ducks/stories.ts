@@ -7,7 +7,7 @@ import { isEqual, pick } from 'lodash';
 import type { ReadonlyDeep } from 'type-fest';
 import * as Errors from '../../types/errors';
 import type { AttachmentType } from '../../types/Attachment';
-import type { DraftBodyRangesType } from '../../types/BodyRange';
+import type { DraftBodyRangeMention } from '../../types/BodyRange';
 import type { MessageAttributesType } from '../../model-types.d';
 import type {
   MessageChangedActionType,
@@ -554,7 +554,7 @@ function reactToStory(
 function replyToStory(
   conversationId: string,
   messageBody: string,
-  mentions: DraftBodyRangesType,
+  mentions: ReadonlyArray<DraftBodyRangeMention>,
   timestamp: number,
   story: StoryViewType
 ): ThunkAction<void, RootStateType, unknown, StoryChangedActionType> {

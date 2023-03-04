@@ -10,7 +10,7 @@ import React, {
   useState,
 } from 'react';
 import classNames from 'classnames';
-import type { DraftBodyRangesType } from '../types/BodyRange';
+import type { DraftBodyRangeMention } from '../types/BodyRange';
 import type { LocalizerType } from '../types/Util';
 import type { ContextMenuOptionType } from './ContextMenu';
 import type {
@@ -92,7 +92,7 @@ export type PropsType = {
   onReactToStory: (emoji: string, story: StoryViewType) => unknown;
   onReplyToStory: (
     message: string,
-    mentions: DraftBodyRangesType,
+    mentions: ReadonlyArray<DraftBodyRangeMention>,
     timestamp: number,
     story: StoryViewType
   ) => unknown;

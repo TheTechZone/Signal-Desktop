@@ -23,7 +23,7 @@ import { ConversationList, RowType } from './ConversationList';
 import type { ConversationType } from '../state/ducks/conversations';
 import type { PreferredBadgeSelectorType } from '../state/selectors/badges';
 import type { LinkPreviewType } from '../types/message/LinkPreviews';
-import type { DraftBodyRangesType } from '../types/BodyRange';
+import type { DraftBodyRangeMention } from '../types/BodyRange';
 import type { LocalizerType, ThemeType } from '../types/Util';
 import type { SmartCompositionTextAreaProps } from '../state/smart/CompositionTextArea';
 import { ModalHost } from './ModalHost';
@@ -56,7 +56,7 @@ export type DataPropsType = {
   onEditorStateChange: (
     conversationId: string | undefined,
     messageText: string,
-    bodyRanges: DraftBodyRangesType,
+    mentions: ReadonlyArray<DraftBodyRangeMention>,
     caretLocation?: number
   ) => unknown;
   theme: ThemeType;
@@ -329,12 +329,12 @@ export function ForwardMessageModal({
 
               <RenderCompositionTextArea
                 draftText={messageBodyText}
-                onChange={(messageText, bodyRanges, caretLocation?) => {
+                onChange={(messageText, mentions, caretLocation?) => {
                   setMessageBodyText(messageText);
                   onEditorStateChange(
                     undefined,
                     messageText,
-                    bodyRanges,
+                    mentions,
                     caretLocation
                   );
                 }}

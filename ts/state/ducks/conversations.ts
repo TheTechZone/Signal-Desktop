@@ -55,7 +55,7 @@ import type {
   ConversationAttributesType,
   MessageAttributesType,
 } from '../../model-types.d';
-import type { DraftBodyRangesType } from '../../types/BodyRange';
+import type { DraftBodyRangeMention } from '../../types/BodyRange';
 import { CallMode } from '../../types/Calling';
 import type { MediaItemType } from '../../types/MediaItem';
 import type { UUIDStringType } from '../../types/UUID';
@@ -269,7 +269,7 @@ export type ConversationType = ReadonlyDeep<
 
     shouldShowDraft?: boolean;
     draftText?: string;
-    draftBodyRanges?: DraftBodyRangesType;
+    draftBodyRanges?: ReadonlyArray<DraftBodyRangeMention>;
     draftPreview?: string;
 
     sharedGroupNames: ReadonlyArray<string>;

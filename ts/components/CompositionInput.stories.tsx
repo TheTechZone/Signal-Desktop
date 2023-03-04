@@ -27,7 +27,7 @@ const useProps = (overrideProps: Partial<Props> = {}): Props => ({
   onEditorStateChange: action('onEditorStateChange'),
   onTextTooLong: action('onTextTooLong'),
   draftText: overrideProps.draftText || undefined,
-  draftBodyRanges: overrideProps.draftBodyRanges || [],
+  draftMentions: overrideProps.draftMentions || [],
   clearQuotedMessage: action('clearQuotedMessage'),
   getPreferredBadge: () => undefined,
   getQuotedMessage: action('getQuotedMessage'),
@@ -118,7 +118,7 @@ export function Mentions(): JSX.Element {
       }),
     ],
     draftText: 'send _ a message',
-    draftBodyRanges: [
+    draftMentions: [
       {
         start: 5,
         length: 1,

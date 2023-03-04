@@ -4,13 +4,14 @@
 import React from 'react';
 import { sortBy } from 'lodash';
 import type {
-  RawBodyRange,
+  // RawBodyRange,
   HydratedBodyRangeMention,
+  BodyRange,
 } from '../../types/BodyRange';
 import { AtMention } from './AtMention';
 
 export type Props = {
-  bodyRanges?: ReadonlyArray<HydratedBodyRangeMention>;
+  mentions?: ReadonlyArray<HydratedBodyRangeMention>;
   direction?: 'incoming' | 'outgoing';
   showConversation?: (options: {
     conversationId: string;
@@ -20,12 +21,12 @@ export type Props = {
 };
 
 export function AtMentionify({
-  bodyRanges,
+  mentions,
   direction,
   showConversation,
   text,
 }: Props): JSX.Element {
-  if (!bodyRanges) {
+  if (!mentions) {
     return <>{text}</>;
   }
 
@@ -35,7 +36,7 @@ export function AtMentionify({
   let last = 0;
 
   const rangeStarts = new Map<number, HydratedBodyRangeMention>();
-  bodyRanges.forEach(range => {
+  mentions.forEach(range => {
     rangeStarts.set(range.start, range);
   });
 
@@ -93,16 +94,16 @@ export function AtMentionify({
 // string, therefore we're unable to mark it up with DOM nodes prior to handing
 // it off to them. This function will encode the "start" position into the text
 // string so we can later pull it off when rendering the @mention.
-AtMentionify.preprocessMentions = (
+AtMentionify.preprocessMentions = <T extends BodyRange.Mention>(
   text: string,
-  bodyRanges?: ReadonlyArray<RawBodyRange>
+  mentions?: ReadonlyArray<BodyRange<T>>
 ): string => {
-  if (!bodyRanges || !bodyRanges.length) {
+  if (!mentions || !mentions.length) {
     return text;
   }
 
   // Sorting by the start index to ensure that we always replace last -> first.
-  return sortBy(bodyRanges, 'start').reduceRight((str, range) => {
+  return sortBy(mentions, 'start').reduceRight((str, range) => {
     const textBegin = str.substr(0, range.start);
     const encodedMention = `\uFFFC@${range.start}`;
     const textEnd = str.substr(range.start + range.length, str.length);

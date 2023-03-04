@@ -14,7 +14,7 @@ import { MentionCompletion } from '../quill/mentions/completion';
 import { EmojiBlot, EmojiCompletion } from '../quill/emoji';
 import type { EmojiPickDataType } from './emoji/EmojiPicker';
 import { convertShortName } from './emoji/lib';
-import type { DraftBodyRangesType } from '../types/BodyRange';
+import type { DraftBodyRangeMention } from '../types/BodyRange';
 import type { LocalizerType, ThemeType } from '../types/Util';
 import type { ConversationType } from '../state/ducks/conversations';
 import type { PreferredBadgeSelectorType } from '../state/selectors/badges';
@@ -61,7 +61,7 @@ export type InputApi = {
   insertEmoji: (e: EmojiPickDataType) => void;
   setContents: (
     text: string,
-    draftBodyRanges?: DraftBodyRangesType,
+    draftMentions?: ReadonlyArray<DraftBodyRangeMention>,
     cursorToEnd?: boolean
   ) => void;
   reset: () => void;
@@ -78,7 +78,7 @@ export type Props = Readonly<{
   inputApi?: React.MutableRefObject<InputApi | undefined>;
   skinTone?: EmojiPickDataType['skinTone'];
   draftText?: string;
-  draftBodyRanges?: DraftBodyRangesType;
+  draftMentions?: ReadonlyArray<DraftBodyRangeMention>;
   moduleClassName?: string;
   theme: ThemeType;
   placeholder?: string;
@@ -88,14 +88,14 @@ export type Props = Readonly<{
   onEditorStateChange?(
     conversationId: string | undefined,
     messageText: string,
-    bodyRanges: DraftBodyRangesType,
+    mentions: ReadonlyArray<DraftBodyRangeMention>,
     caretLocation?: number
   ): unknown;
   onTextTooLong(): unknown;
   onPickEmoji(o: EmojiPickDataType): unknown;
   onSubmit(
     message: string,
-    mentions: DraftBodyRangesType,
+    mentions: ReadonlyArray<DraftBodyRangeMention>,
     timestamp: number
   ): unknown;
   onScroll?: (ev: React.UIEvent<HTMLElement>) => void;
@@ -115,7 +115,7 @@ export function CompositionInput(props: Props): React.ReactElement {
     clearQuotedMessage,
     conversationId,
     disabled,
-    draftBodyRanges,
+    draftMentions,
     draftText,
     getPreferredBadge,
     getQuotedMessage,
@@ -158,16 +158,19 @@ export function CompositionInput(props: Props): React.ReactElement {
 
   const generateDelta = (
     text: string,
-    bodyRanges: DraftBodyRangesType
+    mentions: ReadonlyArray<DraftBodyRangeMention>
   ): Delta => {
     const initialOps = [{ insert: text }];
-    const opsWithMentions = insertMentionOps(initialOps, bodyRanges);
+    const opsWithMentions = insertMentionOps(initialOps, mentions);
     const opsWithEmojis = insertEmojiOps(opsWithMentions);
 
     return new Delta(opsWithEmojis);
   };
 
-  const getTextAndMentions = (): [string, DraftBodyRangesType] => {
+  const getTextAndMentions = (): [
+    string,
+    ReadonlyArray<DraftBodyRangeMention>
+  ] => {
     const quill = quillRef.current;
 
     if (quill === undefined) {
@@ -245,7 +248,7 @@ export function CompositionInput(props: Props): React.ReactElement {
 
   const setContents = (
     text: string,
-    bodyRanges?: DraftBodyRangesType,
+    mentions?: ReadonlyArray<DraftBodyRangeMention>,
     cursorToEnd?: boolean
   ) => {
     const quill = quillRef.current;
@@ -254,7 +257,7 @@ export function CompositionInput(props: Props): React.ReactElement {
       return;
     }
 
-    const delta = generateDelta(text || '', bodyRanges || []);
+    const delta = generateDelta(text || '', mentions || []);
 
     canSendRef.current = true;
     // We need to cast here because we use @types/quill@1.3.10 which has types
@@ -561,7 +564,7 @@ export function CompositionInput(props: Props): React.ReactElement {
 
   const reactQuill = React.useMemo(
     () => {
-      const delta = generateDelta(draftText || '', draftBodyRanges || []);
+      const delta = generateDelta(draftText || '', draftMentions || []);
 
       return (
         <ReactQuill

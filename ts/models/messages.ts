@@ -905,12 +905,12 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
 
     let modifiedText = text;
 
-    const bodyRanges = extractHydratedMentions(attributes, {
+    const mentions = extractHydratedMentions(attributes, {
       conversationSelector: findAndFormatContact,
     });
 
-    if (bodyRanges && bodyRanges.length) {
-      modifiedText = getTextWithMentions(bodyRanges, modifiedText);
+    if (mentions && mentions.length) {
+      modifiedText = getTextWithMentions(mentions, modifiedText);
     }
 
     // Linux emoji support is mixed, so we disable it. (Note that this doesn't touch

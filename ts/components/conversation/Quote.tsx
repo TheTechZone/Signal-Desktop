@@ -371,11 +371,11 @@ export class Quote extends React.Component<Props, State> {
     } = this.props;
 
     if (text && !isGiftBadge) {
-      const draftBodyRanges = bodyRanges?.filter<HydratedBodyRangeMention>(
+      const draftMentions = bodyRanges?.filter<HydratedBodyRangeMention>(
         BodyRange.isMention
       );
-      const quoteText = draftBodyRanges
-        ? getTextWithMentions(draftBodyRanges, text)
+      const quoteText = draftMentions
+        ? getTextWithMentions(draftMentions, text)
         : text;
 
       return (

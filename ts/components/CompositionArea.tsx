@@ -4,7 +4,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { get } from 'lodash';
 import classNames from 'classnames';
-import type { DraftBodyRangesType } from '../types/BodyRange';
+import type { DraftBodyRangeMention } from '../types/BodyRange';
 import type { LocalizerType, ThemeType } from '../types/Util';
 import type { ErrorDialogAudioRecorderType } from '../types/AudioRecorder';
 import { RecordingState } from '../types/AudioRecorder';
@@ -113,7 +113,7 @@ export type OwnProps = Readonly<{
     conversationId: string,
     options: {
       draftAttachments?: ReadonlyArray<AttachmentDraftType>;
-      mentions?: DraftBodyRangesType;
+      mentions?: ReadonlyArray<DraftBodyRangeMention>;
       message?: string;
       timestamp?: number;
       voiceNoteAttachment?: InMemoryAttachmentDraftType;
@@ -143,7 +143,7 @@ export type Props = Pick<
   | 'onEditorStateChange'
   | 'onTextTooLong'
   | 'draftText'
-  | 'draftBodyRanges'
+  | 'draftMentions'
   | 'clearQuotedMessage'
   | 'getPreferredBadge'
   | 'getQuotedMessage'
@@ -214,7 +214,7 @@ export function CompositionArea({
   onEditorStateChange,
   onTextTooLong,
   draftText,
-  draftBodyRanges,
+  draftMentions,
   clearQuotedMessage,
   getPreferredBadge,
   getQuotedMessage,
@@ -281,7 +281,11 @@ export function CompositionArea({
   }, [inputApiRef, setLarge]);
 
   const handleSubmit = useCallback(
-    (message: string, mentions: DraftBodyRangesType, timestamp: number) => {
+    (
+      message: string,
+      mentions: ReadonlyArray<DraftBodyRangeMention>,
+      timestamp: number
+    ) => {
       emojiButtonRef.current?.close();
       sendMultiMediaMessage(conversationId, {
         draftAttachments,
@@ -374,8 +378,8 @@ export function CompositionArea({
       return;
     }
 
-    inputApiRef.current?.setContents(draftText, draftBodyRanges, true);
-  }, [conversationId, draftBodyRanges, draftText, previousConversationId]);
+    inputApiRef.current?.setContents(draftText, draftMentions, true);
+  }, [conversationId, draftMentions, draftText, previousConversationId]);
 
   const handleToggleLarge = useCallback(() => {
     setLarge(l => !l);
@@ -724,7 +728,7 @@ export function CompositionArea({
             clearQuotedMessage={clearQuotedMessage}
             conversationId={conversationId}
             disabled={isDisabled}
-            draftBodyRanges={draftBodyRanges}
+            draftMentions={draftMentions}
             draftText={draftText}
             getPreferredBadge={getPreferredBadge}
             getQuotedMessage={getQuotedMessage}
