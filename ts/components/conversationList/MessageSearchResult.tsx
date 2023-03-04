@@ -9,11 +9,8 @@ import { MessageBodyHighlight } from './MessageBodyHighlight';
 import { ContactName } from '../conversation/ContactName';
 
 import { assertDev } from '../../util/assert';
-import type {
-  HydratedBodyRangesType,
-  LocalizerType,
-  ThemeType,
-} from '../../types/Util';
+import type { HydratedBodyRangesType } from '../../types/BodyRange';
+import type { LocalizerType, ThemeType } from '../../types/Util';
 import { BaseConversationListItem } from './BaseConversationListItem';
 import type {
   ConversationType,

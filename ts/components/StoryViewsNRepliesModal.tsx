@@ -11,7 +11,8 @@ import React, {
 import classNames from 'classnames';
 import { noop } from 'lodash';
 
-import type { DraftBodyRangesType, LocalizerType } from '../types/Util';
+import type { DraftBodyRangesType } from '../types/BodyRange';
+import type { LocalizerType } from '../types/Util';
 import type { ConversationType } from '../state/ducks/conversations';
 import type { EmojiPickDataType } from './emoji/EmojiPicker';
 import type { InputApi } from './CompositionInput';

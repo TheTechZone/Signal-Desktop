@@ -14,10 +14,9 @@ import type { SizeClassType } from '../emoji/lib';
 import type {
   HydratedBodyRangeMention,
   HydratedBodyRangeType,
-  LocalizerType,
-  RenderTextCallbackType,
-} from '../../types/Util';
-import { BodyRange } from '../../types/Util';
+} from '../../types/BodyRange';
+import { BodyRange } from '../../types/BodyRange';
+import type { LocalizerType, RenderTextCallbackType } from '../../types/Util';
 
 const CLASS_NAME = `${MESSAGE_TEXT_CLASS_NAME}__message-search-result-contents`;
 

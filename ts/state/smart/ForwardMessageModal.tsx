@@ -6,8 +6,8 @@ import { useSelector } from 'react-redux';
 import type {
   DraftBodyRangesType,
   HydratedBodyRangeMention,
-} from '../../types/Util';
-import { BodyRange } from '../../types/Util';
+} from '../../types/BodyRange';
+import { BodyRange } from '../../types/BodyRange';
 import type { ForwardMessagePropsType } from '../ducks/globalModals';
 import type { StateType } from '../reducer';
 import * as log from '../../logging/log';

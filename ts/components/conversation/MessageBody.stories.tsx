@@ -9,7 +9,7 @@ import type { Props } from './MessageBody';
 import { MessageBody } from './MessageBody';
 import { setupI18n } from '../../util/setupI18n';
 import enMessages from '../../../_locales/en/messages.json';
-import { BodyRange } from '../../types/Util';
+import { BodyRange } from '../../types/BodyRange';
 
 const i18n = setupI18n('en', enMessages);
 

@@ -47,7 +47,7 @@ import {
   reduceStorySendStatus,
   resolveStorySendStatus,
 } from '../../util/resolveStorySendStatus';
-import { BodyRange } from '../../types/Util';
+import { BodyRange } from '../../types/BodyRange';
 
 export const getStoriesState = (state: StateType): StoriesStateType =>
   state.stories;

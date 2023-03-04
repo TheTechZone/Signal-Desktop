@@ -4,11 +4,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { get } from 'lodash';
 import classNames from 'classnames';
-import type {
-  DraftBodyRangesType,
-  LocalizerType,
-  ThemeType,
-} from '../types/Util';
+import type { DraftBodyRangesType } from '../types/BodyRange';
+import type { LocalizerType, ThemeType } from '../types/Util';
 import type { ErrorDialogAudioRecorderType } from '../types/AudioRecorder';
 import { RecordingState } from '../types/AudioRecorder';
 import type { imageToBlurHash } from '../util/imageToBlurHash';

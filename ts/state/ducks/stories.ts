@@ -7,7 +7,7 @@ import { isEqual, pick } from 'lodash';
 import type { ReadonlyDeep } from 'type-fest';
 import * as Errors from '../../types/errors';
 import type { AttachmentType } from '../../types/Attachment';
-import type { DraftBodyRangesType } from '../../types/Util';
+import type { DraftBodyRangesType } from '../../types/BodyRange';
 import type { MessageAttributesType } from '../../model-types.d';
 import type {
   MessageChangedActionType,

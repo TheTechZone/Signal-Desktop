@@ -17,10 +17,8 @@ import type {
   InMemoryAttachmentDraftType,
 } from '../../types/Attachment';
 import type { BoundActionCreatorsMapObject } from '../../hooks/useBoundActions';
-import type {
-  DraftBodyRangesType,
-  ReplacementValuesType,
-} from '../../types/Util';
+import type { DraftBodyRangesType } from '../../types/BodyRange';
+import type { ReplacementValuesType } from '../../types/Util';
 import type { LinkPreviewType } from '../../types/message/LinkPreviews';
 import type { MessageAttributesType } from '../../model-types.d';
 import type { NoopActionType } from './noop';

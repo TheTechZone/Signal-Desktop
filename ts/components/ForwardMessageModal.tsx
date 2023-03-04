@@ -23,11 +23,8 @@ import { ConversationList, RowType } from './ConversationList';
 import type { ConversationType } from '../state/ducks/conversations';
 import type { PreferredBadgeSelectorType } from '../state/selectors/badges';
 import type { LinkPreviewType } from '../types/message/LinkPreviews';
-import type {
-  DraftBodyRangesType,
-  LocalizerType,
-  ThemeType,
-} from '../types/Util';
+import type { DraftBodyRangesType } from '../types/BodyRange';
+import type { LocalizerType, ThemeType } from '../types/Util';
 import type { SmartCompositionTextAreaProps } from '../state/smart/CompositionTextArea';
 import { ModalHost } from './ModalHost';
 import { SearchInput } from './SearchInput';

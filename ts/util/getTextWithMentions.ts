@@ -1,7 +1,10 @@
 // Copyright 2020 Signal Messenger, LLC
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import type { DraftBodyRangeMention, DraftBodyRangesType } from '../types/Util';
+import type {
+  DraftBodyRangeMention,
+  DraftBodyRangesType,
+} from '../types/BodyRange';
 
 export function getTextWithMentions(
   bodyRanges: DraftBodyRangesType,

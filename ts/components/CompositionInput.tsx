@@ -14,11 +14,8 @@ import { MentionCompletion } from '../quill/mentions/completion';
 import { EmojiBlot, EmojiCompletion } from '../quill/emoji';
 import type { EmojiPickDataType } from './emoji/EmojiPicker';
 import { convertShortName } from './emoji/lib';
-import type {
-  LocalizerType,
-  DraftBodyRangesType,
-  ThemeType,
-} from '../types/Util';
+import type { DraftBodyRangesType } from '../types/BodyRange';
+import type { LocalizerType, ThemeType } from '../types/Util';
 import type { ConversationType } from '../state/ducks/conversations';
 import type { PreferredBadgeSelectorType } from '../state/selectors/badges';
 import { isValidUuid } from '../types/UUID';

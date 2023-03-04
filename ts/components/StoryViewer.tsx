@@ -10,7 +10,8 @@ import React, {
   useState,
 } from 'react';
 import classNames from 'classnames';
-import type { DraftBodyRangesType, LocalizerType } from '../types/Util';
+import type { DraftBodyRangesType } from '../types/BodyRange';
+import type { LocalizerType } from '../types/Util';
 import type { ContextMenuOptionType } from './ContextMenu';
 import type {
   ConversationType,

@@ -7,8 +7,11 @@ import React from 'react';
 import type { ReactNode } from 'react';
 import emojiRegex from 'emoji-regex';
 import { linkify, SUPPORTED_PROTOCOLS } from './Linkify';
-import type { BodyRangeBase, HydratedBodyRangeType } from '../../types/Util';
-import { BodyRange as BodyRangeType } from '../../types/Util';
+import type {
+  BodyRangeBase,
+  HydratedBodyRangeType,
+} from '../../types/BodyRange';
+import { BodyRange as BodyRangeType } from '../../types/BodyRange';
 import { AtMention } from './AtMention';
 import { isLinkSneaky } from '../../types/LinkPreview';
 import { Emojify } from './Emojify';

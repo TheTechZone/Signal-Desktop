@@ -6,8 +6,11 @@ import Delta from 'quill-delta';
 import type { LeafBlot, DeltaOperation } from 'quill';
 import type Op from 'quill-delta/dist/Op';
 
-import type { DraftBodyRangeMention, DraftBodyRangesType } from '../types/Util';
-import { BodyRange } from '../types/Util';
+import type {
+  DraftBodyRangeMention,
+  DraftBodyRangesType,
+} from '../types/BodyRange';
+import { BodyRange } from '../types/BodyRange';
 import type { MentionBlot } from './mentions/blot';
 
 export type MentionBlotValue = {

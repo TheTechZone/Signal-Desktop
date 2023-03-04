@@ -6,7 +6,7 @@ import { sortBy } from 'lodash';
 import type {
   BodyRangesType,
   HydratedBodyRangeMention,
-} from '../../types/Util';
+} from '../../types/BodyRange';
 import { AtMention } from './AtMention';
 
 export type Props = {

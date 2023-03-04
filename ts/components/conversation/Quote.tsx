@@ -14,9 +14,9 @@ import type { AttachmentType, ThumbnailType } from '../../types/Attachment';
 import type {
   HydratedBodyRangeMention,
   HydratedBodyRangesType,
-  LocalizerType,
-} from '../../types/Util';
-import { BodyRange } from '../../types/Util';
+} from '../../types/BodyRange';
+import { BodyRange } from '../../types/BodyRange';
+import type { LocalizerType } from '../../types/Util';
 import type {
   ConversationColorType,
   CustomColorType,

@@ -55,7 +55,7 @@ import type {
   ConversationAttributesType,
   MessageAttributesType,
 } from '../../model-types.d';
-import type { DraftBodyRangesType } from '../../types/Util';
+import type { DraftBodyRangesType } from '../../types/BodyRange';
 import { CallMode } from '../../types/Calling';
 import type { MediaItemType } from '../../types/MediaItem';
 import type { UUIDStringType } from '../../types/UUID';

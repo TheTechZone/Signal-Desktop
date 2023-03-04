@@ -22,8 +22,9 @@ import type {
   ReactionType,
 } from '../../textsecure/SendMessage';
 import type { LinkPreviewType } from '../../types/message/LinkPreviews';
-import type { BodyRangeMention, StoryContextType } from '../../types/Util';
-import { BodyRange } from '../../types/Util';
+import type { BodyRangeMention } from '../../types/BodyRange';
+import { BodyRange } from '../../types/BodyRange';
+import type { StoryContextType } from '../../types/Util';
 import type { LoggerType } from '../../types/Logging';
 import type { StickerWithHydratedData } from '../../types/Stickers';
 import type { QuotedMessageType } from '../../model-types.d';

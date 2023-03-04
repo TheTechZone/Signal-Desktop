@@ -10,7 +10,8 @@ import { getSizeClass } from '../emoji/lib';
 import { Emojify } from './Emojify';
 
 import type { ShowConversationType } from '../../state/ducks/conversations';
-import type { HydratedBodyRangesType, LocalizerType } from '../../types/Util';
+import type { HydratedBodyRangesType } from '../../types/BodyRange';
+import type { LocalizerType } from '../../types/Util';
 import { MessageTextRenderer } from './MessageTextRenderer';
 
 export type Props = {

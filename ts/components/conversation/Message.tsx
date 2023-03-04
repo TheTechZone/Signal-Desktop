@@ -67,11 +67,8 @@ import { getIncrement } from '../../util/timer';
 import { clearTimeoutIfNecessary } from '../../util/clearTimeoutIfNecessary';
 import { isFileDangerous } from '../../util/isFileDangerous';
 import { missingCaseError } from '../../util/missingCaseError';
-import type {
-  HydratedBodyRangesType,
-  LocalizerType,
-  ThemeType,
-} from '../../types/Util';
+import type { HydratedBodyRangesType } from '../../types/BodyRange';
+import type { LocalizerType, ThemeType } from '../../types/Util';
 
 import type { PreferredBadgeSelectorType } from '../../state/selectors/badges';
 import type {
