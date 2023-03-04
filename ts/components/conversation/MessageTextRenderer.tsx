@@ -103,9 +103,18 @@ function createRangeProcessor({
   direction: 'incoming' | 'outgoing' | undefined;
   onMentionTrigger: ((conversationId: string) => void) | undefined;
 }) {
-  function renderMention(conversationId: string, name: string) {
+  function renderMention({
+    conversationId,
+    name,
+    key,
+  }: {
+    conversationId: string;
+    name: string;
+    key: string;
+  }) {
     return (
       <AtMention
+        key={key}
         id={conversationId}
         name={name}
         direction={direction}
@@ -127,54 +136,84 @@ function createRangeProcessor({
     );
   }
 
-  function renderLink(
-    url: string,
-    text: string,
-    innerRanges: ReadonlyArray<RangeNode>
-  ) {
+  function renderLink({
+    url,
+    text,
+    innerRanges,
+    key,
+  }: {
+    url: string;
+    text: string;
+    innerRanges: ReadonlyArray<RangeNode>;
+    key: string;
+  }) {
     if (SUPPORTED_PROTOCOLS.test(url) && !isLinkSneaky(url)) {
-      return <a href={url}>{process(text, innerRanges)}</a>;
+      return (
+        <a key={key} href={url}>
+          {process(text, innerRanges)}
+        </a>
+      );
     }
-    return renderText(text);
+    return renderText({ text, key });
   }
 
-  function renderFormatting(
-    text: string,
-    style: BodyRangeType.Style,
-    innerRanges: ReadonlyArray<RangeNode>
-  ) {
+  function renderFormatting({
+    text,
+    style,
+    innerRanges,
+    key,
+  }: {
+    text: string;
+    style: BodyRangeType.Style;
+    innerRanges: ReadonlyArray<RangeNode>;
+    key: string;
+  }) {
     const inner = process(text, innerRanges);
     switch (style) {
       case BodyRangeType.Style.BOLD:
         return (
-          <span className="MessageTextRenderer__formatting--bold">{inner}</span>
+          <span key={key} className="MessageTextRenderer__formatting--bold">
+            {inner}
+          </span>
         );
       case BodyRangeType.Style.ITALIC:
         return (
-          <span className="MessageTextRenderer__formatting--italic">
+          <span key={key} className="MessageTextRenderer__formatting--italic">
             {inner}
           </span>
         );
       case BodyRangeType.Style.MONOSPACE:
         return (
-          <span className="MessageTextRenderer__formatting--monospace">
+          <span
+            key={key}
+            className="MessageTextRenderer__formatting--monospace"
+          >
             {inner}
           </span>
         );
       case BodyRangeType.Style.STRIKETHROUGH:
         return (
-          <span className="MessageTextRenderer__formatting--strikethrough">
+          <span
+            key={key}
+            className="MessageTextRenderer__formatting--strikethrough"
+          >
             {inner}
           </span>
         );
       case BodyRangeType.Style.SPOILER:
         return (
-          <span className="MessageTextRenderer__formatting--spoiler">
+          <span key={key} className="MessageTextRenderer__formatting--spoiler">
+            {inner}
+          </span>
+        );
+      case BodyRangeType.Style.NONE:
+        return (
+          <span key={key} className="MessageTextRenderer__formatting--none">
             {inner}
           </span>
         );
       default:
-        return inner;
+        return <span key={key}>{inner}</span>;
     }
   }
 
@@ -186,34 +225,59 @@ function createRangeProcessor({
     for (const rangeNode of sortedRangeNodes) {
       // collect any previous text
       if (rangeNode.start > offset) {
-        result.push(renderText(text.slice(offset, rangeNode.start)));
+        result.push(
+          renderText({
+            key: result.length.toString(),
+            text: text.slice(offset, rangeNode.start),
+          })
+        );
       }
       if (RangeNode.isLink(rangeNode)) {
         const rangeText = text.slice(
           rangeNode.start,
           rangeNode.start + rangeNode.length
         );
-        result.push(renderLink(rangeText, rangeNode.url, rangeNode.ranges));
+        result.push(
+          renderLink({
+            key: result.length.toString(),
+            text: rangeText,
+            url: rangeNode.url,
+            innerRanges: rangeNode.ranges,
+          })
+        );
       }
       if (RangeNode.isFormatting(rangeNode)) {
         result.push(
-          renderFormatting(
-            text.slice(rangeNode.start, rangeNode.start + rangeNode.length),
-            rangeNode.style,
-            rangeNode.ranges
-          )
+          renderFormatting({
+            key: result.length.toString(),
+            text: text.slice(
+              rangeNode.start,
+              rangeNode.start + rangeNode.length
+            ),
+            style: rangeNode.style,
+            innerRanges: rangeNode.ranges,
+          })
         );
       }
       if (RangeNode.isMention(rangeNode)) {
         result.push(
-          renderMention(rangeNode.conversationID, rangeNode.replacementText)
+          renderMention({
+            key: result.length.toString(),
+            conversationId: rangeNode.conversationID,
+            name: rangeNode.replacementText,
+          })
         );
       }
       offset = rangeNode.start + rangeNode.length;
     }
 
     // collect any text after
-    result.push(renderText(text.slice(offset, text.length)));
+    result.push(
+      renderText({
+        key: result.length.toString(),
+        text: text.slice(offset, text.length),
+      })
+    );
 
     return <>{result}</>;
   }
@@ -326,13 +390,14 @@ function insertRange(
   throw new Error('unhandled range');
 }
 
-/** Render text that doesn't not contain body ranges or is in between body ranges */
-function renderText(t: string) {
+/** Render text that does not contain body ranges or is in between body ranges */
+function renderText({ text, key }: { text: string; key: string }) {
   return (
     <Emojify
-      text={t}
-      renderNonEmoji={({ text: innerText, key }) => (
-        <AddNewLines key={key} text={innerText} />
+      key={key}
+      text={text}
+      renderNonEmoji={({ text: innerText, key: innerKey }) => (
+        <AddNewLines key={innerKey} text={innerText} />
       )}
     />
   );

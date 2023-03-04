@@ -9,6 +9,7 @@ import type { Props } from './MessageBody';
 import { MessageBody } from './MessageBody';
 import { setupI18n } from '../../util/setupI18n';
 import enMessages from '../../../_locales/en/messages.json';
+import { BodyRange } from '../../types/Util';
 
 const i18n = setupI18n('en', enMessages);
 
@@ -199,3 +200,92 @@ export function ComplexMessageBody(): JSX.Element {
 ComplexMessageBody.story = {
   name: 'Complex MessageBody',
 };
+
+export function FormattingBasic(): JSX.Element {
+  const props = createProps({
+    bodyRanges: [
+      // Abracadabra
+      {
+        start: 36,
+        length: 11,
+        style: BodyRange.Style.BOLD,
+      },
+      // Open Sesame
+      {
+        start: 46,
+        length: 10,
+        style: BodyRange.Style.ITALIC,
+      },
+      // This is the key! And the treasure, too, if we can only get our hands on it!
+      {
+        start: 357,
+        length: 75,
+        style: BodyRange.Style.MONOSPACE,
+      },
+
+      // The real magic is to understand which words work, and when, and for what
+      {
+        start: 138,
+        length: 73,
+        style: BodyRange.Style.STRIKETHROUGH,
+      },
+      // as if the key to the treasure is the treasure!
+      {
+        start: 446,
+        length: 46,
+        style: BodyRange.Style.SPOILER,
+      },
+      {
+        start: 110,
+        length: 27,
+        style: BodyRange.Style.NONE,
+      },
+    ],
+    text: '… It’s in words that the magic is – Abracadabra, Open Sesame, and the rest – but the magic words in one story aren’t magical in the next. The real magic is to understand which words work, and when, and for what; the trick is to learn the trick. … And those words are made from the letters of our alphabet: a couple-dozen squiggles we can draw with the pen. This is the key! And the treasure, too, if we can only get our hands on it! It’s as if – as if the key to the treasure is the treasure!',
+  });
+
+  return <MessageBody {...props} />;
+}
+
+export function FormattingComplex(): JSX.Element {
+  const props = createProps({
+    bodyRanges: [
+      // mention
+      {
+        start: 24,
+        length: 1,
+        mentionUuid: 'abc',
+        conversationID: 'x',
+        replacementText: 'Interpreter 🤖',
+      },
+      // bold wraps mention
+      {
+        start: 14,
+        length: 30,
+        style: BodyRange.Style.BOLD,
+      },
+      // italic overlaps with bold
+      {
+        start: 29,
+        length: 39,
+        style: BodyRange.Style.ITALIC,
+      },
+      // strikethrough overlaps link
+      {
+        start: 397,
+        length: 29,
+        style: BodyRange.Style.STRIKETHROUGH,
+      },
+    ],
+    text:
+      'Computational processes \uFFFC are abstract beings that inhabit computers. ' +
+      'As they evolve, processes manipulate other abstract things called data. ' +
+      'The evolution of a process is directed by a pattern of rules called a program. ' +
+      'People create programs to direct processes. In effect, we conjure the spirits of ' +
+      'the computer with our spells.\n\n' +
+      'link preceded by emoji: 🤖https://signal.org/\n\n' +
+      'link overlapping strikethrough: https://signal.org/ (up to "...//signal")',
+  });
+
+  return <MessageBody {...props} />;
+}
