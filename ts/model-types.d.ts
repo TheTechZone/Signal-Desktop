@@ -6,7 +6,7 @@
 import * as Backbone from 'backbone';
 
 import type { GroupV2ChangeType } from './groups';
-import type { DraftBodyRangesType, BodyRangesType } from './types/BodyRange';
+import type { DraftBodyRangesType, RawBodyRange } from './types/BodyRange';
 import type { CallHistoryDetailsFromDiskType } from './types/Calling';
 import type { CustomColorType, ConversationColorType } from './types/Colors';
 import type { DeviceType } from './textsecure/Types.d';
@@ -82,7 +82,7 @@ export type QuotedMessageType = {
   //   new messages, but old messages might have this attribute.
   author?: string;
   authorUuid?: string;
-  bodyRanges?: BodyRangesType;
+  bodyRanges?: ReadonlyArray<RawBodyRange>;
   id: number;
   isGiftBadge?: boolean;
   isViewOnce: boolean;
@@ -122,7 +122,7 @@ export type MessageReactionType = {
 
 export type MessageAttributesType = {
   bodyAttachment?: AttachmentType;
-  bodyRanges?: BodyRangesType;
+  bodyRanges?: ReadonlyArray<RawBodyRange>;
   callHistoryDetails?: CallHistoryDetailsFromDiskType;
   canReplyToStory?: boolean;
   changedId?: string;

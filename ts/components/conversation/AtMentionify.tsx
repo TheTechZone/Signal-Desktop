@@ -4,7 +4,7 @@
 import React from 'react';
 import { sortBy } from 'lodash';
 import type {
-  BodyRangesType,
+  RawBodyRange,
   HydratedBodyRangeMention,
 } from '../../types/BodyRange';
 import { AtMention } from './AtMention';
@@ -95,7 +95,7 @@ export function AtMentionify({
 // string so we can later pull it off when rendering the @mention.
 AtMentionify.preprocessMentions = (
   text: string,
-  bodyRanges?: BodyRangesType
+  bodyRanges?: ReadonlyArray<RawBodyRange>
 ): string => {
   if (!bodyRanges || !bodyRanges.length) {
     return text;

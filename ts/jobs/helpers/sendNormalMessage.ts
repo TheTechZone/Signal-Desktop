@@ -22,7 +22,6 @@ import type {
   ReactionType,
 } from '../../textsecure/SendMessage';
 import type { LinkPreviewType } from '../../types/message/LinkPreviews';
-import type { BodyRangeMention } from '../../types/BodyRange';
 import { BodyRange } from '../../types/BodyRange';
 import type { StoryContextType } from '../../types/Util';
 import type { LoggerType } from '../../types/Logging';
@@ -473,7 +472,7 @@ async function getMessageSendData({
   contact?: Array<ContactWithHydratedAvatar>;
   deletedForEveryoneTimestamp: undefined | number;
   expireTimer: undefined | DurationInSeconds;
-  mentions: undefined | ReadonlyArray<BodyRangeMention>;
+  mentions: undefined | ReadonlyArray<BodyRange<BodyRange.Mention>>;
   messageTimestamp: number;
   preview: Array<LinkPreviewType>;
   quote: QuotedMessageType | null;

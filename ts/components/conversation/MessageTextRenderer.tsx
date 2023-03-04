@@ -1,70 +1,19 @@
 // Copyright 2023 Signal Messenger, LLC
 // SPDX-License-Identifier: AGPL-3.0-only
 
-/* eslint-disable @typescript-eslint/no-namespace */
-
 import React from 'react';
 import type { ReactNode } from 'react';
 import emojiRegex from 'emoji-regex';
 import { linkify, SUPPORTED_PROTOCOLS } from './Linkify';
-import type {
-  BodyRangeBase,
-  HydratedBodyRangeType,
-} from '../../types/BodyRange';
-import { BodyRange as BodyRangeType } from '../../types/BodyRange';
+import type { HydratedBodyRangeType, RangeNode } from '../../types/BodyRange';
+import { BodyRange, insertRange } from '../../types/BodyRange';
 import { AtMention } from './AtMention';
 import { isLinkSneaky } from '../../types/LinkPreview';
 import { Emojify } from './Emojify';
 import { AddNewLines } from './AddNewLines';
 import type { SizeClassType } from '../emoji/lib';
-import * as log from '../../logging/log';
 
 const EMOJI_REGEXP = emojiRegex();
-
-type Mention = {
-  mentionUuid: string;
-  conversationID: string;
-  replacementText: string;
-};
-type Link = {
-  url: string;
-};
-type Formatting = {
-  style: BodyRangeType.Style;
-};
-
-type BodyRange = BodyRangeBase & (Mention | Link | Formatting);
-
-/**
- * A range that can contain other nested ranges
- * Inner range start fields are relative to the start of the containing range
- */
-type RangeNodeBase = BodyRange & {
-  ranges: ReadonlyArray<RangeNode>;
-};
-
-type RangeNode = RangeNodeBase & (Mention | Link | Formatting);
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-namespace RangeNode {
-  export function isLink<T extends Mention | Link | Formatting>(
-    node: T
-  ): node is T & Link {
-    return ('url' as const satisfies keyof Link) in node;
-  }
-
-  export function isFormatting<T extends Mention | Link | Formatting>(
-    node: T
-  ): node is T & Formatting {
-    return ('style' as const satisfies keyof Formatting) in node;
-  }
-
-  export function isMention<T extends Mention | Link | Formatting>(
-    node: T
-  ): node is T & Mention {
-    return ('mentionUuid' as const satisfies keyof Mention) in node;
-  }
-}
 
 type Props = {
   messageText: string;
@@ -87,8 +36,8 @@ export function MessageTextRenderer({
 
   // put mentions last, so they are fully wrapped by other ranges
   const sortedRanges = [...bodyRanges].sort((a, b) => {
-    if (BodyRangeType.isMention(a)) {
-      if (BodyRangeType.isMention(b)) {
+    if (BodyRange.isMention(a)) {
+      if (BodyRange.isMention(b)) {
         return 0;
       }
       return 1;
@@ -177,25 +126,25 @@ function createRangeProcessor({
     key,
   }: {
     text: string;
-    style: BodyRangeType.Style;
+    style: BodyRange.Style;
     innerRanges: ReadonlyArray<RangeNode>;
     key: string;
   }) {
     const inner = process(text, innerRanges);
     switch (style) {
-      case BodyRangeType.Style.BOLD:
+      case BodyRange.Style.BOLD:
         return (
           <span key={key} className="MessageTextRenderer__formatting--bold">
             {inner}
           </span>
         );
-      case BodyRangeType.Style.ITALIC:
+      case BodyRange.Style.ITALIC:
         return (
           <span key={key} className="MessageTextRenderer__formatting--italic">
             {inner}
           </span>
         );
-      case BodyRangeType.Style.MONOSPACE:
+      case BodyRange.Style.MONOSPACE:
         return (
           <span
             key={key}
@@ -204,7 +153,7 @@ function createRangeProcessor({
             {inner}
           </span>
         );
-      case BodyRangeType.Style.STRIKETHROUGH:
+      case BodyRange.Style.STRIKETHROUGH:
         return (
           <span
             key={key}
@@ -213,13 +162,13 @@ function createRangeProcessor({
             {inner}
           </span>
         );
-      case BodyRangeType.Style.SPOILER:
+      case BodyRange.Style.SPOILER:
         return (
           <span key={key} className="MessageTextRenderer__formatting--spoiler">
             {inner}
           </span>
         );
-      case BodyRangeType.Style.NONE:
+      case BodyRange.Style.NONE:
         return (
           <span key={key} className="MessageTextRenderer__formatting--none">
             {inner}
@@ -245,7 +194,7 @@ function createRangeProcessor({
           })
         );
       }
-      if (RangeNode.isLink(rangeNode)) {
+      if (BodyRange.isLink(rangeNode)) {
         const rangeText = text.slice(
           rangeNode.start,
           rangeNode.start + rangeNode.length
@@ -259,7 +208,7 @@ function createRangeProcessor({
           })
         );
       }
-      if (RangeNode.isFormatting(rangeNode)) {
+      if (BodyRange.isFormatting(rangeNode)) {
         result.push(
           renderFormatting({
             key: result.length.toString(),
@@ -272,7 +221,7 @@ function createRangeProcessor({
           })
         );
       }
-      if (RangeNode.isMention(rangeNode)) {
+      if (BodyRange.isMention(rangeNode)) {
         result.push(
           renderMention({
             key: result.length.toString(),
@@ -300,109 +249,6 @@ function createRangeProcessor({
   };
 }
 
-/**
- * Insert a range into an existing range tree, splitting up the range if it intersects
- * with an existing range
- *
- * @param range The range to insert the tree
- * @param rangeTree A list of nested non-intersecting range nodes, these starting ranges
- *  will not be split up
- */
-function insertRange(
-  range: BodyRange,
-  rangeTree: ReadonlyArray<RangeNode>
-): ReadonlyArray<RangeNode> {
-  const [current, ...rest] = rangeTree;
-
-  if (!current) {
-    return [{ ...range, ranges: [] }];
-  }
-  const rangeEnd = range.start + range.length;
-  const currentEnd = current.start + current.length;
-
-  // ends before current starts
-  if (rangeEnd <= current.start) {
-    return [{ ...range, ranges: [] }, current, ...rest];
-  }
-
-  // starts after current one ends
-  if (range.start >= currentEnd) {
-    return [current, ...insertRange(range, rest)];
-  }
-
-  // range is contained by first
-  if (range.start >= current.start && rangeEnd <= currentEnd) {
-    return [
-      {
-        ...current,
-        ranges: insertRange(
-          { ...range, start: range.start - current.start },
-          current.ranges
-        ),
-      },
-      ...rest,
-    ];
-  }
-
-  // range contains first (but might contain more)
-  // split range into 3
-  if (range.start <= current.start && rangeEnd >= currentEnd) {
-    return [
-      { ...range, length: current.start - range.start, ranges: [] },
-      {
-        ...current,
-        ranges: insertRange(
-          { ...range, start: 0, length: current.length },
-          current.ranges
-        ),
-      },
-      ...insertRange({ ...range, start: currentEnd }, rest),
-    ];
-  }
-
-  // range intersects beginning
-  // split range into 2
-  if (range.start < current.start && rangeEnd <= currentEnd) {
-    return [
-      { ...range, length: current.start - range.start, ranges: [] },
-      {
-        ...current,
-        ranges: insertRange(
-          {
-            ...range,
-            start: 0,
-            length: range.length - (current.start - range.start),
-          },
-          current.ranges
-        ),
-      },
-      ...rest,
-    ];
-  }
-
-  // range intersects ending
-  // split range into 2
-  if (range.start >= current.start && rangeEnd > currentEnd) {
-    return [
-      {
-        ...current,
-        ranges: insertRange(
-          {
-            ...range,
-            start: range.start - current.start,
-            length: currentEnd - range.start,
-          },
-          current.ranges
-        ),
-      },
-      ...insertRange({ ...range, start: currentEnd }, rest),
-    ];
-  }
-
-  log.error(`MessageTextRenderer: unhandled range ${range}`);
-  throw new Error('unhandled range');
-}
-
 /** Render text that does not contain body ranges or is in between body ranges */
 function renderText({ text, key }: { text: string; key: string }) {
   return (
@@ -416,7 +262,9 @@ function renderText({ text, key }: { text: string; key: string }) {
   );
 }
 
-export function extractLinks(messageText: string): ReadonlyArray<BodyRange> {
+export function extractLinks(
+  messageText: string
+): ReadonlyArray<BodyRange<{ url: string }>> {
   // to support emojis immediately before links
   // we replace emojis with a space for each byte
   const matches = linkify.match(

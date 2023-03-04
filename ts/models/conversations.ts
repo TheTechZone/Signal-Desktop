@@ -83,7 +83,7 @@ import {
   deriveAccessKey,
 } from '../Crypto';
 import * as Bytes from '../Bytes';
-import type { BodyRangesType, DraftBodyRangesType } from '../types/BodyRange';
+import type { DraftBodyRangesType } from '../types/BodyRange';
 import { BodyRange } from '../types/BodyRange';
 import { getTextWithMentions } from '../util/getTextWithMentions';
 import { migrateColor } from '../util/migrateColor';
@@ -4022,7 +4022,7 @@ export class ConversationModel extends window.Backbone
       attachments: Array<AttachmentType>;
       body: string | undefined;
       contact?: Array<ContactWithHydratedAvatar>;
-      mentions?: BodyRangesType;
+      mentions?: ReadonlyArray<BodyRange<BodyRange.Mention>>;
       preview?: Array<LinkPreviewType>;
       quote?: QuotedMessageType;
       sticker?: StickerWithHydratedData;
