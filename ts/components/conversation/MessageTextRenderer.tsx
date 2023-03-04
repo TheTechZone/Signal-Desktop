@@ -7,7 +7,6 @@ import React from 'react';
 import type { ReactNode } from 'react';
 import emojiRegex from 'emoji-regex';
 import { linkify, SUPPORTED_PROTOCOLS } from './Linkify';
-
 import type { BodyRangeBase, HydratedBodyRangeType } from '../../types/Util';
 import { BodyRange as BodyRangeType } from '../../types/Util';
 import { AtMention } from './AtMention';
@@ -83,7 +82,18 @@ export function MessageTextRenderer({
   // get the ranges that cannot be split up first
   const links = disableLinks ? [] : extractLinks(messageText);
 
-  const rangesTree = bodyRanges.reduce<ReadonlyArray<RangeNode>>(
+  // put mentions last, so they are fully wrapped by other ranges
+  const sortedRanges = [...bodyRanges].sort((a, b) => {
+    if (BodyRangeType.isMention(a)) {
+      if (BodyRangeType.isMention(b)) {
+        return 0;
+      }
+      return 1;
+    }
+    return -1;
+  });
+
+  const rangesTree = sortedRanges.reduce<ReadonlyArray<RangeNode>>(
     (acc, range) => insertRange(range, acc),
     links.map(b => ({ ...b, ranges: [] }))
   );

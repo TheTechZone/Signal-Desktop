@@ -256,12 +256,12 @@ export function FormattingComplex(): JSX.Element {
         length: 1,
         mentionUuid: 'abc',
         conversationID: 'x',
-        replacementText: 'Interpreter 🤖',
+        replacementText: '🤖 Hello',
       },
       // bold wraps mention
       {
         start: 14,
-        length: 30,
+        length: 31,
         style: BodyRange.Style.BOLD,
       },
       // italic overlaps with bold
@@ -276,6 +276,20 @@ export function FormattingComplex(): JSX.Element {
         length: 29,
         style: BodyRange.Style.STRIKETHROUGH,
       },
+      // strikethrough over metion
+      {
+        start: 465,
+        length: 49,
+        style: BodyRange.Style.STRIKETHROUGH,
+      },
+      // mention 2
+      {
+        start: 501,
+        length: 1,
+        mentionUuid: 'abc',
+        conversationID: 'x',
+        replacementText: '🤖 Hello',
+      },
     ],
     text:
       'Computational processes \uFFFC are abstract beings that inhabit computers. ' +
@@ -284,7 +298,8 @@ export function FormattingComplex(): JSX.Element {
       'People create programs to direct processes. In effect, we conjure the spirits of ' +
       'the computer with our spells.\n\n' +
       'link preceded by emoji: 🤖https://signal.org/\n\n' +
-      'link overlapping strikethrough: https://signal.org/ (up to "...//signal")',
+      'link overlapping strikethrough: https://signal.org/ (up to "...//signal")\n\n' +
+      'strikethrough going through mention \uFFFC all the way',
   });
 
   return <MessageBody {...props} />;
