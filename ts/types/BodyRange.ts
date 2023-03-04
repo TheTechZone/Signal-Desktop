@@ -189,7 +189,14 @@ export function insertRange(
           current.ranges
         ),
       },
-      ...insertRange({ ...range, start: currentEnd }, rest),
+      ...insertRange(
+        {
+          ...range,
+          start: currentEnd,
+          length: range.length - (currentEnd - range.start),
+        },
+        rest
+      ),
     ];
   }
 
