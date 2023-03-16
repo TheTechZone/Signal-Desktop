@@ -81,7 +81,8 @@ async function doComputePeaks(
   url: string,
   barCount: number
 ): Promise<ComputePeaksResult> {
-  const existing = waveformCache.get(url);
+  const cacheKey = `${url}:${barCount}`;
+  const existing = waveformCache.get(cacheKey);
   if (existing) {
     log.info('GlobalAudioContext: waveform cache hit', url);
     return Promise.resolve(existing);
@@ -101,7 +102,7 @@ async function doComputePeaks(
       `GlobalAudioContext: audio ${url} duration ${duration}s is too long`
     );
     const emptyResult = { peaks, duration };
-    waveformCache.set(url, emptyResult);
+    waveformCache.set(cacheKey, emptyResult);
     return emptyResult;
   }
 
@@ -143,7 +144,7 @@ async function doComputePeaks(
   }
 
   const result = { peaks, duration };
-  waveformCache.set(url, result);
+  waveformCache.set(cacheKey, result);
   return result;
 }
 
@@ -155,11 +156,14 @@ export async function computePeaks(
 
   const pending = inProgressMap.get(computeKey);
   if (pending) {
-    log.info('GlobalAudioContext: already computing peaks for', computeKey);
+    log.info(
+      'VoiceNotesPlaybackContext: already computing peaks for',
+      computeKey
+    );
     return pending;
   }
 
-  log.info('GlobalAudioContext: queue computing peaks for', computeKey);
+  log.info('VoiceNotesPlaybackContext: queue computing peaks for', computeKey);
   const promise = computeQueue.add(() => doComputePeaks(url, barCount));
 
   inProgressMap.set(computeKey, promise);
@@ -178,10 +182,7 @@ export const VoiceNotesPlaybackContext =
   React.createContext<Contents>(globalContents);
 
 export type VoiceNotesPlaybackProps = {
-  conversationId: string | undefined;
-  isPaused: boolean;
   children?: React.ReactNode | React.ReactChildren;
-  unloadMessageAudio: () => void;
 };
 
 /**

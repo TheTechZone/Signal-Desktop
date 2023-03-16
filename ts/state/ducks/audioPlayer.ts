@@ -5,10 +5,9 @@ import type { ThunkAction } from 'redux-thunk';
 import type { ReadonlyDeep } from 'type-fest';
 import type { BoundActionCreatorsMapObject } from '../../hooks/useBoundActions';
 import { useBoundActions } from '../../hooks/useBoundActions';
-import { Sound } from '../../util/Sound';
 
 import type { StateType as RootStateType } from '../reducer';
-import { setVoiceNotePlaybackRate, markViewed } from './conversations';
+import { setVoiceNotePlaybackRate } from './conversations';
 import { extractVoiceNoteForPlayback } from '../selectors/audioPlayer';
 import type {
   VoiceNoteAndConsecutiveForPlayback,
@@ -23,18 +22,20 @@ import type {
   ConversationChangedActionType,
 } from './conversations';
 import * as log from '../../logging/log';
-import * as Errors from '../../types/errors';
-
-import { strictAssert } from '../../util/assert';
-import { globalMessageAudio } from '../../services/globalMessageAudio';
-import { getUserConversationId } from '../selectors/user';
 import { isAudio } from '../../types/Attachment';
 import { getAttachmentUrlForPath } from '../selectors/message';
-import { SeenStatus } from '../../MessageSeenStatus';
+import { assertDev } from '../../util/assert';
 
 // State
 
-export type AudioPlayerContent = ReadonlyDeep<{
+/** Some audio identified by a URL (currently only used for drafts) */
+type AudioPlayerContentDraft = ReadonlyDeep<{
+  conversationId: string;
+  url: string;
+}>;
+
+/** A voice note, with a queue for consecutive playback */
+export type AudioPlayerContentVoiceNote = ReadonlyDeep<{
   conversationId: string;
   context: string;
   current: VoiceNoteForPlayback;
@@ -44,16 +45,33 @@ export type AudioPlayerContent = ReadonlyDeep<{
   // false on the first of a consecutive group
   isConsecutive: boolean;
   ourConversationId: string | undefined;
-  startPosition: number;
 }>;
 
 export type ActiveAudioPlayerStateType = ReadonlyDeep<{
   playing: boolean;
   currentTime: number;
   playbackRate: number;
-  duration: number;
-  content: AudioPlayerContent | undefined;
+  duration: number | undefined; // never zero or NaN
+  startPosition: number;
+  content: AudioPlayerContentVoiceNote | AudioPlayerContentDraft;
 }>;
+
+/* eslint-disable @typescript-eslint/no-namespace */
+export namespace AudioPlayerContent {
+  export function isVoiceNote(
+    content: ActiveAudioPlayerStateType['content']
+  ): content is AudioPlayerContentVoiceNote {
+    return (
+      ('current' as const satisfies keyof AudioPlayerContentVoiceNote) in
+      content
+    );
+  }
+  export function isDraft(
+    content: ActiveAudioPlayerStateType['content']
+  ): content is AudioPlayerContentDraft {
+    return !isVoiceNote(content);
+  }
+}
 
 export type AudioPlayerStateType = ReadonlyDeep<{
   active: ActiveAudioPlayerStateType | undefined;
@@ -64,18 +82,10 @@ export type AudioPlayerStateType = ReadonlyDeep<{
 export type SetMessageAudioAction = ReadonlyDeep<{
   type: 'audioPlayer/SET_MESSAGE_AUDIO';
   payload:
-    | {
-        conversationId: string;
-        context: string;
-        current: VoiceNoteForPlayback;
-        queue: ReadonlyArray<VoiceNoteForPlayback>;
-        isConsecutive: boolean;
-        // timestamp of the message following the last one in the queue
-        nextMessageTimestamp: number | undefined;
-        ourConversationId: string | undefined;
-        startPosition: number;
+    | ((AudioPlayerContentVoiceNote | AudioPlayerContentDraft) & {
         playbackRate: number;
-      }
+        startPosition: number;
+      })
     | undefined;
 }>;
 
@@ -94,18 +104,18 @@ type CurrentTimeUpdated = ReadonlyDeep<{
   payload: number;
 }>;
 
+type SetPosition = ReadonlyDeep<{
+  type: 'audioPlayer/SET_POSITION';
+  payload: number;
+}>;
+
 type MessageAudioEnded = ReadonlyDeep<{
   type: 'audioPlayer/MESSAGE_AUDIO_ENDED';
 }>;
 
 type DurationChanged = ReadonlyDeep<{
   type: 'audioPlayer/DURATION_CHANGED';
-  payload: number;
-}>;
-
-type UpdateQueueAction = ReadonlyDeep<{
-  type: 'audioPlayer/UPDATE_QUEUE';
-  payload: ReadonlyArray<VoiceNoteForPlayback>;
+  payload: number | undefined;
 }>;
 
 type AudioPlayerActionType = ReadonlyDeep<
@@ -115,30 +125,56 @@ type AudioPlayerActionType = ReadonlyDeep<
   | MessageAudioEnded
   | CurrentTimeUpdated
   | DurationChanged
-  | UpdateQueueAction
+  | SetPosition
 >;
 
 // Action Creators
 
 export const actions = {
-  loadMessageAudio,
-  playMessageAudio,
+  loadVoiceNoteAudio,
+  loadVoiceNoteDraftAudio,
   setPlaybackRate,
-  setCurrentTime,
+  currentTimeUpdated,
+  durationChanged,
   setIsPlaying,
+  setPosition,
   pauseVoiceNotePlayer,
   unloadMessageAudio,
+  messageAudioEnded,
 };
+
+function messageAudioEnded(): MessageAudioEnded {
+  return {
+    type: 'audioPlayer/MESSAGE_AUDIO_ENDED',
+  };
+}
+
+function durationChanged(value: number | undefined): DurationChanged {
+  assertDev(
+    !Number.isNaN(value) && (value === undefined || value > 0),
+    `Duration must be > 0 if defined, got ${value}`
+  );
+  return {
+    type: 'audioPlayer/DURATION_CHANGED',
+    payload: value,
+  };
+}
 
 export const useAudioPlayerActions = (): BoundActionCreatorsMapObject<
   typeof actions
 > => useBoundActions(actions);
 
-function setCurrentTime(value: number): CurrentTimeUpdated {
-  globalMessageAudio.currentTime = value;
+function currentTimeUpdated(value: number): CurrentTimeUpdated {
   return {
     type: 'audioPlayer/CURRENT_TIME_UPDATED',
     payload: value,
+  };
+}
+
+function setPosition(positionAsRatio: number): SetPosition {
+  return {
+    type: 'audioPlayer/SET_POSITION',
+    payload: positionAsRatio,
   };
 }
 
@@ -153,13 +189,10 @@ function setPlaybackRate(
   return (dispatch, getState) => {
     const { audioPlayer } = getState();
     const { active } = audioPlayer;
-    if (!active?.content) {
+    if (!active) {
       log.warn('audioPlayer.setPlaybackRate: No active message audio');
       return;
     }
-
-    globalMessageAudio.playbackRate = rate;
-
     dispatch({
       type: 'audioPlayer/SET_PLAYBACK_RATE',
       payload: rate,
@@ -176,136 +209,27 @@ function setPlaybackRate(
   };
 }
 
-const stateChangeConfirmUpSound = new Sound({
-  src: 'sounds/state-change_confirm-up.ogg',
-});
-const stateChangeConfirmDownSound = new Sound({
-  src: 'sounds/state-change_confirm-down.ogg',
-});
-
-/** plays a message that has been loaded into content */
-function playMessageAudio(
-  playConsecutiveSound: boolean
-): ThunkAction<
-  void,
-  RootStateType,
-  unknown,
-  CurrentTimeUpdated | SetIsPlayingAction | DurationChanged | MessageAudioEnded
-> {
-  return (dispatch, getState) => {
-    const ourConversationId = getUserConversationId(getState());
-
-    if (!ourConversationId) {
-      log.error('playMessageAudio: No ourConversationId');
-      return;
-    }
-
-    const { audioPlayer } = getState();
-    const { active } = audioPlayer;
-
-    if (!active) {
-      log.error('playMessageAudio: Not active');
-      return;
-    }
-
-    const { content } = active;
-
-    if (!content) {
-      log.error('playMessageAudio: No message audio loaded');
-      return;
-    }
-    const { current } = content;
-
-    if (!current.url) {
-      log.error('playMessageAudio: pending download');
-      return;
-    }
-
-    if (playConsecutiveSound) {
-      void stateChangeConfirmUpSound.play();
-    }
-
-    // set source to new message and start playing
-    globalMessageAudio.load({
-      src: current.url,
-      playbackRate: active.playbackRate,
-      onTimeUpdate: () => {
-        dispatch({
-          type: 'audioPlayer/CURRENT_TIME_UPDATED',
-          payload: globalMessageAudio.currentTime,
-        });
-      },
-
-      onLoadedMetadata: () => {
-        strictAssert(
-          !Number.isNaN(globalMessageAudio.duration),
-          'Audio should have definite duration on `loadedmetadata` event'
-        );
-
-        log.info('playMessageAudio: `loadedmetadata` event', current.id);
-
-        dispatch(
-          setCurrentTime(content.startPosition * globalMessageAudio.duration)
-        );
-        dispatch(setIsPlaying(true));
-      },
-
-      onDurationChange: () => {
-        log.info('playMessageAudio: `durationchange` event', current.id);
-
-        if (!Number.isNaN(globalMessageAudio.duration)) {
-          dispatch({
-            type: 'audioPlayer/DURATION_CHANGED',
-            payload: Math.max(globalMessageAudio.duration, 1e-23),
-          });
-        }
-      },
-
-      onEnded: () => {
-        const { audioPlayer: innerAudioPlayer } = getState();
-        const { active: innerActive } = innerAudioPlayer;
-        if (
-          innerActive?.content?.isConsecutive &&
-          innerActive.content?.queue.length === 0
-        ) {
-          void stateChangeConfirmDownSound.play();
-        }
-        dispatch({ type: 'audioPlayer/MESSAGE_AUDIO_ENDED' });
-      },
-    });
-
-    if (!current.isPlayed) {
-      const message = getState().conversations.messagesLookup[current.id];
-      if (message && message.seenStatus !== SeenStatus.Unseen) {
-        markViewed(current.id);
-      }
-    } else {
-      log.info('audioPlayer.loadMessageAudio: message already played', {
-        message: current.messageIdForLogging,
-      });
-    }
-  };
-}
-
 /**
  * Load message audio into the "content", the smart MiniPlayer will then play it
  */
-function loadMessageAudio({
+function loadVoiceNoteAudio({
   voiceNoteData,
   position,
   context,
   ourConversationId,
+  playbackRate,
 }: {
   voiceNoteData: VoiceNoteAndConsecutiveForPlayback;
   position: number;
   context: string;
   ourConversationId: string;
+  playbackRate: number;
 }): SetMessageAudioAction {
   const {
     conversationId,
     voiceNote,
     consecutiveVoiceNotes,
-    playbackRate,
+    // playbackRate,
     nextMessageTimestamp,
   } = voiceNoteData;
   return {
@@ -324,32 +248,22 @@ function loadMessageAudio({
   };
 }
 
-export function setIsPlaying(
-  value: boolean
-): ThunkAction<
-  void,
-  RootStateType,
-  unknown,
-  SetMessageAudioAction | SetIsPlayingAction
-> {
-  return (dispatch, getState) => {
-    if (!value) {
-      globalMessageAudio.pause();
-    } else {
-      const { audioPlayer } = getState();
-      globalMessageAudio.play().catch(error => {
-        log.error(
-          'MessageAudio: resume error',
-          audioPlayer.active?.content?.current.id,
-          Errors.toLogFormat(error)
-        );
-        dispatch(unloadMessageAudio());
-      });
-    }
-    dispatch({
-      type: 'audioPlayer/SET_IS_PLAYING',
-      payload: value,
-    });
+export function loadVoiceNoteDraftAudio(
+  content: AudioPlayerContentDraft & {
+    playbackRate: number;
+    startPosition: number;
+  }
+): SetMessageAudioAction {
+  return {
+    type: 'audioPlayer/SET_MESSAGE_AUDIO',
+    payload: content,
+  };
+}
+
+function setIsPlaying(value: boolean): SetIsPlayingAction {
+  return {
+    type: 'audioPlayer/SET_IS_PLAYING',
+    payload: value,
   };
 }
 
@@ -362,7 +276,6 @@ export function pauseVoiceNotePlayer(): ReturnType<typeof setIsPlaying> {
 }
 
 export function unloadMessageAudio(): SetMessageAudioAction {
-  globalMessageAudio.pause();
   return {
     type: 'audioPlayer/SET_MESSAGE_AUDIO',
     payload: undefined,
@@ -390,17 +303,27 @@ export function reducer(
   if (action.type === 'audioPlayer/SET_MESSAGE_AUDIO') {
     const { payload } = action;
 
+    if (payload === undefined) {
+      return {
+        ...state,
+        active: undefined,
+      };
+    }
+
+    const { playbackRate, startPosition, ...content } = payload;
     return {
       ...state,
-      active: {
-        // defaults
-        playing: false,
-        currentTime: 0,
-        duration: 0,
-        ...active,
-        playbackRate: payload?.playbackRate ?? 1,
-        content: payload,
-      },
+      active:
+        payload === undefined
+          ? undefined
+          : {
+              currentTime: 0,
+              duration: undefined,
+              playing: true,
+              playbackRate,
+              content,
+              startPosition,
+            },
     };
   }
 
@@ -443,6 +366,19 @@ export function reducer(
     };
   }
 
+  if (action.type === 'audioPlayer/SET_POSITION') {
+    if (!active) {
+      return state;
+    }
+    return {
+      ...state,
+      active: {
+        ...active,
+        startPosition: action.payload,
+      },
+    };
+  }
+
   if (action.type === 'audioPlayer/SET_PLAYBACK_RATE') {
     if (!active) {
       return state;
@@ -463,6 +399,10 @@ export function reducer(
     const { content } = active;
 
     if (!content) {
+      return state;
+    }
+
+    if (!AudioPlayerContent.isVoiceNote(content)) {
       return state;
     }
 
@@ -539,6 +479,13 @@ export function reducer(
       return state;
     }
 
+    if (AudioPlayerContent.isDraft(content)) {
+      return {
+        ...state,
+        active: undefined,
+      };
+    }
+
     const { queue } = content;
 
     const [nextVoiceNote, ...newQueue] = queue;
@@ -548,12 +495,12 @@ export function reducer(
         ...state,
         active: {
           ...active,
+          startPosition: 0,
           content: {
             ...content,
             current: nextVoiceNote,
             queue: newQueue,
             isConsecutive: true,
-            startPosition: 0,
           },
         },
       };
@@ -561,10 +508,7 @@ export function reducer(
 
     return {
       ...state,
-      active: {
-        ...active,
-        content: undefined,
-      },
+      active: undefined,
     };
   }
 
@@ -581,7 +525,7 @@ export function reducer(
     }
     const { content } = active;
 
-    if (!content) {
+    if (!AudioPlayerContent.isVoiceNote(content)) {
       return state;
     }
 
@@ -593,10 +537,7 @@ export function reducer(
       if (!next) {
         return {
           ...state,
-          active: {
-            ...active,
-            content: undefined,
-          },
+          active: undefined,
         };
       }
 
@@ -642,6 +583,10 @@ export function reducer(
     const { content } = active;
 
     if (!content) {
+      return state;
+    }
+
+    if (AudioPlayerContent.isDraft(content)) {
       return state;
     }
 

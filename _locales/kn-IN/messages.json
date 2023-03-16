@@ -52,6 +52,14 @@
     "message": "$contact$ ಅವರನ್ನು ಸೇರಿಸಲಾಗುತ್ತಿದೆ...",
     "description": "Shown in toast while a user is being added to a group"
   },
+  "icu:RecordingComposer__cancel": {
+    "messageformat": "ರದ್ದುಮಾಡಿ",
+    "description": "Label of cancel button on voice note recording UI"
+  },
+  "icu:RecordingComposer__send": {
+    "messageformat": "ಕಳುಹಿಸಿ",
+    "description": "Label of send button on voice note recording UI"
+  },
   "GroupListItem__message-default": {
     "message": "$count$ ಸದಸ್ಯರು",
     "description": "Shown below the group name when selecting a group to invite a contact to"
@@ -931,7 +939,7 @@
     "description": "Shown in a message's triple-dot menu if there isn't room for a dedicated download button"
   },
   "reactToMessage": {
-    "message": "ಸಂದೇಶಕ್ಕೆ ವಾಪಸಾಗಿ",
+    "message": "ಸಂದೇಶಕ್ಕೆ ಪ್ರತಿಕ್ರಿಯಿಸಿ",
     "description": "Shown in triple-dot menu next to message to allow user to react to the associated message"
   },
   "replyToMessage": {
@@ -1251,11 +1259,11 @@
     "description": "Shown on explainer dialog available from delivery issue timeline events"
   },
   "DeliveryIssue--summary": {
-    "message": "ಒಂದು ಮೆಸೇಜ್, ಸ್ಟಿಕ್ಕರ್, ಪ್ರತಿಕ್ರಿಯೆ, ಓದಿದ ರಸೀದಿ ಅಥವಾ ಮಾಧ್ಯಮವನ್ನು $sender$ ಇಂದ ನಿಮಗೆ ಡೆಲಿವರಿ ಮಾಡಲಾಗದು. ನಿಮಗೆ ನೇರವಾಗಿ ಅಥವಾ ಗುಂಪಿನಲ್ಲಿ ಕಳುಹಿಸಲು ಅವರು ಪ್ರಯತ್ನಿಸಿರಬಹುದು.",
+    "message": "ಒಂದು ಮೆಸೇಜ್, ಸ್ಟಿಕ್ಕರ್, ಪ್ರತಿಕ್ರಿಯೆ, ಓದಿದ ರಸೀದಿ ಅಥವಾ ಮಾಧ್ಯಮವನ್ನು $sender$ ಅವರಿಂದ ನಿಮಗೆ ಡೆಲಿವರಿ ಮಾಡಲಾಗಲಿಲ್ಲ. ನಿಮಗೆ ನೇರವಾಗಿ ಅಥವಾ ಗುಂಪಿನಲ್ಲಿ ಕಳುಹಿಸಲು ಅವರು ಪ್ರಯತ್ನಿಸಿರಬಹುದು.",
     "description": "Shown on explainer dialog available from delivery issue timeline events in 1:1 conversations"
   },
   "DeliveryIssue--summary--group": {
-    "message": "ಈ ಚಾಟ್‌ನಲ್ಲಿ $sender$ ಅವರಿಂದ ಸಂದೇಶ, ಸ್ಟಿಕರ್, ಪ್ರತಿಕ್ರಿಯೆ, ಓದಿದ ರಸೀದಿ ಅಥವಾ ಮಾಧ್ಯಮವನ್ನು ನಿಮಗೆ ಡೆಲಿವರಿ ಮಾಡಲು ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ.",
+    "message": "ಈ ಚಾಟ್‌ನಲ್ಲಿ $sender$ ಅವರಿಂದ ಮೆಸೇಜ್, ಸ್ಟಿಕ್ಕರ್, ಪ್ರತಿಕ್ರಿಯೆ, ಓದಿದ ರಸೀದಿ ಅಥವಾ ಮಾಧ್ಯಮವನ್ನು ನಿಮಗೆ ಡೆಲಿವರಿ ಮಾಡಲಾಗಲಿಲ್ಲ.",
     "description": "Shown on explainer dialog available from delivery issue timeline events in groups"
   },
   "ChangeNumber--notification": {
@@ -1778,10 +1786,10 @@
     "description": "Displayed in notifications for messages in a group"
   },
   "notificationReaction": {
-    "message": "$sender$ ಅವರು ನಿಮ್ಮ ಸಂದೇಶಕ್ಕೆ $emoji$ ಪ್ರತಿಸ್ಪಂದನೆ ನೀಡಿದ್ದಾರೆ"
+    "message": "$sender$ ಅವರು ನಿಮ್ಮ ಮೆಸೇಜ್‌ಗೆ $emoji$ ಪ್ರತಿಕ್ರಿಯಿಸಿದ್ದಾರೆ"
   },
   "notificationReactionMessage": {
-    "message": "$sender$ ಅವರು $emoji$ ಪ್ರತಿಸ್ಪಂದನೆಯನ್ನು ಇದಕ್ಕೆ ನೀಡಿದ್ದಾರೆ: $message$"
+    "message": "ಇದಕ್ಕೆ $sender$ ಅವರು $emoji$ ಪ್ರತಿಕ್ರಿಯಿಸಿದ್ದಾರೆ: $message$"
   },
   "sendFailed": {
     "message": "ಕಳಿಸಲು ವಿಫಲವಾಯಿತು",
@@ -1881,15 +1889,23 @@
   },
   "timestampFormat_M": {
     "message": "ತಿಂತಿಂತಿಂ ದಿ",
-    "description": "Timestamp format string for displaying month and day (but not the year) of a date within the current year, ex: use 'MMM D' for 'Aug 8', or 'D MMM' for '8 Aug'."
+    "description": "(deleted 01/25/2023) Timestamp format string for displaying month and day (but not the year) of a date within the current year, ex: use 'MMM D' for 'Aug 8', or 'D MMM' for '8 Aug'."
+  },
+  "timestampFormat__long--today": {
+    "message": "ಇಂದು $time$",
+    "description": "Timestamp format string for displaying \"Today\" and the time"
+  },
+  "timestampFormat__long--yesterday": {
+    "message": "ನಾಳೆ $time$",
+    "description": "Timestamp format string for displaying \"Yesterday\" and the time"
   },
   "timestampFormat__long__today": {
     "message": "[ಇಂದು] LT",
-    "description": "Timestamp format string for displaying \"Today\" and the time"
+    "description": "(deleted 01/25/2023) Timestamp format string for displaying \"Today\" and the time"
   },
   "timestampFormat__long__yesterday": {
     "message": "[ನಿನ್ನೆ] LT",
-    "description": "Timestamp format string for displaying \"Yesterday\" and the time"
+    "description": "(deleted 01/25/2023) Timestamp format string for displaying \"Yesterday\" and the time"
   },
   "messageBodyTooLong": {
     "message": "ಮೆಸೇಜ್ ಬಾಡಿ ತುಂಬಾ ಉದ್ದವಾಗಿದೆ.",
@@ -2181,7 +2197,7 @@
     "message": "ಪುನಃ ಲಿಂಕ್ ಮಾಡಿ"
   },
   "autoUpdateNewVersionTitle": {
-    "message": "ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ"
+    "message": "Update Available"
   },
   "autoUpdateRetry": {
     "message": "ಅಪ್‌ಡೇಟ್‌ಗೆ ಮರುಪ್ರಯತ್ನಿಸಿ"
@@ -2580,6 +2596,18 @@
     "message": "ಇತ್ತೀಚೆಗೆ ಬಳಸಿದ ಸ್ಟಿಕ್ಕರ್‌ಗಳು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ.",
     "description": "Shown in the sticker picker when there are no recent stickers to show."
   },
+  "icu:stickers__StickerPicker__recent": {
+    "messageformat": "ಇತ್ತೀಚಿನವುಗಳು",
+    "description": "Title for all of the recent stickers"
+  },
+  "icu:stickers__StickerPicker__featured": {
+    "messageformat": "ವೈಶಿಷ್ಟ್ಯಗೊಳಿಸಲಾಗಿದೆ",
+    "description": "Title for featured stickers"
+  },
+  "icu:stickers__StickerPicker__analog-time": {
+    "messageformat": "ಅನಲಾಗ್ ಸಮಯ",
+    "description": "aria-label for the analog time sticker"
+  },
   "stickers--StickerPreview--Title": {
     "message": "ಸ್ಟಿಕ್ಕರ್ ಪ್ಯಾಕ್",
     "description": "The title that appears in the sticker pack preview modal."
@@ -2777,7 +2805,7 @@
     "description": "Shown in the shortcuts guide"
   },
   "Keyboard--toggle-reaction-picker": {
-    "message": "ಆಯ್ಕೆ ಮಾಡಿದ ಮೆಸೇಜ್‌ಗೆ ಟಾಗಲ್ ಎಮೋಜಿ ಪ್ರತಿಕ್ರಿಯೆ ಆಯ್ಕೆಗಾರ",
+    "message": "ಆಯ್ಕೆ ಮಾಡಿದ ಮೆಸೇಜ್‌ಗೆ ಟಾಗಲ್ ಎಮೋಜಿ ಪ್ರತಿಕ್ರಿಯೆ ಪಿಕರ್",
     "description": "Shown in the shortcuts guide"
   },
   "Keyboard--save-attachment": {
@@ -2947,6 +2975,18 @@
   "conversationMarkedUnread": {
     "message": "ಸಂಭಾಷಣೆಯನ್ನು ಓದಿಲ್ಲ ಎಂದು ಗುರುತಿಸಲಾಗಿದೆ",
     "description": "A toast that shows up when user marks a conversation as unread"
+  },
+  "icu:AuthArtCreator--dialog--message": {
+    "messageformat": "Signal ಸ್ಟಿಕ್ಕರ್ ಪ್ಯಾಕ್ ಕ್ರಿಯೇಟರ್ ಅನ್ನು ತೆರೆಯಲು ನೀವು ಬಯಸುತ್ತೀರಾ?",
+    "description": "A body of the dialog that is presented when user tries to open Signal Sticker Pack Creator from a link"
+  },
+  "icu:AuthArtCreator--dialog--confirm": {
+    "messageformat": "ದೃಢೀಕರಿಸಿ",
+    "description": "A buttle title for confirming Signal Sticker Pack Creator dialog"
+  },
+  "icu:AuthArtCreator--dialog--dismiss": {
+    "messageformat": "ವಜಾಗೊಳಿಸಿ",
+    "description": "A buttle title for dismissing Signal Sticker Pack Creator dialog"
   },
   "StickerCreator--title": {
     "message": "ಸ್ಟಿಕ್ಕರ್ ಪ್ಯಾಕ್ ಕ್ರಿಯೇಟರ್",
@@ -3146,6 +3186,10 @@
   },
   "StickerCreator--Authentication--error": {
     "message": "ಸ್ಟಿಕ್ಕರ್ ಪ್ಯಾಕ್ ಕ್ರಿಯೇಟರ್ ಬಳಸಲು ನಿಮ್ಮ ಫೋನ್ ಮತ್ತು ಡೆಸ್ಕ್‌ಟಾಪ್‌ನಲ್ಲಿ ದಯವಿಟ್ಟು Signal ಸೆಟಪ್ ಮಾಡಿ",
+    "description": "The error message which appears when the user has not linked their account and attempts to use the Sticker Creator"
+  },
+  "icu:ArtCreator--Authentication--error": {
+    "messageformat": "ಸ್ಟಿಕ್ಕರ್ ಪ್ಯಾಕ್ ಕ್ರಿಯೇಟರ್ ಬಳಸಲು ನಿಮ್ಮ ಫೋನ್ ಮತ್ತು ಡೆಸ್ಕ್‌ಟಾಪ್‌ನಲ್ಲಿ ದಯವಿಟ್ಟು Signal ಸೆಟಪ್ ಮಾಡಿ",
     "description": "The error message which appears when the user has not linked their account and attempts to use the Sticker Creator"
   },
   "Reactions--remove": {
@@ -4854,11 +4898,11 @@
   },
   "TimelineDateHeader--date-in-last-6-months": {
     "message": "ddd, MMM D",
-    "description": "Moment.js format for date headers in the message timeline, for dates <6 months old. See https://momentjs.com/docs/#/displaying/format/."
+    "description": "(deleted 01/25/2023) Moment.js format for date headers in the message timeline, for dates <6 months old. See https://momentjs.com/docs/#/displaying/format/."
   },
   "TimelineDateHeader--date-older-than-6-months": {
     "message": "ತಿತಿತಿ ದಿ, ವವವವ",
-    "description": "Moment.js format for date headers in the message timeline, for dates >=6 months old. See https://momentjs.com/docs/#/displaying/format/."
+    "description": "(deleted 01/25/2023) Moment.js format for date headers in the message timeline, for dates >=6 months old. See https://momentjs.com/docs/#/displaying/format/."
   },
   "MessageRequestWarning__learn-more": {
     "message": "ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ",
@@ -5430,23 +5474,75 @@
   },
   "Preferences__who-can--title": {
     "message": "ಯಾರು ಮಾಡಬಹುದು ..",
-    "description": "Title for the 'who can do X' setting"
+    "description": "(deleted 2022/02/14) Title for the 'who can do X' setting"
   },
   "Preferences__privacy--description": {
     "message": "ಈ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬದಲಾಯಿಸಲು, ನಿಮ್ಮ ಮೊಬೈಲ್ ಸಾಧನದಲ್ಲಿ Signal ಆ್ಯಪ್ ತೆರೆಯಿರಿ ಮತ್ತು ಸೆಟ್ಟಿಂಗ್‌ಗಳು > ಗೌಪ್ಯತೆ ಗೆ ನ್ಯಾವಿಗೇಟ್ ಮಾಡಿ",
-    "description": "Description for the 'who can do X' setting"
+    "description": "(deleted 2022/02/14) Description for the 'who can do X' setting"
   },
   "Preferences__who-can--everybody": {
     "message": "ಎಲ್ಲರೂ",
-    "description": "Option for who can see my X select"
+    "description": "(deleted 2022/02/14) Option for who can see my X select"
   },
   "Preferences__who-can--contacts": {
     "message": "ನನ್ನ ಸಂಪರ್ಕಗಳು",
-    "description": "Option for who can see my X select"
+    "description": "(deleted 2022/02/14) Option for who can see my X select"
   },
   "Preferences__who-can--nobody": {
     "message": "ಯಾರೂ ಇಲ್ಲ",
-    "description": "Option for who can see my X select"
+    "description": "(deleted 2022/02/14) Option for who can see my X select"
+  },
+  "icu:Preferences__pnp__row--title": {
+    "messageformat": "ಫೋನ್ ಸಂಖ್ಯೆ",
+    "description": "Title of Phone Number row in Privacy section of Preferences window"
+  },
+  "icu:Preferences__pnp__row--body": {
+    "messageformat": "ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ಯಾರು ನೋಡಬಹುದು ಮತ್ತು ಅದರ ಮೂಲಕ Signal ನಲ್ಲಿ ನಿಮ್ಮನ್ನು ಯಾರು ಸಂಪರ್ಕಿಸಬಹುದು ಎಂಬುದನ್ನು ಆಯ್ಕೆಮಾಡಿ.",
+    "description": "Body of Phone Number row in Privacy section of Preferences window"
+  },
+  "icu:Preferences__pnp__sharing--title": {
+    "messageformat": "ನನ್ನ ಸಂಖ್ಯೆಯನ್ನು ಯಾರು ನೋಡಬಹುದು",
+    "description": "Title for the phone number sharing setting row"
+  },
+  "icu:Preferences__pnp__sharing--description--everyone": {
+    "messageformat": "ನೀವು ಸಂದೇಶ ಕಳುಹಿಸುವ ಜನರಿಗೆ ಮತ್ತು ಗುಂಪುಗಳಿಗೆ ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆ ಕಾಣಿಸುತ್ತದೆ. ತಮ್ಮ ಫೋನ್ ಸಂಪರ್ಕಗಳಲ್ಲಿ ನಿಮ್ಮ ಸಂಖ್ಯೆಯನ್ನು ಹೊಂದಿರುವ ಜನರೂ ಸಹ Signal ನಲ್ಲಿ ಅದನ್ನು ನೋಡುತ್ತಾರೆ.",
+    "description": "Description for the phone number sharing setting row when the value is Everyone"
+  },
+  "icu:Preferences__pnp__sharing--description--nobody": {
+    "messageformat": "Signal ನಲ್ಲಿ ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ಯಾರೂ ನೋಡಲಾಗುವುದಿಲ್ಲ.",
+    "description": "Description for the phone number sharing setting row when the value is Nobody"
+  },
+  "icu:Preferences__pnp--page-title": {
+    "messageformat": "ಫೋನ್ ಸಂಖ್ಯೆ",
+    "description": "Title of the page in Phone Number Privacy settings"
+  },
+  "icu:Preferences__pnp__sharing__everyone": {
+    "messageformat": "ಎಲ್ಲರೂ",
+    "description": "Option for sharing phone number with everyone"
+  },
+  "icu:Preferences__pnp__sharing__nobody": {
+    "messageformat": "ಯಾರೂ ಇಲ್ಲ",
+    "description": "Option for sharing phone number with nobody"
+  },
+  "icu:Preferences__pnp__discoverability--title": {
+    "messageformat": "ಸಂಖ್ಯೆಯ ಮೂಲಕ ನನ್ನನ್ನು ಯಾರು ಕಂಡುಹಿಡಿಯಬಹುದು",
+    "description": "Title for the phone number discoverability setting row"
+  },
+  "icu:Preferences__pnp__discoverability--description--everyone": {
+    "messageformat": "ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ತಮ್ಮ ಸಂಪರ್ಕಗಳಲ್ಲಿ ಹೊಂದಿರುವ ಯಾರಾದರೂ ನಿಮ್ಮನ್ನು Signal ನಲ್ಲಿನ ಸಂಪರ್ಕವಾಗಿ ನಿಮ್ಮನ್ನು ನೋಡುತ್ತಾರೆ. ಇತರರು ಹೊಸ ಚಾಟ್ ಅಥವಾ ಗ್ರೂಪ್ ಅನ್ನು ಆರಂಭಿಸಿದಾಗ ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆಯೊಂದಿಗೆ ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಲು ಅವರಿಗೆ ಸಾಧ್ಯವಾಗುತ್ತದೆ.",
+    "description": "Description for the phone number discoverability setting row wth the value is everyone"
+  },
+  "icu:Preferences__pnp__discoverability--description--nobody": {
+    "messageformat": "Signal ನಲ್ಲಿ ಯಾರಿಗೂ ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆಯ ಮೂಲಕ ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಲು ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ.",
+    "description": "Description for the phone number discoverability setting row wth the value is nobody"
+  },
+  "icu:Preferences__pnp__discoverability__everyone": {
+    "messageformat": "ಎಲ್ಲರೂ",
+    "description": "Option for letting everyone discover you by phone number"
+  },
+  "icu:Preferences__pnp__discoverability__nobody": {
+    "messageformat": "ಯಾರೂ ಇಲ್ಲ",
+    "description": "Option for letting nobody discover you by phone number"
   },
   "Preferences--messaging": {
     "message": "ಸಂದೇಶ ಕಳುಹಿಸುವಿಕೆ",
@@ -5504,6 +5600,14 @@
     "message": "ಲಭ್ಯವಿರುವ ಆವೃತ್ತಿ $version$ ಕ್ಕೆ ಅಪ್‌ಡೇಟ್ ಮಾಡಿ",
     "description": "Tooltip for new update available"
   },
+  "icu:DialogUpdate__downloading": {
+    "messageformat": "Downloading Update...",
+    "description": "The title of update dialog when update download is in progress."
+  },
+  "icu:DialogUpdate__downloaded": {
+    "messageformat": "Update Downloaded",
+    "description": "The title of update dialog when update download is completed."
+  },
   "NSIS__retry-dialog--first-line": {
     "message": "Signal ಅನ್ನು ಮುಚ್ಚಲು ಸಾಧ್ಯವಿಲ್ಲ.",
     "description": "First line of the dialog displayed when Windows installer can't close application automatically and needs user intervention to complete the installation."
@@ -5551,6 +5655,10 @@
   "CustomizingPreferredReactions__had-save-error": {
     "message": "ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಉಳಿಸುವಾಗ ದೋಷ ಸಂಭವಿಸಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ.",
     "description": "Shown if there is an error when saving your preferred reaction settings. Should be very rare to see this message."
+  },
+  "icu:MediaEditor__clock-more-styles": {
+    "messageformat": "ಇನ್ನಷ್ಟು ಶೈಲಿಗಳು",
+    "description": "Action button for switching up the clock styles"
   },
   "MediaEditor__control--draw": {
     "message": "ರಚಿಸಿ",
@@ -6246,11 +6354,19 @@
   },
   "StoryCreator__error--video-too-long": {
     "message": "ಈ ವಿಡಿಯೋ ತೀರಾ ದೀರ್ಘವಿರುವುದರಿಂದ ಸ್ಟೋರಿಗೆ ಇದನ್ನು ಪೋಸ್ಟ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ",
-    "description": "Error string for when a video post to story fails"
+    "description": "(deleted 02/22/2023) Error string for when a video post to story fails"
   },
   "StoryCreator__error--video-unsupported": {
     "message": "ಈ ವಿಡಿಯೋ unsupported file format ನಲ್ಲಿ ಇದೆ. ಹಾಗಾಗಿ ಇದನ್ನು ಸ್ಟೋರಿಗೆ ಪೋಸ್ಟ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ",
     "description": "Error string for when a video post to story fails"
+  },
+  "icu:StoryCreator__error--video-too-long": {
+    "messageformat": "{maxDurationInSec, plural, one {ಈ ವಿಡಿಯೋ 1 ಸೆಕೆಂಡ್‌ಗಿಂತ ದೀರ್ಘವಿರುವುದರಿಂದ ಸ್ಟೋರಿಗೆ ಇದನ್ನು ಪೋಸ್ಟ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.} other {ಈ ವಿಡಿಯೋ {maxDurationInSec,number}ಸೆಕೆಂಡ್‌ಗಳಿಗಿಂತ ದೀರ್ಘವಿರುವುದರಿಂದ ಸ್ಟೋರಿಗೆ ಇದನ್ನು ಪೋಸ್ಟ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.}}",
+    "description": "Error string for when a video post to story fails because video's duration is too long"
+  },
+  "icu:StoryCreator__error--video-too-big": {
+    "messageformat": "ಈ ವಿಡಿಯೋ {limit}{units} ಗಿಂತ ದೊಡ್ಡದಾಗಿರುವುದರಿಂದ ಸ್ಟೋರಿಗೆ ಇದನ್ನು ಪೋಸ್ಟ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.",
+    "description": "Error string for when a video post to story fails because video's file size is too big"
   },
   "StoryCreator__error--video-error": {
     "message": "ವಿಡಿಯೋ ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ",
@@ -6401,7 +6517,7 @@
     "description": "Content of the second row of username onboarding modal"
   },
   "icu:UsernameOnboardingModalBody__row__lock": {
-    "messageformat": "ಇತರರು ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಲು ನಿಮ್ಮ ಯೂಸರ್‌ನೇಮ್ ಅನ್ನು ಪ್ರಾಥಮಿಕ ವಿಧಾನವಾಗಿ ಬಳಸಲು, ಸೆಟ್ಟಿಂಗ್‌ಗಳು > ಫೋನ್ ನಂಬರ್ > ಯಾರು ನನ್ನ ನಂಬರ್ ಕಂಡುಕೊಳ್ಳಬಹುದು ಅಡಿಯಲ್ಲಿ ಫೋನ್ ನಂಬರ್ ಅನ್ವೇಷಣೆಯನ್ನು ಆಫ್ ಮಾಡಿ.",
+    "messageformat": "ಇತರರು ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಲು ನಿಮ್ಮ ಯೂಸರ್‌ನೇಮ್ ಅನ್ನು ಪ್ರಾಥಮಿಕ ವಿಧಾನವಾಗಿ ಬಳಸಲು, ಸೆಟ್ಟಿಂಗ್‌ಗಳು> ಗೌಪ್ಯತೆ > ಫೋನ್ ನಂಬರ್ > ಯಾರು ನನ್ನ ನಂಬರ್ ಕಂಡುಕೊಳ್ಳಬಹುದು ಎಂಬುದರ ಅಡಿಯಲ್ಲಿ ಫೋನ್ ನಂಬರ್ ಅನ್ವೇಷಣೆಯನ್ನು ಆಫ್ ಮಾಡಿ.",
     "description": "Content of the third row of username onboarding modal"
   },
   "icu:UsernameOnboardingModalBody__learn-more": {
@@ -6456,40 +6572,24 @@
     "message": "ಸಣ್ಣ ಟ್ವೀಕ್‌ಗಳು, ಬಗ್ ಫಿಕ್ಸ್‌ಗಳು ಮತ್ತು ಕಾರ್ಯಕ್ಷಮತೆ ವರ್ಧನೆಗಳು. Signal ಬಳಸುತ್ತಿರುವುದಕ್ಕಾಗಿ ಧನ್ಯವಾದಗಳು!",
     "description": "Release notes for releases that only include bug fixes"
   },
-  "WhatsNew__v5.63--0": {
-    "message": "ನಿಮ್ಮ‌ ಆ್ಯಪ್ ಅನ್ನು ಸರಾಗವಾಗಿರಿಸಲು ಬಗ್ ಫಿಕ್ಸಿಂಗ್ ಮತ್ತು ಇತರೆ ನಿರ್ವಹಣಾ ಸುಧಾರಣೆಗಳನ್ನು ಮಾಡುವ ಕೆಲಸದಲ್ಲಿ ನಿರತರಾಗಿದ್ದೇವೆ.",
-    "description": "Release notes for v5.63"
+  "icu:WhatsNew__v6.10--0": {
+    "messageformat": "ಹಳೆಯ ನೆನಪುಗಳನ್ನು ಮೆಲುಕು ಹಾಕಲು ಯಾವುದೇ ಚಿತ್ರ ಅಥವಾ ವೀಡಿಯೋ ಮೇಲೆ ಕ್ಲಿಕ್ ಮಾಡಿ ಮತ್ತು ಮೀಡಿಯಾ ವ್ಯೂವರ್‌ನಲ್ಲಿ ಹೊಸ ಫಾರ್ವರ್ಡ್ ಮತ್ತು ಬ್ಯಾಕ್‌ವರ್ಡ್ ಬಟನ್‌ಗಳನ್ನು ಬಳಸಿ.",
+    "description": "Release notes for v6.10"
   },
-  "WhatsNew__v5.63--beta.2": {
-    "message": "ನಮ್ಮ ಹೊಸ ಸ್ಟೋರೀಸ್ ಫೀಚರ್ ಅನ್ನು ಬಳಸಲು ಮತ್ತು ಪರೀಕ್ಷಿಸಲು ಪ್ರಾರಂಭಿಸಿ. ಇತರೆ ಬೀಟಾ ಟೆಸ್ಟರ್ ಗಳೊಂದಿಗೆ ಈ ಫೀಚರ್ ಅನ್ನು ನೀವು ಬಳಸಬಹುದು ಮತ್ತು ಇದು ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತಿದೆ ಎಂದು ನಮಗೆ ತಿಳಿಸಿ.",
-    "description": "Release notes for v5.63"
+  "icu:WhatsNew__v6.10--1": {
+    "messageformat": "ರೆಕಾರ್ಡಿಂಗ್ ಪ್ರಗತಿಯಲ್ಲಿರುವಾಗ ಇನ್ನೊಂದು ಚಾಟ್‌ಗೆ ಬದಲಾದರೆ ವಾಯ್ಸ್ ಮೆಸೇಜ್‌ಗಳು ಈಗ ಡ್ರಾಫ್ಟ್‌ಗಳಾಗಿ ಸೇವ್ ಆಗುತ್ತವೆ.",
+    "description": "Release notes for v6.10"
   },
-  "WhatsNew__v6.0": {
-    "message": "ಸ್ಟೋರೀಸ್ ಈಗ Signal ನಲ್ಲಿ! ಮಾಯವಾಗುವ ಪಠ್ಯ, ಚಿತ್ರಗಳು, ವಿಡಿಯೋ ಅಪ್ಡೇಟ್‌ಗಳನ್ನು ಆಯ್ದ ಸ್ನೇಹಿತರು, ಗ್ರೂಪ್‌ಗಳ ಜೊತೆ ಹಂಚಿಕೊಳ್ಳಿ, ಅವು 24 ಗಂಟೆಗಳ ನಂತರ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಮಾಯವಾಗುತ್ತವೆ. ಸ್ಟೋರೀಸ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಲು ಇಷ್ಟಪಡುವ ಪ್ರತಿಯೊಬ್ಬರಿಗಾಗಿ, ಇದನ್ನು ಗೌಪ್ಯವಾಗಿ ಮತ್ತು ಯಾವುದೇ ಜಾಹೀರಾತುಗಳನ್ನು ನೋಡದೆ ಮಾಡಲು ಇಲ್ಲಿದೆ ದಾರಿ. ಸ್ಟೋರೀಸ್ ಅನ್ನು ನೋಡಲು ಅಥವಾ ಹಂಚಿಕೊಳ್ಳಲು ನೀವು ಬಯಸದಿದ್ದರೆ, ನಿಮ್ಮ ಆದ್ಯತೆಗಳು > ಗೌಪ್ಯತೆಯಲ್ಲಿ ನೀವು ಅವೆಲ್ಲದರಿಂದ ಹೊರಗುಳಿಯುವ ಆಯ್ಕೆ ಮಾಡಬಹುದು.",
-    "description": "Release notes for v6.0"
+  "icu:WhatsNew__v6.10--2": {
+    "messageformat": "ಸ್ಟಿಕ್ಕರ್ ಕಳುಹಿಸುವುದರಿಂದ ಇನ್ನು ಮುಂದೆ ಡ್ರಾಫ್ಟ್ ಟೆಕ್ಸ್ಟ್ ತೆರವುಗೊಳ್ಳುವುದಿಲ್ಲ. ಧನ್ಯವಾದಗಳು, {lamemakes}!",
+    "description": "Release notes for v6.10"
   },
-  "WhatsNew__v6.1--1": {
-    "message": "ನೀವು ಸಣ್ಣ ಗ್ರೂಪ್‌ಗಳಿಗೆ (16 ಜನರ ತನಕ) ಗ್ರೂಪ್ ಕಾಲ್ ಮಾಡಲು ಪ್ರಾರಂಭಿಸುವಾಗ, ರಿಂಗಣಿಸುವ ಅಧಿಸೂಚನೆಯನ್ನು ಕಳುಹಿಸಲು ನೀವು ಆಯ್ಕೆ ಮಾಡಬಹುದು. ಗ್ರೂಪ್ ಸದಸ್ಯರು iOS ಬೀಟಾದಲ್ಲಿದ್ದರೆ ಅಥವಾ Desktop ಅಥವಾ Android ಬಳಸುತ್ತಿದ್ದರೆ ರಿಂಗ್ ಆಲಿಸುತ್ತಾರೆ.",
-    "description": "Release notes for v6.1"
+  "icu:WhatsNew__v6.10--3": {
+    "messageformat": "ಸಂಭಾಷಣೆಯ ಸರ್ಚ್ ಬಾರ್ ಐಕಾನ್‌ಗಳನ್ನು ಮತ್ತೆ ಅಲೈನ್‌ಮೆಂಟ್‌ಗೆ ತಂದಿದ್ದಕ್ಕಾಗಿ {norstbox} ಗೆ ಧನ್ಯವಾದ ಹೇಳಲು ನಾವು ಬಯಸುತ್ತೇವೆ.",
+    "description": "Release notes for v6.10"
   },
-  "icu:WhatsNew__v6.3--0": {
-    "messageformat": "ಉಲ್ಲೇಖಿತ ಉತ್ತರವನ್ನು ಪ್ರಾರಂಭಿಸಲು ಚಾಟ್‌ನಲ್ಲಿ ಯಾವುದೇ ಮೆಸೇಜ್ ಸಾಲಿನ ಮೇಲೆ ಡಬಲ್ ಕ್ಲಿಕ್ ಮಾಡಿ. ಇದೊಂಥರಾ ಹಳೇ ಐಡಿಯಾಗಳ ಕುರಿತಾದ ಹೊಸ ಆಲೋಚನೆಗಳಿಗೆ ಶಾರ್ಟ್‌ಕಟ್ ಇದ್ದಂತೆ. ಈ ಫೀಚರ್ ಅನ್ನು ಅನುಷ್ಠಾನಗೊಳಿಸಿದ ಮತ್ತು ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಒದಗಿಸಿದ {whynothugo} ಮತ್ತು Signal ಸಮುದಾಯಕ್ಕೆ ಧನ್ಯವಾದಗಳು.",
-    "description": "Release notes for v6.3"
-  },
-  "icu:WhatsNew__v6.3--1": {
-    "messageformat": "ಝೂಮ್ ಇನ್ ಮಾಡದೆಯೇ ಗ್ಯಾಲರಿ ವೀಕ್ಷಣೆಯನ್ನು ರದ್ದುಗೊಳಿಸಲು ಇಮೇಜ್‌ನ ಹೊರಗಡೆ ಕ್ಲಿಕ್ ಮಾಡುವುದು ಈಗ ಸುಲಭ. ಕೆಲವೊಮ್ಮೆ ಸಂಗತಿಗಳನ್ನು ತೀರಾ ಝೂಮ್ ಮಾಡುವುದು ಹಿತವಾಗದೆ ಮುಚ್ಚಲು ಬಯಸುತ್ತೀರಿ. ಸರಿಪಡಿಸಿದ್ದಕ್ಕಾಗಿ {jojomatik} ಅವರಿಗೆ ಧನ್ಯವಾದಗಳು!",
-    "description": "Release notes for v6.3"
-  },
-  "icu:WhatsNew__v6.5--0": {
-    "messageformat": "ನಿಮ್ಮ ಪ್ರತ್ಯುತ್ತರ ಸಮಯವನ್ನು ವೇಗಗೊಳಿಸಿ. ನೀವೀಗ ಸ್ಟೋರಿಗೆ ಉತ್ತರಿಸುವಾಗ ಯಾವುದೇ ಎಮೋಜಿ ಮೇಲೆ ಕ್ಲಿಕ್ ಮಾಡುವ ಮೂಲಕ ತ್ವರಿತವಾಗಿ ಪ್ರತಿಕ್ರಿಯಿಸಬಹುದು.",
-    "description": "Release notes for v6.5"
-  },
-  "icu:WhatsNew__v6.5--1": {
-    "messageformat": "ಇದೀಗ ಚೈನೀಸ್ ಮತ್ತು ಜಪಾನೀಸ್‌ ಭಾಷೆಯ ಪ್ರತಿ ಕ್ಯಾರೆಕ್ಟರ್‌ಗಾಗಿ ನಿಮ್ಮ ಮೆಸೇಜ್ ಇತಿಹಾಸವನ್ನು ಸರ್ಚ್ ಮಾಡಲು ಸಾಧ್ಯ.",
-    "description": "Release notes for v6.5"
-  },
-  "icu:WhatsNew__v6.6--0": {
-    "messageformat": "ಧ್ವನಿ ಮತ್ತು ವೀಡಿಯೋ ಕರೆಗಳ ಹಲವಾರು ವಿಶ್ವಾಸಾರ್ಹತೆ ಮತ್ತು ಕಾರ್ಯಕ್ಷಮತೆ ಸುಧಾರಣೆಗಳನ್ನು ಪರೀಕ್ಷಿಸಲು ನಮಗೆ ಸಹಾಯ ಮಾಡಿ. ಈ ಬೀಟಾ ಬಿಡುಗಡೆಯು ಕೆಲವು ದೋಷ ಪರಿಹಾರಗಳು ಹಾಗೂ ಕೆಲವು ಸಣ್ಣ UI ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಕೂಡಾ ಒಳಗೊಂಡಿದೆ (ಹೊಸ ಲಿಂಕ್ ಪೂರ್ವನೋಟ ಸುಧಾರಣೆಗಳನ್ನು ನೋಡಿ). ಬೀಟಾ ಪರೀಕ್ಷಕರಾಗಿದ್ದಕ್ಕಾಗಿ ಧನ್ಯವಾದಗಳು ಮತ್ತು ನೀವು ಯಾವುದೇ ದೋಷಗಳನ್ನು ಗುರುತಿಸಿದರೆ ದಯವಿಟ್ಟು ಕಮ್ಯುನಿಟಿ ಫೋರಂನಲ್ಲಿ ನಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಿ.",
-    "description": "Release notes for v6.6"
+  "icu:WhatsNew__v6.11--0": {
+    "messageformat": "Start talking to yourself even faster with a new icon that makes the “Note to Self” chat easier to find. Thanks to {hackerbirds} on GitHub for their contribution.",
+    "description": "Release notes for v6.11"
   }
 }

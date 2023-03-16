@@ -52,6 +52,14 @@
     "message": "$contact$ ကို ပေါင်းထည့်နေဆဲ...",
     "description": "Shown in toast while a user is being added to a group"
   },
+  "icu:RecordingComposer__cancel": {
+    "messageformat": "မလုပ်တော့ပါ",
+    "description": "Label of cancel button on voice note recording UI"
+  },
+  "icu:RecordingComposer__send": {
+    "messageformat": "ပေးပို့ရန်",
+    "description": "Label of send button on voice note recording UI"
+  },
   "GroupListItem__message-default": {
     "message": "မန်ဘာ $count$ ဦး",
     "description": "Shown below the group name when selecting a group to invite a contact to"
@@ -1251,11 +1259,11 @@
     "description": "Shown on explainer dialog available from delivery issue timeline events"
   },
   "DeliveryIssue--summary": {
-    "message": "မက်ဆေ့ချ်၊ စတစ်ကာ၊ တုံ့ပြန်မှု၊ ဖတ်ပြီးကြောင်းညွှန်ပြမှု သို့မဟုတ် မီဒီယာသည် $sender$ မှ သင့်ထံသို့ မရောက်သွားပါ။ သင့်ထံ တိုက်ရိုက် သို့မဟုတ် အဖွဲ့တွင် ပေးပို့ခြင်းဖြစ်နိုင်ပါသည်။",
+    "message": "မက်ဆေ့ချ်၊ စတစ်ကာ၊ တုံ့ပြန်မှု၊ ဖတ်ပြီးကြောင်းညွှန်ပြမှု သို့မဟုတ် မီဒီယာကို $sender$ မှ သင့်ထံသို့ ပေးပို့၍ မရနိုင်ခဲ့ပါ။ သင့်ထံ တိုက်ရိုက် သို့မဟုတ် အဖွဲ့တွင် ပေးပို့ရန် ကြိုးစားခဲ့ခြင်း ဖြစ်နိုင်ပါသည်။",
     "description": "Shown on explainer dialog available from delivery issue timeline events in 1:1 conversations"
   },
   "DeliveryIssue--summary--group": {
-    "message": "မက်ဆေ့ချ်၊ စတစ်ကာ၊ တုံ့ပြန်မှု၊ ဖတ်ပြီးကြောင်းညွှန်ပြမှု သို့မဟုတ် မီဒီယာသည် ဤချက်(တ်)တွင် $sender$ မှ သင့်ထံသို့ မရောက်သွားပါ။",
+    "message": "မက်ဆေ့ချ်၊ စတစ်ကာ၊ တုံ့ပြန်မှု၊ ဖတ်ပြီးကြောင်းညွှန်ပြမှု သို့မဟုတ် မီဒီယာကို ဤချက်(တ်)တွင် $sender$ မှ သင့်ထံသို့ ပေးပို့၍ မရနိုင်ခဲ့ပါ။",
     "description": "Shown on explainer dialog available from delivery issue timeline events in groups"
   },
   "ChangeNumber--notification": {
@@ -1778,10 +1786,10 @@
     "description": "Displayed in notifications for messages in a group"
   },
   "notificationReaction": {
-    "message": "$sender$ သည် သင့်မက်ဆေ့ချ်တွင် $emoji$ တုံ့ပြန်မှု ပေးခဲ့သည်"
+    "message": "$sender$ သည် သင့်မက်ဆေ့ချ်ကို $emoji$ တုံ့ပြန်မှု ပေးခဲ့သည်"
   },
   "notificationReactionMessage": {
-    "message": "$sender$ သည် ဖော်ပြပါတွင် $emoji$ တုံ့ပြန်မှု ပေးခဲ့သည်- $message$"
+    "message": "$sender$ သည် ဖော်ပြပါကို $emoji$ တုံ့ပြန်မှု ပေးခဲ့သည်- $message$"
   },
   "sendFailed": {
     "message": "ပေးပို့ခြင်း မအောင်မြင်ပါ",
@@ -1881,15 +1889,23 @@
   },
   "timestampFormat_M": {
     "message": "MMM D",
-    "description": "Timestamp format string for displaying month and day (but not the year) of a date within the current year, ex: use 'MMM D' for 'Aug 8', or 'D MMM' for '8 Aug'."
+    "description": "(deleted 01/25/2023) Timestamp format string for displaying month and day (but not the year) of a date within the current year, ex: use 'MMM D' for 'Aug 8', or 'D MMM' for '8 Aug'."
+  },
+  "timestampFormat__long--today": {
+    "message": "ယနေ့ $time$",
+    "description": "Timestamp format string for displaying \"Today\" and the time"
+  },
+  "timestampFormat__long--yesterday": {
+    "message": "ယမန်နေ့ $time$",
+    "description": "Timestamp format string for displaying \"Yesterday\" and the time"
   },
   "timestampFormat__long__today": {
     "message": "[ယနေ့] LT",
-    "description": "Timestamp format string for displaying \"Today\" and the time"
+    "description": "(deleted 01/25/2023) Timestamp format string for displaying \"Today\" and the time"
   },
   "timestampFormat__long__yesterday": {
     "message": "[ယမန်နေ့] LT",
-    "description": "Timestamp format string for displaying \"Yesterday\" and the time"
+    "description": "(deleted 01/25/2023) Timestamp format string for displaying \"Yesterday\" and the time"
   },
   "messageBodyTooLong": {
     "message": "မက်ဆေ့ချ် စာကိုယ် ရှည်လွန်းနေပါသည်။",
@@ -2181,7 +2197,7 @@
     "message": "Relink"
   },
   "autoUpdateNewVersionTitle": {
-    "message": "အပ်ဒိတ် ရရှိနိုင်ပါပြီ"
+    "message": "Update Available"
   },
   "autoUpdateRetry": {
     "message": "အပ်ဒိတ်လုပ်ဆောင်မှု ပြန်ကြိုးစားရန်"
@@ -2580,6 +2596,18 @@
     "message": "မကြာမီက သုံးထား‌သော စတစ်ကာများသည် ဤနေရာတွင် ပေါ်ပါမည်။",
     "description": "Shown in the sticker picker when there are no recent stickers to show."
   },
+  "icu:stickers__StickerPicker__recent": {
+    "messageformat": "နောက်ဆုံး",
+    "description": "Title for all of the recent stickers"
+  },
+  "icu:stickers__StickerPicker__featured": {
+    "messageformat": "အသားပေးထားသည်များ",
+    "description": "Title for featured stickers"
+  },
+  "icu:stickers__StickerPicker__analog-time": {
+    "messageformat": "လက်တံဖြင့်ပြသော အချိန်",
+    "description": "aria-label for the analog time sticker"
+  },
   "stickers--StickerPreview--Title": {
     "message": "စတစ်ကာတွဲ",
     "description": "The title that appears in the sticker pack preview modal."
@@ -2777,7 +2805,7 @@
     "description": "Shown in the shortcuts guide"
   },
   "Keyboard--toggle-reaction-picker": {
-    "message": "ရွေးချယ်ထားသော မက်ဆေ့ချ်အတွက် ရွေးချယ်ထားသော အီမိုဂျိ တုံ့ပြန်မှုကို နှိပ်ရန်",
+    "message": "ရွေးချယ်ထားသော မက်ဆေ့ချ်အတွက် ကြိုက်ရာ အီမိုဂျိ တုံ့ပြန်မှုကို နှိပ်ရန်",
     "description": "Shown in the shortcuts guide"
   },
   "Keyboard--save-attachment": {
@@ -2947,6 +2975,18 @@
   "conversationMarkedUnread": {
     "message": "စကားဝိုင်းကို မဖတ်ရသေးဟု မှတ်ထားသည်",
     "description": "A toast that shows up when user marks a conversation as unread"
+  },
+  "icu:AuthArtCreator--dialog--message": {
+    "messageformat": "Signal Sticker Pack Creator ကို သင် ဖွင့်လိုပါသလား။",
+    "description": "A body of the dialog that is presented when user tries to open Signal Sticker Pack Creator from a link"
+  },
+  "icu:AuthArtCreator--dialog--confirm": {
+    "messageformat": "အတည်ပြုရန်",
+    "description": "A buttle title for confirming Signal Sticker Pack Creator dialog"
+  },
+  "icu:AuthArtCreator--dialog--dismiss": {
+    "messageformat": "ပယ်ရန်",
+    "description": "A buttle title for dismissing Signal Sticker Pack Creator dialog"
   },
   "StickerCreator--title": {
     "message": "စတစ်ကာတွဲ ဖန်တီးသူ",
@@ -3146,6 +3186,10 @@
   },
   "StickerCreator--Authentication--error": {
     "message": "စတစ်ကာတွဲ ဖန်တီးမှုကို သုံးရန် သင့်ဖုန်းနှင့် Desktop တွင် Signal ကို သတ်မှတ်ပါ",
+    "description": "The error message which appears when the user has not linked their account and attempts to use the Sticker Creator"
+  },
+  "icu:ArtCreator--Authentication--error": {
+    "messageformat": "Sticker Pack Creator ကို သုံးရန် သင့်ဖုန်းနှင့် Desktop တွင် Signal ကို စီစဉ်သတ်မှတ်ပေးပါ",
     "description": "The error message which appears when the user has not linked their account and attempts to use the Sticker Creator"
   },
   "Reactions--remove": {
@@ -4854,11 +4898,11 @@
   },
   "TimelineDateHeader--date-in-last-6-months": {
     "message": "ddd, MMM D",
-    "description": "Moment.js format for date headers in the message timeline, for dates <6 months old. See https://momentjs.com/docs/#/displaying/format/."
+    "description": "(deleted 01/25/2023) Moment.js format for date headers in the message timeline, for dates <6 months old. See https://momentjs.com/docs/#/displaying/format/."
   },
   "TimelineDateHeader--date-older-than-6-months": {
     "message": "MMM D, YYYY",
-    "description": "Moment.js format for date headers in the message timeline, for dates >=6 months old. See https://momentjs.com/docs/#/displaying/format/."
+    "description": "(deleted 01/25/2023) Moment.js format for date headers in the message timeline, for dates >=6 months old. See https://momentjs.com/docs/#/displaying/format/."
   },
   "MessageRequestWarning__learn-more": {
     "message": "ထပ်မံလေ့လာရန်",
@@ -5430,23 +5474,75 @@
   },
   "Preferences__who-can--title": {
     "message": "ခွင့်ရှိသူ...",
-    "description": "Title for the 'who can do X' setting"
+    "description": "(deleted 2022/02/14) Title for the 'who can do X' setting"
   },
   "Preferences__privacy--description": {
     "message": "ဤဆက်တင်ကို ပြောင်းရန် သင့်မိုဘိုင်းစက်တွင် Signal အက်ပ်ကို ဖွင့်ပြီး ဆက်တင် > ကိုယ်ပိုင်အချက်အလက်သို့ သွားပါ",
-    "description": "Description for the 'who can do X' setting"
+    "description": "(deleted 2022/02/14) Description for the 'who can do X' setting"
   },
   "Preferences__who-can--everybody": {
     "message": "အားလုံး",
-    "description": "Option for who can see my X select"
+    "description": "(deleted 2022/02/14) Option for who can see my X select"
   },
   "Preferences__who-can--contacts": {
     "message": "ကျွန်ုပ်၏ အဆက်အသွယ်များ",
-    "description": "Option for who can see my X select"
+    "description": "(deleted 2022/02/14) Option for who can see my X select"
   },
   "Preferences__who-can--nobody": {
     "message": "မည်သူမျှ",
-    "description": "Option for who can see my X select"
+    "description": "(deleted 2022/02/14) Option for who can see my X select"
+  },
+  "icu:Preferences__pnp__row--title": {
+    "messageformat": "ဖုန်းနံပါတ်",
+    "description": "Title of Phone Number row in Privacy section of Preferences window"
+  },
+  "icu:Preferences__pnp__row--body": {
+    "messageformat": "သင့်ဖုန်းနံပါတ်ကို မြင်နိုင်သူများနှင့် Signal တွင် ထိုနံပါတ်ဖြင့် သင့်ထံသို့ ဆက်သွယ်နိုင်သူများကို ရွေးချယ်ပါ။",
+    "description": "Body of Phone Number row in Privacy section of Preferences window"
+  },
+  "icu:Preferences__pnp__sharing--title": {
+    "messageformat": "ကျွန်ုပ်၏ဖုန်းနံပါတ်ကို မြင်နိုင်သူများ",
+    "description": "Title for the phone number sharing setting row"
+  },
+  "icu:Preferences__pnp__sharing--description--everyone": {
+    "messageformat": "သင်မက်ဆေ့ချ်ပို့သော လူများနှင့် အဖွဲ့များသည် သင်၏ ဖုန်းနံပါတ်ကို မြင်တွေ့ရပါမည်။ သင့်ဖုန်းနံပါတ်ကို ဖုန်းအဆက်အသွယ်များထဲတွင် ထည့်ထားသူများသည်လည်း Signal ပေါ်တွင် သင့်ဖုန်းနံပါတ်ကို တွေ့ရှိရပါမည်။",
+    "description": "Description for the phone number sharing setting row when the value is Everyone"
+  },
+  "icu:Preferences__pnp__sharing--description--nobody": {
+    "messageformat": "မည်သူမျှ သင့်ဖုန်းနံပါတ်ကို Signal ပေါ်တွင် မြင်နိုင်မည် မဟုတ်ပါ။",
+    "description": "Description for the phone number sharing setting row when the value is Nobody"
+  },
+  "icu:Preferences__pnp--page-title": {
+    "messageformat": "ဖုန်းနံပါတ်",
+    "description": "Title of the page in Phone Number Privacy settings"
+  },
+  "icu:Preferences__pnp__sharing__everyone": {
+    "messageformat": "လူတိုင်း",
+    "description": "Option for sharing phone number with everyone"
+  },
+  "icu:Preferences__pnp__sharing__nobody": {
+    "messageformat": "မည်သူမျှ မရှာနိုင်",
+    "description": "Option for sharing phone number with nobody"
+  },
+  "icu:Preferences__pnp__discoverability--title": {
+    "messageformat": "ဖုန်းနံပါတ်ဖြင့် ကျွန်ုပ်ကို ရှာနိုင်သူများ",
+    "description": "Title for the phone number discoverability setting row"
+  },
+  "icu:Preferences__pnp__discoverability--description--everyone": {
+    "messageformat": "အဆက်အသွယ်များထဲတွင် သင့်ဖုန်းနံပါတ်ကို ထည့်ထားသည့် မည်သူမဆိုသည် Signal ပေါ်တွင် သင့်ကို အဆက်အသွယ်တစ်ခုအဖြစ် မြင်ရပါမည်။ အခြားသူများသည် ချက်(တ်) သို့မဟုတ် အဖွဲ့အသစ်တစ်ခု စတင်သည့်အခါတိုင်း သင့်ဖုန်းနံပါတ်ဖြင့် သင့်ထံသို့ ဆက်သွယ်နိုင်ပါမည်။",
+    "description": "Description for the phone number discoverability setting row wth the value is everyone"
+  },
+  "icu:Preferences__pnp__discoverability--description--nobody": {
+    "messageformat": "Signal ရှိ မည်သူကမျှ သင့်ဖုန်းနံပါတ်ဖြင့် သင့်ကို ဆက်သွယ်နိုင်မည် မဟုတ်ပါ။",
+    "description": "Description for the phone number discoverability setting row wth the value is nobody"
+  },
+  "icu:Preferences__pnp__discoverability__everyone": {
+    "messageformat": "လူတိုင်း",
+    "description": "Option for letting everyone discover you by phone number"
+  },
+  "icu:Preferences__pnp__discoverability__nobody": {
+    "messageformat": "မည်သူမျှ မရှာနိုင်",
+    "description": "Option for letting nobody discover you by phone number"
   },
   "Preferences--messaging": {
     "message": "မက်ဆေ့ချ်ပေးပို့ခြင်း",
@@ -5504,6 +5600,14 @@
     "message": "ဗားရှင်း $version$ အတွက် အပ်ဒိတ် ရရှိပါပြီ",
     "description": "Tooltip for new update available"
   },
+  "icu:DialogUpdate__downloading": {
+    "messageformat": "Downloading Update...",
+    "description": "The title of update dialog when update download is in progress."
+  },
+  "icu:DialogUpdate__downloaded": {
+    "messageformat": "Update Downloaded",
+    "description": "The title of update dialog when update download is completed."
+  },
   "NSIS__retry-dialog--first-line": {
     "message": "Signal ကို ပိတ်၍ မရနိုင်ပါ။",
     "description": "First line of the dialog displayed when Windows installer can't close application automatically and needs user intervention to complete the installation."
@@ -5551,6 +5655,10 @@
   "CustomizingPreferredReactions__had-save-error": {
     "message": "သင့်ဆက်တင်ကို သိမ်းချိန်တွင် ပြဿနာ ရှိခဲ့ပါသည်။ နောက်မှ ထပ်ကြိုးစားပေးပါ။",
     "description": "Shown if there is an error when saving your preferred reaction settings. Should be very rare to see this message."
+  },
+  "icu:MediaEditor__clock-more-styles": {
+    "messageformat": "နောက်ထပ်စတိုင်များ",
+    "description": "Action button for switching up the clock styles"
   },
   "MediaEditor__control--draw": {
     "message": "ရေးဆွဲရန်",
@@ -5809,7 +5917,7 @@
     "description": "Toast message"
   },
   "Stories__toast--sending-reaction": {
-    "message": "တုံ့ပြန်ချက် ပို့နေဆဲ...",
+    "message": "တုံ့ပြန်မှု ပို့နေဆဲ...",
     "description": "Toast message"
   },
   "Stories__toast--hasNoSound": {
@@ -6246,11 +6354,19 @@
   },
   "StoryCreator__error--video-too-long": {
     "message": "ဗီဒီယိုသည် ရှည်လွန်းနေသောကြောင့် စတိုရီတွင် ပို့စ်တင်၍ မရနိုင်ပါ",
-    "description": "Error string for when a video post to story fails"
+    "description": "(deleted 02/22/2023) Error string for when a video post to story fails"
   },
   "StoryCreator__error--video-unsupported": {
     "message": "ဗီဒီယိုသည် ပံ့ပိုးပေးထားသည့် ဖိုင်ဖောမတ် မဟုတ်သောကြောင့် စတိုရီတွင် ပို့စ်တင်၍ မရနိုင်ပါ",
     "description": "Error string for when a video post to story fails"
+  },
+  "icu:StoryCreator__error--video-too-long": {
+    "messageformat": "{maxDurationInSec, plural, other {ဗီဒီယိုမှာ {maxDurationInSec,number} စက္ကန့်ထက် ပိုရှည်နေသောကြောင့် စတိုရီတွင် တင်၍ မရပါ။}}",
+    "description": "Error string for when a video post to story fails because video's duration is too long"
+  },
+  "icu:StoryCreator__error--video-too-big": {
+    "messageformat": "ဗီဒီယိုမှာ {limit}{units} ထက် ပိုကြီးနေသောကြောင့် စတိုရီတွင် တင်၍ မရပါ။",
+    "description": "Error string for when a video post to story fails because video's file size is too big"
   },
   "StoryCreator__error--video-error": {
     "message": "ဗီဒီယို လုပ်ဆောင်ရန် မအောင်မြင်ခဲ့ပါ",
@@ -6401,7 +6517,7 @@
     "description": "Content of the second row of username onboarding modal"
   },
   "icu:UsernameOnboardingModalBody__row__lock": {
-    "messageformat": "သင့်သုံးစွဲသူအမည်ကို သင့်ထံ ဆက်သွယ်နိုင်သည့် ပင်မနည်းလမ်းအဖြစ် သုံးရန် ဆက်တင် > ဖုန်းနံပါတ် > ကျွန်ုပ်၏ ဖုန်းနံပါတ်ကို ရှာနိုင်မည့်သူများအောက်ရှိ ဖုန်းနံပါတ် ရှာဖွေရေးကို ပိတ်ပါ။",
+    "messageformat": "သင့်သုံးစွဲသူအမည်ကို သင့်ထံ ဆက်သွယ်နိုင်သည့် ပင်မနည်းလမ်းအဖြစ် သုံးရန် ဆက်တင် > ကိုယ်ပိုင်အချက်အလက် > ဖုန်းနံပါတ် > ကျွန်ုပ်၏ ဖုန်းနံပါတ်ကို ရှာနိုင်မည့်သူများအောက်ရှိ ဖုန်းနံပါတ် ရှာဖွေရေးကို ပိတ်ပါ။",
     "description": "Content of the third row of username onboarding modal"
   },
   "icu:UsernameOnboardingModalBody__learn-more": {
@@ -6456,40 +6572,24 @@
     "message": "အနေအထား ပြုပြင်မှုလေးများ၊ ချို့ယွင်းချက် ပြင်ဆင်မှုများနှင့် စွမ်းဆောင်ရည် မြှင့်တင်မှုများ။ Signal ကို သုံးသည့်အတွက် ကျေးဇူးတင်ပါသည်။",
     "description": "Release notes for releases that only include bug fixes"
   },
-  "WhatsNew__v5.63--0": {
-    "message": "အက်ပ်အား သင့်အတွက် ချောမွေ့စွာ အလုပ်လုပ်စေရန် ချို့ယွင်းချက် ပြင်ဆင်မှုများကို ကြိုးစားလုပ်ဆောင်ထားပြီး အခြားသော စွမ်းဆောင်ရည် မွမ်းမံမှုများကို ပြုလုပ်ထားပါသည်။",
-    "description": "Release notes for v5.63"
+  "icu:WhatsNew__v6.10--0": {
+    "messageformat": "ရုပ်ပုံ အမှတ်တရများကို ပြန်လည်ကြည့်ရှုရန် ပုံ သို့မဟုတ် ဗီဒီယို တစ်ခုခုကို နှိပ်ပြီး မီဒီယာ ကြည့်ရှုမှုမြင်ကွင်းရှိ ရှေ့သို့၊ နောက်သို့ ခလုတ်သစ်များကို သုံးပါ။",
+    "description": "Release notes for v6.10"
   },
-  "WhatsNew__v5.63--beta.2": {
-    "message": "ကျွန်ုပ်တို့၏ စတိုရီ လုပ်ဆောင်ချက်အင်္ဂါရပ် အသစ်ကို စတင်သုံးစွဲပြီး စမ်းသပ်လိုက်ပါ။ သင်သည် အခြား Beta စမ်းသပ်သုံးစွဲသူများနှင့်အတူ ဤလုပ်ဆောင်ချက်အင်္ဂါရပ်ကို သုံးစွဲနိုင်ပြီး ၎င်းအလုပ်လုပ်ပုံအကြောင်း ကျွန်ုပ်တို့အား အသိပေးပါ။",
-    "description": "Release notes for v5.63"
+  "icu:WhatsNew__v6.10--1": {
+    "messageformat": "ယခုအခါ အသံသွင်းနေစဉ် အခြားချက်(တ်)သို့ ပြောင်းလိုက်ပါက အသံမက်ဆေ့ချ်များကို ဖိုင်ကြမ်းအဖြစ် သိမ်းထားပေးပါသည်။",
+    "description": "Release notes for v6.10"
   },
-  "WhatsNew__v6.0": {
-    "message": "ယခုအခါ Signal တွင် စတိုရီများ ရှိနေပါပြီ။ 24 နာရီကြာပြီးနောက် အော်တိုပျောက်သွားမည့် စာသား၊ ပုံနှင့် ဗီဒီယို အပ်ဒိတ်များကို ရွေးထားသည့် မိတ်ဆွေများ၊ အဖွဲ့များထံ ဝေမျှလိုက်ပါ။ စတိုရီများ ဝေမျှရသည်ကို သဘောကျသူတိုင်းအတွက် ကြော်ငြာများ မပါဘဲ သီးသန့်လုပ်ဆောင်နိုင်မည့် နည်းလမ်း ဒီမှာရှိနေပါပြီ။ စတိုရီများကို မမြင်လိုပါက၊ မဝေမျှလိုပါက ဆက်တင်၌ ပိတ်ထားနိုင်ပါသည်။",
-    "description": "Release notes for v6.0"
+  "icu:WhatsNew__v6.10--2": {
+    "messageformat": "စတစ်ကာ ပေးပို့မှုကြောင့် စာကြမ်းများ ရှင်းလင်းခံရခြင်း မဖြစ်တော့ပါ။ ကျေးဇူးပါ {lamemakes}။",
+    "description": "Release notes for v6.10"
   },
-  "WhatsNew__v6.1--1": {
-    "message": "အဖွဲ့ငယ် (လူ 16 ဦးအထိ) အတွက် အဖွဲ့ကောလ်ကို စတင်သည့်အခါ ဖုန်းမြည်သံ အသိပေးချက် ပို့ရန် ရွေးချယ်နိုင်ပါသည်။ အဖွဲ့ဝင်များသည် iOS beta သို့မဟုတ် ဒတ်ခ်စတော့(ပ်) သို့မဟုတ် Android ကို သုံးနေပါက ဖုန်းမြည်သံကို ကြားရပါမည်။",
-    "description": "Release notes for v6.1"
+  "icu:WhatsNew__v6.10--3": {
+    "messageformat": "စကားဝိုင်း ရှာဖွေမှုဘား အိုင်ကွန်များကို ပြန်လည်ချိန်ညှိပေးထားသည့်အတွက် {norstbox} ကိုလည်း ကျေးဇူးတင်ပါသည်။",
+    "description": "Release notes for v6.10"
   },
-  "icu:WhatsNew__v6.3--0": {
-    "messageformat": "Quote လုပ်ထားသော အကြောင်းပြန်စာကို စတင်ရန် ချက်(တ်)ရှိ မက်ဆေ့ချ် တစ်ခုခုကို နှစ်ချက်နှိပ်ပါ။ ယင်းသည် အိုင်ဒီယာဟောင်းများနှင့်ပတ်သက်သော အတွေးသစ်များအတွက် ရှော့တ်ကတ်ဖြစ်ပါသည်။ ဤအင်္ဂါရပ်ကို အကောင်အထည်ဖော်၍ တုံ့ပြန်ချက်ပေးသည့်အတွက် {whynothugo} နှင့် Signal အဖွဲ့အစည်းကို ကျေးဇူးတင်ပါသည်။",
-    "description": "Release notes for v6.3"
-  },
-  "icu:WhatsNew__v6.3--1": {
-    "messageformat": "ဇူးမ် မချဲ့ဘဲ ပုံပြခန်းကြည့်ရှုမှုကို ဖယ်ရန် ပုံပြင်ပကို နှိပ်ရသည်မှာ ယခုဆို ပိုမိုလွယ်ကူသွားပါသည်။ တစ်ခါတစ်ရံ ပိတ်ချလိုက်လိုသော်လည်း ထိုအစား မျက်စိမှောက်နေတတ်သည်။ ပြုပြင်ပေးမှုအတွက် {jojomatik} ကို ကျေးဇူးတင်ပါသည်။",
-    "description": "Release notes for v6.3"
-  },
-  "icu:WhatsNew__v6.5--0": {
-    "messageformat": "သင့်တုံ့ပြန်ချိန်ကို တိုးမြှင့်ပါ။ ယခုအခါ စတိုရီကို အကြောင်းပြန်သည့်အခါ မည်သည့်အီမိုဂျိကိုမဆို နှိပ်၍ ပိုမိုမြန်ဆန်စွာ တုံ့ပြန်နိုင်ပါပြီ။",
-    "description": "Release notes for v6.5"
-  },
-  "icu:WhatsNew__v6.5--1": {
-    "messageformat": "ယခုအခါ တရုတ်အက္ခရာနှင့် ဂျပန်အက္ခရာ တစ်လုံးစီအတွက် သင့်မက်ဆေ့ချ်မှတ်တမ်းကို ရှာ၍ ရနိုင်ပါပြီ။",
-    "description": "Release notes for v6.5"
-  },
-  "icu:WhatsNew__v6.6--0": {
-    "messageformat": "အော်ဒီယိုနှင့် ဗီဒီယို ကောလ်များအတွက် စွမ်းဆောင်ရည် မြှင့်တင်မှုများနှင့် ယုံကြည်စိတ်ချရမှု အချို့ကို စမ်းသပ်ရန် ကျွန်ုပ်တို့အား ကူညီပေးပါ။ ဤစမ်းသပ်ထုတ်ဝေမှုတွင် ချို့ယွင်းချက်ပြင်ဆင်မှု အနည်းငယ်နှင့် UI အပ်ဒိတ်အသေးစားအချို့ (လင့်ခ်ကြိုတင်ကြည့်ရှုမှု အဆင့်မြှင့်တင်မှု အသစ်များကို ရှာရန်) လည်း ပါဝင်ပါသည်။ စမ်းသပ်သုံးစွဲသူအဖြစ် ဆောင်ရွက်ပေးသည့်အတွက် ကျေးဇူးတင်ပါသည်၊ ချို့ယွင်းချက်တစ်ခုခု တွေ့ရှိပါက ကွန်မြူနတီဖိုရမ်မှတစ်ဆင့် ကျွန်ုပ်တို့ထံ ဆက်သွယ်ပါ။",
-    "description": "Release notes for v6.6"
+  "icu:WhatsNew__v6.11--0": {
+    "messageformat": "Start talking to yourself even faster with a new icon that makes the “Note to Self” chat easier to find. Thanks to {hackerbirds} on GitHub for their contribution.",
+    "description": "Release notes for v6.11"
   }
 }

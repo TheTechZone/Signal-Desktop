@@ -52,6 +52,14 @@
     "message": "Besig om $contact$ by te voeg…",
     "description": "Shown in toast while a user is being added to a group"
   },
+  "icu:RecordingComposer__cancel": {
+    "messageformat": "Kanselleer",
+    "description": "Label of cancel button on voice note recording UI"
+  },
+  "icu:RecordingComposer__send": {
+    "messageformat": "Stuur",
+    "description": "Label of send button on voice note recording UI"
+  },
   "GroupListItem__message-default": {
     "message": "$count$ lede",
     "description": "Shown below the group name when selecting a group to invite a contact to"
@@ -1881,15 +1889,23 @@
   },
   "timestampFormat_M": {
     "message": "D MMM",
-    "description": "Timestamp format string for displaying month and day (but not the year) of a date within the current year, ex: use 'MMM D' for 'Aug 8', or 'D MMM' for '8 Aug'."
+    "description": "(deleted 01/25/2023) Timestamp format string for displaying month and day (but not the year) of a date within the current year, ex: use 'MMM D' for 'Aug 8', or 'D MMM' for '8 Aug'."
+  },
+  "timestampFormat__long--today": {
+    "message": "Vandag $time$",
+    "description": "Timestamp format string for displaying \"Today\" and the time"
+  },
+  "timestampFormat__long--yesterday": {
+    "message": "Gister $time$",
+    "description": "Timestamp format string for displaying \"Yesterday\" and the time"
   },
   "timestampFormat__long__today": {
     "message": "[Vandag] LT",
-    "description": "Timestamp format string for displaying \"Today\" and the time"
+    "description": "(deleted 01/25/2023) Timestamp format string for displaying \"Today\" and the time"
   },
   "timestampFormat__long__yesterday": {
     "message": "[Gister] LT",
-    "description": "Timestamp format string for displaying \"Yesterday\" and the time"
+    "description": "(deleted 01/25/2023) Timestamp format string for displaying \"Yesterday\" and the time"
   },
   "messageBodyTooLong": {
     "message": "Die boodskapteks is te lank.",
@@ -2181,7 +2197,7 @@
     "message": "Herkoppel"
   },
   "autoUpdateNewVersionTitle": {
-    "message": "Bywerking nie beskikbaar nie."
+    "message": "Update Available"
   },
   "autoUpdateRetry": {
     "message": "Probeer weer bywerking"
@@ -2580,6 +2596,18 @@
     "message": "Onlangs gebruikte plakkers sal hier verskyn.",
     "description": "Shown in the sticker picker when there are no recent stickers to show."
   },
+  "icu:stickers__StickerPicker__recent": {
+    "messageformat": "Onlangs",
+    "description": "Title for all of the recent stickers"
+  },
+  "icu:stickers__StickerPicker__featured": {
+    "messageformat": "Beskikbaar",
+    "description": "Title for featured stickers"
+  },
+  "icu:stickers__StickerPicker__analog-time": {
+    "messageformat": "Analoogtyd",
+    "description": "aria-label for the analog time sticker"
+  },
   "stickers--StickerPreview--Title": {
     "message": "Plakkerpakket",
     "description": "The title that appears in the sticker pack preview modal."
@@ -2777,7 +2805,7 @@
     "description": "Shown in the shortcuts guide"
   },
   "Keyboard--toggle-reaction-picker": {
-    "message": "Wissel emoji-reaksiekieser vir geselekteerde boodskap",
+    "message": "Skakel emoji-reaksiekieser vir geselekteerde boodskap aan of af",
     "description": "Shown in the shortcuts guide"
   },
   "Keyboard--save-attachment": {
@@ -2947,6 +2975,18 @@
   "conversationMarkedUnread": {
     "message": "Gesprek as ongelees gemerk",
     "description": "A toast that shows up when user marks a conversation as unread"
+  },
+  "icu:AuthArtCreator--dialog--message": {
+    "messageformat": "Wil jy die Signal-plakkerpakket-skepper oopmaak?",
+    "description": "A body of the dialog that is presented when user tries to open Signal Sticker Pack Creator from a link"
+  },
+  "icu:AuthArtCreator--dialog--confirm": {
+    "messageformat": "Bevestig",
+    "description": "A buttle title for confirming Signal Sticker Pack Creator dialog"
+  },
+  "icu:AuthArtCreator--dialog--dismiss": {
+    "messageformat": "Wys weg",
+    "description": "A buttle title for dismissing Signal Sticker Pack Creator dialog"
   },
   "StickerCreator--title": {
     "message": "Plakkerpakket-skepper",
@@ -3146,6 +3186,10 @@
   },
   "StickerCreator--Authentication--error": {
     "message": "Stel Signal op u foon en tafelblad in om die Plakkerpakket-skepper te gebruik",
+    "description": "The error message which appears when the user has not linked their account and attempts to use the Sticker Creator"
+  },
+  "icu:ArtCreator--Authentication--error": {
+    "messageformat": "Stel Signal op jou foon en tafelblad in om die Plakkerpakket-skepper te gebruik",
     "description": "The error message which appears when the user has not linked their account and attempts to use the Sticker Creator"
   },
   "Reactions--remove": {
@@ -4854,11 +4898,11 @@
   },
   "TimelineDateHeader--date-in-last-6-months": {
     "message": "ddd, MMM D",
-    "description": "Moment.js format for date headers in the message timeline, for dates <6 months old. See https://momentjs.com/docs/#/displaying/format/."
+    "description": "(deleted 01/25/2023) Moment.js format for date headers in the message timeline, for dates <6 months old. See https://momentjs.com/docs/#/displaying/format/."
   },
   "TimelineDateHeader--date-older-than-6-months": {
     "message": "D MMM, YYYY",
-    "description": "Moment.js format for date headers in the message timeline, for dates >=6 months old. See https://momentjs.com/docs/#/displaying/format/."
+    "description": "(deleted 01/25/2023) Moment.js format for date headers in the message timeline, for dates >=6 months old. See https://momentjs.com/docs/#/displaying/format/."
   },
   "MessageRequestWarning__learn-more": {
     "message": "Vind meer uit",
@@ -5430,23 +5474,75 @@
   },
   "Preferences__who-can--title": {
     "message": "Wie kan…",
-    "description": "Title for the 'who can do X' setting"
+    "description": "(deleted 2022/02/14) Title for the 'who can do X' setting"
   },
   "Preferences__privacy--description": {
     "message": "Maak die Signal-toepassing op jou mobiele toestel oop en gaan na Instellings > Privaatheid om hierdie instellings te verander",
-    "description": "Description for the 'who can do X' setting"
+    "description": "(deleted 2022/02/14) Description for the 'who can do X' setting"
   },
   "Preferences__who-can--everybody": {
     "message": "Almal",
-    "description": "Option for who can see my X select"
+    "description": "(deleted 2022/02/14) Option for who can see my X select"
   },
   "Preferences__who-can--contacts": {
     "message": "My kontakte",
-    "description": "Option for who can see my X select"
+    "description": "(deleted 2022/02/14) Option for who can see my X select"
   },
   "Preferences__who-can--nobody": {
     "message": "Niemand",
-    "description": "Option for who can see my X select"
+    "description": "(deleted 2022/02/14) Option for who can see my X select"
+  },
+  "icu:Preferences__pnp__row--title": {
+    "messageformat": "Telefoonnommer",
+    "description": "Title of Phone Number row in Privacy section of Preferences window"
+  },
+  "icu:Preferences__pnp__row--body": {
+    "messageformat": "Kies wie jou telefoonnommer kan sien en wie jou daarmee op Signal kan kontak.",
+    "description": "Body of Phone Number row in Privacy section of Preferences window"
+  },
+  "icu:Preferences__pnp__sharing--title": {
+    "messageformat": "Wie my nommer kan sien",
+    "description": "Title for the phone number sharing setting row"
+  },
+  "icu:Preferences__pnp__sharing--description--everyone": {
+    "messageformat": "Jou telefoonnommer sal sigbaar wees vir mense en groepe aan wie jy boodskappe stuur. Mense wat jou nommer in hulle telefoonkontakte het, sal dit ook in Signal kan sien.",
+    "description": "Description for the phone number sharing setting row when the value is Everyone"
+  },
+  "icu:Preferences__pnp__sharing--description--nobody": {
+    "messageformat": "Niemand sal jou telefoonnommer in Signal kan sien nie.",
+    "description": "Description for the phone number sharing setting row when the value is Nobody"
+  },
+  "icu:Preferences__pnp--page-title": {
+    "messageformat": "Telefoonnommer",
+    "description": "Title of the page in Phone Number Privacy settings"
+  },
+  "icu:Preferences__pnp__sharing__everyone": {
+    "messageformat": "Enigiemand",
+    "description": "Option for sharing phone number with everyone"
+  },
+  "icu:Preferences__pnp__sharing__nobody": {
+    "messageformat": "Niemand",
+    "description": "Option for sharing phone number with nobody"
+  },
+  "icu:Preferences__pnp__discoverability--title": {
+    "messageformat": "Wie my volgens my nommer kan vind",
+    "description": "Title for the phone number discoverability setting row"
+  },
+  "icu:Preferences__pnp__discoverability--description--everyone": {
+    "messageformat": "Enigiemand wat jou telefoonnommer in hulle kontakte het, sal jou as 'n kontak in Signal sien. Ander sal jou op jou telefoonnommer kan bereik wanneer hulle 'n nuwe klets of groep begin.",
+    "description": "Description for the phone number discoverability setting row wth the value is everyone"
+  },
+  "icu:Preferences__pnp__discoverability--description--nobody": {
+    "messageformat": "Niemand op Signal sal jou met jou telefoonnommer kan bereik nie.",
+    "description": "Description for the phone number discoverability setting row wth the value is nobody"
+  },
+  "icu:Preferences__pnp__discoverability__everyone": {
+    "messageformat": "Enigiemand",
+    "description": "Option for letting everyone discover you by phone number"
+  },
+  "icu:Preferences__pnp__discoverability__nobody": {
+    "messageformat": "Niemand",
+    "description": "Option for letting nobody discover you by phone number"
   },
   "Preferences--messaging": {
     "message": "Boodskappe",
@@ -5504,6 +5600,14 @@
     "message": "Bywerking na weergawe $version$ is beskikbaar",
     "description": "Tooltip for new update available"
   },
+  "icu:DialogUpdate__downloading": {
+    "messageformat": "Downloading Update...",
+    "description": "The title of update dialog when update download is in progress."
+  },
+  "icu:DialogUpdate__downloaded": {
+    "messageformat": "Update Downloaded",
+    "description": "The title of update dialog when update download is completed."
+  },
   "NSIS__retry-dialog--first-line": {
     "message": "Signal kan nie toegemaak word nie.",
     "description": "First line of the dialog displayed when Windows installer can't close application automatically and needs user intervention to complete the installation."
@@ -5551,6 +5655,10 @@
   "CustomizingPreferredReactions__had-save-error": {
     "message": "Jou instellings kon nie gestoor word nie. Probeer asb. weer.",
     "description": "Shown if there is an error when saving your preferred reaction settings. Should be very rare to see this message."
+  },
+  "icu:MediaEditor__clock-more-styles": {
+    "messageformat": "Meer style",
+    "description": "Action button for switching up the clock styles"
   },
   "MediaEditor__control--draw": {
     "message": "Skets",
@@ -6246,11 +6354,19 @@
   },
   "StoryCreator__error--video-too-long": {
     "message": "Kan nie video by storie plaas nie, want dit is te lank",
-    "description": "Error string for when a video post to story fails"
+    "description": "(deleted 02/22/2023) Error string for when a video post to story fails"
   },
   "StoryCreator__error--video-unsupported": {
     "message": "Kan nie video by storie plaas nie, want dit is in 'n ongesteunde lêerformaat",
     "description": "Error string for when a video post to story fails"
+  },
+  "icu:StoryCreator__error--video-too-long": {
+    "messageformat": "{maxDurationInSec, plural, one {Kan nie video in storie plaas nie, want dit is langer as 1 sekonde.} other {Kan nie video in storie plaas nie, want dit is langer as {maxDurationInSec,number} sekondes.}}",
+    "description": "Error string for when a video post to story fails because video's duration is too long"
+  },
+  "icu:StoryCreator__error--video-too-big": {
+    "messageformat": "Kan nie video in storie plaas nie, want dit is langer as {limit}{units}.",
+    "description": "Error string for when a video post to story fails because video's file size is too big"
   },
   "StoryCreator__error--video-error": {
     "message": "Kon nie video oplaai nie.",
@@ -6345,7 +6461,7 @@
     "description": "Label for when a person reacts to a story"
   },
   "Quote__story-reaction--single": {
-    "message": "Het op die storie gereageer",
+    "message": "Het op 'n storie gereageer",
     "description": "Used whenever we can't find a user's first name"
   },
   "Quote__story-reaction-notification--incoming": {
@@ -6401,7 +6517,7 @@
     "description": "Content of the second row of username onboarding modal"
   },
   "icu:UsernameOnboardingModalBody__row__lock": {
-    "messageformat": "Skakel telefoonnommer-ontdekking af onder Instellings > Telefoonnommer > Wie kan my nommer vind, om jou gebruikersnaam te gebruik as die primêre manier waarop ander jou kan kontak.",
+    "messageformat": "Skakel telefoonnommer-ontdekking af onder Instellings > Telefoonnommer > Wie kan my nommer vind, om jou gebruikersnaam te gebruik as die primêre manier waarop andere jou kan kontak.",
     "description": "Content of the third row of username onboarding modal"
   },
   "icu:UsernameOnboardingModalBody__learn-more": {
@@ -6456,40 +6572,24 @@
     "message": "Klein veranderings, foutregstellings en prestasieverbeterings. Dankie dat jy Signal gebruik!",
     "description": "Release notes for releases that only include bug fixes"
   },
-  "WhatsNew__v5.63--0": {
-    "message": "Hard aan die werk om foute reg te stel en ander prestasieverbeterings aan te bring om die toepassing vir jou glad te laat werk.",
-    "description": "Release notes for v5.63"
+  "icu:WhatsNew__v6.10--0": {
+    "messageformat": "Klik op enige foto of video en gebruik die nuwe Vorentoe- en Agtertoe-knoppies in die mediakyker om 'n nostalgiese visuele toer te onderneem.",
+    "description": "Release notes for v6.10"
   },
-  "WhatsNew__v5.63--beta.2": {
-    "message": "Begin om ons nuwe stories-kenmerk te gebruik en te toets. Jy kan die kenmerk saam met ander beta-toetsers gebruik en ons laat weet hoe dit werk.",
-    "description": "Release notes for v5.63"
+  "icu:WhatsNew__v6.10--1": {
+    "messageformat": "Stemboodskappe word nou as konsepte gestoor as jy na 'n ander klets oorskakel terwyl 'n opname aan die gang is.",
+    "description": "Release notes for v6.10"
   },
-  "WhatsNew__v6.0": {
-    "message": "Daar is nou Stories in Signal! Deel verdwynende teks, beelde en video-opdaterings met uitgesoekte vriende of groepe wat outomaties ná 24 uur verdwyn. Vir almal wat daarvan hou om stories te deel, hier is 'n manier om dit privaat te doen en sonder om enige advertensies te sien. As jy nie stories wil sien of deel nie, kan jy dit alles in jou Instellings > Privaatheid afskakel.",
-    "description": "Release notes for v6.0"
+  "icu:WhatsNew__v6.10--2": {
+    "messageformat": "Die stuur van 'n plakker veroorsaak nie meer dat 'n konsepteks uitgevee word nie. Dankie, {lamemakes}!",
+    "description": "Release notes for v6.10"
   },
-  "WhatsNew__v6.1--1": {
-    "message": "Wanneer jy 'n groepoproep vir klein groepe (tot 16 mense) begin, kan jy kies om 'n luitoon as kennisgewing te stuur. Groeplede sal 'n luitoon hoor as hulle op iOS-beta is, of Desktop of Android gebruik.",
-    "description": "Release notes for v6.1"
+  "icu:WhatsNew__v6.10--3": {
+    "messageformat": "Ons bedank ook graag vir {norstbox}, wat die gespreksoekbalk-ikone se belyning reggestel het.",
+    "description": "Release notes for v6.10"
   },
-  "icu:WhatsNew__v6.3--0": {
-    "messageformat": "Dubbelklik op enige boodskapry in 'n klets om 'n aangehaalde antwoord te begin. Dis soos 'n kortpad vir nuwe gedagtes oor ou idees. Dankie aan {whynothugo} en die Signal-gemeenskap vir die implementering van hierdie kenmerk en die verskaffing van terugvoer.",
-    "description": "Release notes for v6.3"
-  },
-  "icu:WhatsNew__v6.3--1": {
-    "messageformat": "Nou is dit makliker om buite 'n beeld te klik om van daardie galerybeeld ontslae te raak sonder dat dit inzoem. Soms wou jy die beeld net toemaak, nie opblaas nie. Dankie aan {jojomatik} vir hierdie regstelling!",
-    "description": "Release notes for v6.3"
-  },
-  "icu:WhatsNew__v6.5--0": {
-    "messageformat": "Versnel jou responstyd. Nou kan jy vinniger reageer deur op enige emoji te klik wanneer jy op 'n storie antwoord.",
-    "description": "Release notes for v6.5"
-  },
-  "icu:WhatsNew__v6.5--1": {
-    "messageformat": "Dit is nou moontlik om deur jou boodskapgeskiedenis vir individuele karakters in Chinees en Japannees te soek.",
-    "description": "Release notes for v6.5"
-  },
-  "icu:WhatsNew__v6.6--0": {
-    "messageformat": "Help ons om verskeie betroubaarheids- en werkverrigtingsverbeterings vir stem- en video-oproepe te toets. Hierdie beta-vrystelling bevat ook 'n paar foutregstellings en 'n paar klein gebruikerskoppelvlak-bywerkings (wees op die uitkyk vir die nuwe skakelvoorskou-verbeterings!). Dankie dat jy 'n beta-toetser is; kontak ons asseblief op die gemeenskapsforum as jy enige foute opmerk.",
-    "description": "Release notes for v6.6"
+  "icu:WhatsNew__v6.11--0": {
+    "messageformat": "Start talking to yourself even faster with a new icon that makes the “Note to Self” chat easier to find. Thanks to {hackerbirds} on GitHub for their contribution.",
+    "description": "Release notes for v6.11"
   }
 }

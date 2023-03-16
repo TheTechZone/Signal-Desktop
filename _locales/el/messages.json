@@ -52,6 +52,14 @@
     "message": "Προσθήκη $contact$…",
     "description": "Shown in toast while a user is being added to a group"
   },
+  "icu:RecordingComposer__cancel": {
+    "messageformat": "Ακύρωση",
+    "description": "Label of cancel button on voice note recording UI"
+  },
+  "icu:RecordingComposer__send": {
+    "messageformat": "Αποστολή",
+    "description": "Label of send button on voice note recording UI"
+  },
   "GroupListItem__message-default": {
     "message": "$count$ μέλη",
     "description": "Shown below the group name when selecting a group to invite a contact to"
@@ -1251,11 +1259,11 @@
     "description": "Shown on explainer dialog available from delivery issue timeline events"
   },
   "DeliveryIssue--summary": {
-    "message": "Κάποιο μήνυμα, αντίδραση, αποδεικτικό ανάγνωσης ή πολυμέσο από τον/την $sender$ δεν μπόρεσε να σου παραδοθεί. Προσπάθησε να στο στείλει σε σένα απ' ευθείας ή σε κάποια ομάδα.",
+    "message": "Δεν ήταν δυνατή η παράδοση μηνύματος, αντίδρασης, αποδεικτικού ανάγνωσης ή πολυμέσου από τον χρήστη $sender$. Προσπάθησε να στο στείλει σε σένα απευθείας ή σε κάποια ομάδα.",
     "description": "Shown on explainer dialog available from delivery issue timeline events in 1:1 conversations"
   },
   "DeliveryIssue--summary--group": {
-    "message": "Κάποιο μήνυμα, αυτοκόλλητο, αντίδραση, αποδεικτικό ανάγνωσης ή πολυμέσο από τον/την $sender$ σε αυτή τη συνομιλία δεν μπόρεσε να σου παραδοθεί.",
+    "message": "Δεν ήταν δυνατή η παράδοση μηνύματος, αυτοκόλλητου, αντίδρασης, αποδεικτικού ανάγνωσης ή πολυμέσου από τον χρήστη $sender$ σε αυτή τη συνομιλία.",
     "description": "Shown on explainer dialog available from delivery issue timeline events in groups"
   },
   "ChangeNumber--notification": {
@@ -1778,10 +1786,10 @@
     "description": "Displayed in notifications for messages in a group"
   },
   "notificationReaction": {
-    "message": "Ο/Η $sender$ αντέδρασε με $emoji$ στο μήνυμά σας"
+    "message": "Ο/Η $sender$ αντέδρασε με $emoji$ στο μήνυμά σου"
   },
   "notificationReactionMessage": {
-    "message": "Ο/Η $sender$ αντέδρασε με $emoji$ στο: $message$"
+    "message": "Ο/Η $sender$ αντέδρασε με $emoji$ στη δημοσίευση: $message$"
   },
   "sendFailed": {
     "message": "Αποτυχία αποστολής",
@@ -1881,15 +1889,23 @@
   },
   "timestampFormat_M": {
     "message": "D MMM",
-    "description": "Timestamp format string for displaying month and day (but not the year) of a date within the current year, ex: use 'MMM D' for 'Aug 8', or 'D MMM' for '8 Aug'."
+    "description": "(deleted 01/25/2023) Timestamp format string for displaying month and day (but not the year) of a date within the current year, ex: use 'MMM D' for 'Aug 8', or 'D MMM' for '8 Aug'."
+  },
+  "timestampFormat__long--today": {
+    "message": "Σήμερα $time$",
+    "description": "Timestamp format string for displaying \"Today\" and the time"
+  },
+  "timestampFormat__long--yesterday": {
+    "message": "Χθες $time$",
+    "description": "Timestamp format string for displaying \"Yesterday\" and the time"
   },
   "timestampFormat__long__today": {
     "message": "[Σήμερα] LT",
-    "description": "Timestamp format string for displaying \"Today\" and the time"
+    "description": "(deleted 01/25/2023) Timestamp format string for displaying \"Today\" and the time"
   },
   "timestampFormat__long__yesterday": {
     "message": "[Χθες] LT",
-    "description": "Timestamp format string for displaying \"Yesterday\" and the time"
+    "description": "(deleted 01/25/2023) Timestamp format string for displaying \"Yesterday\" and the time"
   },
   "messageBodyTooLong": {
     "message": "Το περιεχόμενο του μηνύματος είναι πολύ μεγάλο.",
@@ -2181,7 +2197,7 @@
     "message": "Επανασύνδεση"
   },
   "autoUpdateNewVersionTitle": {
-    "message": "Διαθέσιμη αναβάθμιση"
+    "message": "Update Available"
   },
   "autoUpdateRetry": {
     "message": "Επανάληψη αναβάθμισης"
@@ -2580,6 +2596,18 @@
     "message": "Τα αυτοκόλλητα που χρησιμοποιήθηκαν πρόσφατα θα εμφανίζονται εδώ.",
     "description": "Shown in the sticker picker when there are no recent stickers to show."
   },
+  "icu:stickers__StickerPicker__recent": {
+    "messageformat": "Πρόσφατα",
+    "description": "Title for all of the recent stickers"
+  },
+  "icu:stickers__StickerPicker__featured": {
+    "messageformat": "Προτεινόμενα",
+    "description": "Title for featured stickers"
+  },
+  "icu:stickers__StickerPicker__analog-time": {
+    "messageformat": "Αναλογική ώρα",
+    "description": "aria-label for the analog time sticker"
+  },
   "stickers--StickerPreview--Title": {
     "message": "Πακέτο αυτοκολλήτων",
     "description": "The title that appears in the sticker pack preview modal."
@@ -2948,6 +2976,18 @@
     "message": "Η συνομιλία σημειώθηκε ως μη αναγνωσμένη",
     "description": "A toast that shows up when user marks a conversation as unread"
   },
+  "icu:AuthArtCreator--dialog--message": {
+    "messageformat": "Θέλεις να ανοίξεις τον δημιουργό πακέτου αυτοκόλλητων Signal;",
+    "description": "A body of the dialog that is presented when user tries to open Signal Sticker Pack Creator from a link"
+  },
+  "icu:AuthArtCreator--dialog--confirm": {
+    "messageformat": "Επιβεβαίωση",
+    "description": "A buttle title for confirming Signal Sticker Pack Creator dialog"
+  },
+  "icu:AuthArtCreator--dialog--dismiss": {
+    "messageformat": "Απόρριψη",
+    "description": "A buttle title for dismissing Signal Sticker Pack Creator dialog"
+  },
   "StickerCreator--title": {
     "message": "Δημιουργός πακέτου αυτοκολλήτων",
     "description": "The title of the Sticker Pack Creator window"
@@ -3148,12 +3188,16 @@
     "message": "Παρακαλώ ρύθμισε το Signal στο τηλέφωνο και τον υπολογιστή σου για να χρησιμοποιήσεις τον Δημιουργό πακέτων αυτοκολλήτων",
     "description": "The error message which appears when the user has not linked their account and attempts to use the Sticker Creator"
   },
+  "icu:ArtCreator--Authentication--error": {
+    "messageformat": "Ρύθμισε το Signal στο τηλέφωνο και τον υπολογιστή σου για να χρησιμοποιήσεις τον δημιουργό πακέτων με αυτοκόλλητα",
+    "description": "The error message which appears when the user has not linked their account and attempts to use the Sticker Creator"
+  },
   "Reactions--remove": {
     "message": "Αφαίρεση αντίδρασης",
     "describe": "Shown when you want to remove a reaction you've made"
   },
   "Reactions--error": {
-    "message": "Αποτυχία αποστολής αντίδρασης. Παρακαλώ ξαναδοκίμασε.",
+    "message": "Αποτυχία αποστολής αντίδρασης. Δοκίμασε πάλι.",
     "description": "Shown when a reaction fails to send"
   },
   "Reactions--more": {
@@ -4854,11 +4898,11 @@
   },
   "TimelineDateHeader--date-in-last-6-months": {
     "message": "ddd, D/M",
-    "description": "Moment.js format for date headers in the message timeline, for dates <6 months old. See https://momentjs.com/docs/#/displaying/format/."
+    "description": "(deleted 01/25/2023) Moment.js format for date headers in the message timeline, for dates <6 months old. See https://momentjs.com/docs/#/displaying/format/."
   },
   "TimelineDateHeader--date-older-than-6-months": {
     "message": "D MMM, YYYY",
-    "description": "Moment.js format for date headers in the message timeline, for dates >=6 months old. See https://momentjs.com/docs/#/displaying/format/."
+    "description": "(deleted 01/25/2023) Moment.js format for date headers in the message timeline, for dates >=6 months old. See https://momentjs.com/docs/#/displaying/format/."
   },
   "MessageRequestWarning__learn-more": {
     "message": "Μάθε περισσότερα",
@@ -5430,23 +5474,75 @@
   },
   "Preferences__who-can--title": {
     "message": "Ποια άτομα μπορούν…",
-    "description": "Title for the 'who can do X' setting"
+    "description": "(deleted 2022/02/14) Title for the 'who can do X' setting"
   },
   "Preferences__privacy--description": {
     "message": "Για να αλλάξεις αυτές τις ρυθμίσεις, άνοιξε το Signal στο κινητό σου και πήγαινε στις Ρυθμίσεις > Ιδιωτικότητα",
-    "description": "Description for the 'who can do X' setting"
+    "description": "(deleted 2022/02/14) Description for the 'who can do X' setting"
   },
   "Preferences__who-can--everybody": {
     "message": "Όλοι",
-    "description": "Option for who can see my X select"
+    "description": "(deleted 2022/02/14) Option for who can see my X select"
   },
   "Preferences__who-can--contacts": {
     "message": "Οι επαφές μου",
-    "description": "Option for who can see my X select"
+    "description": "(deleted 2022/02/14) Option for who can see my X select"
   },
   "Preferences__who-can--nobody": {
     "message": "Κανένας",
-    "description": "Option for who can see my X select"
+    "description": "(deleted 2022/02/14) Option for who can see my X select"
+  },
+  "icu:Preferences__pnp__row--title": {
+    "messageformat": "Αριθμός τηλεφώνου",
+    "description": "Title of Phone Number row in Privacy section of Preferences window"
+  },
+  "icu:Preferences__pnp__row--body": {
+    "messageformat": "Επίλεξε ποια άτομα μπορούν να δουν τον αριθμό τηλεφώνου σου και ποια μπορούν να τον χρησιμοποιήσει για να επικοινωνήσουν μαζί σου στο Signal.",
+    "description": "Body of Phone Number row in Privacy section of Preferences window"
+  },
+  "icu:Preferences__pnp__sharing--title": {
+    "messageformat": "Ποιοι μπορούν να δουν τον αριθμό μου",
+    "description": "Title for the phone number sharing setting row"
+  },
+  "icu:Preferences__pnp__sharing--description--everyone": {
+    "messageformat": "Ο αριθμός τηλεφώνου σου θα είναι ορατός σε όλα τα άτομα και τις ομάδες που στέλνεις μηνύματα. Τα άτομα που έχουν τον αριθμό σου στις επαφές τους θα μπορούν επίσης να τον δουν στο Signal.",
+    "description": "Description for the phone number sharing setting row when the value is Everyone"
+  },
+  "icu:Preferences__pnp__sharing--description--nobody": {
+    "messageformat": "Κανένας δεν θα μπορεί να δει τον αριθμό τηλεφώνου σου στο Signal.",
+    "description": "Description for the phone number sharing setting row when the value is Nobody"
+  },
+  "icu:Preferences__pnp--page-title": {
+    "messageformat": "Αριθμός τηλεφώνου",
+    "description": "Title of the page in Phone Number Privacy settings"
+  },
+  "icu:Preferences__pnp__sharing__everyone": {
+    "messageformat": "Όλοι",
+    "description": "Option for sharing phone number with everyone"
+  },
+  "icu:Preferences__pnp__sharing__nobody": {
+    "messageformat": "Κανένας",
+    "description": "Option for sharing phone number with nobody"
+  },
+  "icu:Preferences__pnp__discoverability--title": {
+    "messageformat": "Ποιοι μπορούν να με βρουν με τον αριθμό μου",
+    "description": "Title for the phone number discoverability setting row"
+  },
+  "icu:Preferences__pnp__discoverability--description--everyone": {
+    "messageformat": "Όποιος έχει τον αριθμό τηλεφώνου σου στις επαφές του θα σε βλέπει ως επαφή στο Signal. Οι άλλοι θα μπορούν να επικοινωνήσουν μαζί σου με τον αριθμό τηλεφώνου σου όταν ξεκινήσουν μια νέα συνομιλία ή ομάδα.",
+    "description": "Description for the phone number discoverability setting row wth the value is everyone"
+  },
+  "icu:Preferences__pnp__discoverability--description--nobody": {
+    "messageformat": "Κανένα άτομο στο Signal δεν θα μπορεί να σε βρει με τον αριθμό τηλεφώνου σου.",
+    "description": "Description for the phone number discoverability setting row wth the value is nobody"
+  },
+  "icu:Preferences__pnp__discoverability__everyone": {
+    "messageformat": "Όλοι",
+    "description": "Option for letting everyone discover you by phone number"
+  },
+  "icu:Preferences__pnp__discoverability__nobody": {
+    "messageformat": "Κανένας",
+    "description": "Option for letting nobody discover you by phone number"
   },
   "Preferences--messaging": {
     "message": "Συνομιλίες",
@@ -5504,6 +5600,14 @@
     "message": "Αναβάθμιση στη διαθέσιμη έκδοση $version$",
     "description": "Tooltip for new update available"
   },
+  "icu:DialogUpdate__downloading": {
+    "messageformat": "Downloading Update...",
+    "description": "The title of update dialog when update download is in progress."
+  },
+  "icu:DialogUpdate__downloaded": {
+    "messageformat": "Update Downloaded",
+    "description": "The title of update dialog when update download is completed."
+  },
   "NSIS__retry-dialog--first-line": {
     "message": "Το Signal δεν μπορεί να κλείσει.",
     "description": "First line of the dialog displayed when Windows installer can't close application automatically and needs user intervention to complete the installation."
@@ -5551,6 +5655,10 @@
   "CustomizingPreferredReactions__had-save-error": {
     "message": "Υπήρξε κάποιο σφάλμα με την αποθήκευση των ρυθμίσεών σου. Παρακαλώ ξαναπροσπάθησε αργότερα.",
     "description": "Shown if there is an error when saving your preferred reaction settings. Should be very rare to see this message."
+  },
+  "icu:MediaEditor__clock-more-styles": {
+    "messageformat": "Περισσότερα στιλ",
+    "description": "Action button for switching up the clock styles"
   },
   "MediaEditor__control--draw": {
     "message": "Σχεδίαση",
@@ -6246,11 +6354,19 @@
   },
   "StoryCreator__error--video-too-long": {
     "message": "Δεν είναι δυνατή η δημοσίευση του βίντεο στην ιστορία, το βίντεο είναι πολύ μεγάλο",
-    "description": "Error string for when a video post to story fails"
+    "description": "(deleted 02/22/2023) Error string for when a video post to story fails"
   },
   "StoryCreator__error--video-unsupported": {
     "message": "Δεν είναι δυνατή η δημοσίευση του βίντεο στην ιστορία, η μορφή του δεν υποστηρίζεται",
     "description": "Error string for when a video post to story fails"
+  },
+  "icu:StoryCreator__error--video-too-long": {
+    "messageformat": "{maxDurationInSec, plural, one {Δεν είναι δυνατή η δημοσίευση του βίντεο στην ιστορία επειδή είναι μεγαλύτερο από 1 δευτερόλεπτο.} other {Δεν είναι δυνατή η δημοσίευση του βίντεο στην ιστορία επειδή είναι μεγαλύτερο από {maxDurationInSec,number} δευτερόλεπτα.}}",
+    "description": "Error string for when a video post to story fails because video's duration is too long"
+  },
+  "icu:StoryCreator__error--video-too-big": {
+    "messageformat": "Δεν είναι δυνατή η δημοσίευση του βίντεο στην ιστορία επειδή είναι μεγαλύτερο από {limit}{units}.",
+    "description": "Error string for when a video post to story fails because video's file size is too big"
   },
   "StoryCreator__error--video-error": {
     "message": "Αποτυχία φόρτωσης του βίντεο",
@@ -6401,7 +6517,7 @@
     "description": "Content of the second row of username onboarding modal"
   },
   "icu:UsernameOnboardingModalBody__row__lock": {
-    "messageformat": "Απενεργοποίησε την επιλογή της ανακάλυψης του αριθμού τηλεφώνου στις Ρυθμίσεις > Αριθμός τηλεφώνου > Ποιος μπορεί να βρει τον αριθμό μου, για να χρησιμοποιήσεις το όνομα χρήστη σου ως τον κύριο τρόπο επικοινωνίας με άλλους.",
+    "messageformat": "Απενεργοποίησε την επιλογή της ανακάλυψης του αριθμού τηλεφώνου στις Ρυθμίσεις > Απόρρητο > Αριθμός τηλεφώνου > Ποιοι χρήστες μπορούν να βρουν τον αριθμό μου, για να χρησιμοποιήσεις το όνομα χρήστη σου ως τον κύριο τρόπο επικοινωνίας με άλλους.",
     "description": "Content of the third row of username onboarding modal"
   },
   "icu:UsernameOnboardingModalBody__learn-more": {
@@ -6456,40 +6572,24 @@
     "message": "Μικρές τροποποιήσεις, επιδιορθώσεις σφαλμάτων και βελτιώσεις απόδοσης. Ευχαριστούμε που χρησιμοποιείς το Signal!",
     "description": "Release notes for releases that only include bug fixes"
   },
-  "WhatsNew__v5.63--0": {
-    "message": "Δουλεύουμε σκληρά για να την επιδιόρθωση σφαλμάτων και τη δημιουργία άλλων βελτιώσεων απόδοσης για να διατηρηθεί η ομαλή λειτουργία της εφαρμογής για εσάς.",
-    "description": "Release notes for v5.63"
+  "icu:WhatsNew__v6.10--0": {
+    "messageformat": "Κάνε κλικ σε οποιαδήποτε εικόνα ή βίντεο και χρησιμοποίησε τα νέα κουμπιά Εμπρός και Πίσω στην προβολή πολυμέσων για να κάνεις μια βόλτα στις αναμνήσεις σου.",
+    "description": "Release notes for v6.10"
   },
-  "WhatsNew__v5.63--beta.2": {
-    "message": "Ξεκίνα να χρησιμοποιείς και να δοκιμάζεις τη νέα λειτουργία ιστοριών. Μπορείς να χρησιμοποιήσεις αυτήν τη λειτουργία με άλλους δοκιμαστές beta και να μας ενημερώσεις για το πώς λειτουργεί.",
-    "description": "Release notes for v5.63"
+  "icu:WhatsNew__v6.10--1": {
+    "messageformat": "Τα φωνητικά μηνύματα αποθηκεύονται πλέον ως πρόχειρα εάν πας σε άλλη συνομιλία ενώ η εγγραφή βρίσκεται σε εξέλιξη.",
+    "description": "Release notes for v6.10"
   },
-  "WhatsNew__v6.0": {
-    "message": "Οι ιστορίες έφτασαν τώρα στο Signal! Μοιράσου κείμενα, εικόνες και ενημερώσεις βίντεο που εξαφανίζονται αυτόματα μετά από 24 ώρες με επιλεγμένους φίλους ή ομάδες. Για όλα τα άτομα που αγαπούν να μοιράζονται ιστορίες, ορίστε ένας τρόπος να το κάνουν ιδιωτικά και χωρίς διαφημίσεις. Εάν δεν θέλεις να βλέπεις ή να μοιράζεσαι ιστορίες, μπορείς να καταργήσεις τη συμμετοχή σου από όλα στις Προτιμήσεις > Ιδιωτικότητα.",
-    "description": "Release notes for v6.0"
+  "icu:WhatsNew__v6.10--2": {
+    "messageformat": "Η αποστολή αυτοκόλλητου δεν προκαλεί πλέον τη διαγραφή του πρόχειρου κειμένου. Ευχαριστώ, {lamemakes}!",
+    "description": "Release notes for v6.10"
   },
-  "WhatsNew__v6.1--1": {
-    "message": "Όταν ξεκινάς μια ομαδική κλήση για μικρές ομάδες (έως 16 άτομα), μπορείς να επιλέξεις να στείλεις μια ειδοποίηση κλήσης. Τα μέλη της ομάδας θα ακούσουν ένα κουδούνισμα εάν έχουν iOS beta ή χρησιμοποιούν σταθερό υπολογιστή ή λογισμικό Android.",
-    "description": "Release notes for v6.1"
+  "icu:WhatsNew__v6.10--3": {
+    "messageformat": "Θα θέλαμε επίσης να ευχαριστήσουμε τον χρήστη {norstbox} για την ευθυγράμμιση των εικονιδίων της γραμμής αναζήτησης της συζήτησης.",
+    "description": "Release notes for v6.10"
   },
-  "icu:WhatsNew__v6.3--0": {
-    "messageformat": "Κάνε διπλό κλικ σε οποιαδήποτε σειρά μηνυμάτων σε μια συνομιλία για να ξεκινήσεις μια απάντηση σε εισαγωγικά. Είναι σαν μια συντόμευση για νέες σκέψεις σχετικά με παλιές ιδέες. Ευχαριστούμε τον χρήστη {whynothugo} και την κοινότητα Signal για την εφαρμογή αυτής της δυνατότητας και την παροχή σχολίων.",
-    "description": "Release notes for v6.3"
-  },
-  "icu:WhatsNew__v6.3--1": {
-    "messageformat": "Τώρα είναι πιο εύκολο να κάνεις κλικ έξω από μια εικόνα για να απορρίψεις την προβολή της συλλογής χωρίς να κάνεις ζουμ. Μερικές φορές ήθελες απλώς να κλείσεις, και αντί αυτού τα πράγματα μεγάλωναν πολύ. Ευχαριστούμε τον χρήστη {jojomatik} για τη διόρθωση!",
-    "description": "Release notes for v6.3"
-  },
-  "icu:WhatsNew__v6.5--0": {
-    "messageformat": "Επιτάχυνε τον χρόνο απόκρισής σου. Τώρα μπορείς να αντιδράς πιο γρήγορα κάνοντας κλικ σε οποιοδήποτε emoji όταν απαντάς σε μια ιστορία.",
-    "description": "Release notes for v6.5"
-  },
-  "icu:WhatsNew__v6.5--1": {
-    "messageformat": "Πλέον μπορείς να κάνεις αναζήτηση στο ιστορικό μηνυμάτων σου για μεμονωμένους χαρακτήρες στα κινεζικά και τα ιαπωνικά.",
-    "description": "Release notes for v6.5"
-  },
-  "icu:WhatsNew__v6.6--0": {
-    "messageformat": "Βοήθησέ μας να δοκιμάσουμε αρκετές βελτιώσεις αξιοπιστίας και απόδοσης για φωνητικές κλήσεις και βιντεοκλήσεις. Αυτή η έκδοση beta περιλαμβάνει επίσης μερικές επιδιορθώσεις σφαλμάτων και μερικές μικρές ενημερώσεις στο περιβάλλον χρήστη (ανακάλυψε τις νέες βελτιώσεις προεπισκόπησης συνδέσμου!). Σε ευχαριστούμε που είσαι δοκιμαστής beta και επικοινώνησε μαζί μας στο φόρουμ της κοινότητας εάν εντοπίσεις σφάλματα.",
-    "description": "Release notes for v6.6"
+  "icu:WhatsNew__v6.11--0": {
+    "messageformat": "Start talking to yourself even faster with a new icon that makes the “Note to Self” chat easier to find. Thanks to {hackerbirds} on GitHub for their contribution.",
+    "description": "Release notes for v6.11"
   }
 }

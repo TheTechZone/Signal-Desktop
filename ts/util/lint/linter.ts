@@ -24,6 +24,8 @@ const excludedFilesRegexp = RegExp(
   [
     '^release/',
     '^preload.bundle.js(LICENSE.txt|map)?',
+    '^about.browser.bundle.js(LICENSE.txt|map)?',
+    '^about.preload.bundle.js(LICENSE.txt|map)?',
     '^storybook-static/',
 
     // Non-distributed files
@@ -60,7 +62,6 @@ const excludedFilesRegexp = RegExp(
     '^js/curve/',
     '^js/util_worker.js',
     '^libtextsecure/test/test.js',
-    '^sticker-creator/dist/bundle.js',
     '^test/test.js',
     '^ts/workers/heicConverter.bundle.js',
     '^ts/sql/mainWorker.bundle.js',
@@ -85,7 +86,6 @@ const excludedFilesRegexp = RegExp(
     '^node_modules/react/.+',
     '^node_modules/react-contextmenu/.+',
     '^node_modules/react-dom/.+',
-    '^node_modules/react-dropzone/.+',
     '^node_modules/react-hot-loader/.+',
     '^node_modules/react-icon-base/.+',
     '^node_modules/react-input-autosize/.+',
@@ -95,7 +95,6 @@ const excludedFilesRegexp = RegExp(
     '^node_modules/react-router/.+',
     '^node_modules/react-router-dom/.+',
     '^node_modules/react-select/.+',
-    '^node_modules/react-sortable-hoc/.+',
     '^node_modules/react-transition-group/.+',
     '^node_modules/react-virtualized/.+',
     '^node_modules/reactcss/.+',
@@ -174,7 +173,6 @@ const excludedFilesRegexp = RegExp(
     '^node_modules/express/.+',
     '^node_modules/fast-glob/.+',
     '^node_modules/file-entry-cache/.+',
-    '^node_modules/file-loader/.+',
     '^node_modules/file-system-cache/.+', // Currently only used in storybook
     '^node_modules/finalhandler/.+',
     '^node_modules/flat-cache/.+',

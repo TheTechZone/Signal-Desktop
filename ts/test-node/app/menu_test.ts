@@ -11,6 +11,7 @@ import { load as loadLocale } from '../../../app/locale';
 import type { MenuListType } from '../../types/menu';
 
 const forceUpdate = stub();
+const openArtCreator = stub();
 const openContactUs = stub();
 const openForums = stub();
 const openJoinTheBeta = stub();
@@ -22,7 +23,6 @@ const showAbout = stub();
 const showDebugLog = stub();
 const showKeyboardShortcuts = stub();
 const showSettings = stub();
-const showStickerCreator = stub();
 const showWindow = stub();
 
 const getExpectedEditMenu = (
@@ -120,7 +120,7 @@ const EXPECTED_MACOS: MenuListType = [
   {
     label: '&File',
     submenu: [
-      { label: 'Create/upload sticker pack', click: showStickerCreator },
+      { label: 'Create/upload sticker pack', click: openArtCreator },
       { type: 'separator' },
       { accelerator: 'CmdOrCtrl+W', label: 'Close Window', role: 'close' },
     ],
@@ -145,7 +145,7 @@ const EXPECTED_WINDOWS: MenuListType = [
   {
     label: '&File',
     submenu: [
-      { label: 'Create/upload sticker pack', click: showStickerCreator },
+      { label: 'Create/upload sticker pack', click: openArtCreator },
       {
         label: 'Preferences…',
         accelerator: 'CommandOrControl+,',
@@ -213,6 +213,7 @@ describe('createTemplate', () => {
 
   const actions = {
     forceUpdate,
+    openArtCreator,
     openContactUs,
     openForums,
     openJoinTheBeta,
@@ -224,7 +225,6 @@ describe('createTemplate', () => {
     showDebugLog,
     showKeyboardShortcuts,
     showSettings,
-    showStickerCreator,
     showWindow,
   };
 

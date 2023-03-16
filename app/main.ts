@@ -48,6 +48,7 @@ import { consoleLogger } from '../ts/util/consoleLogger';
 import type { ThemeSettingType } from '../ts/types/StorageUIKeys';
 import { ThemeType } from '../ts/types/Util';
 import * as Errors from '../ts/types/errors';
+import { resolveCanonicalLocales } from '../ts/util/resolveCanonicalLocales';
 
 import './startup_config';
 
@@ -417,6 +418,7 @@ async function prepareUrl(
     storageUrl: config.get<string>('storageUrl'),
     updatesUrl: config.get<string>('updatesUrl'),
     resourcesUrl: config.get<string>('resourcesUrl'),
+    artCreatorUrl: config.get<string>('artCreatorUrl'),
     cdnUrl0: config.get<ConfigType>('cdn').get<string>('0'),
     cdnUrl2: config.get<ConfigType>('cdn').get<string>('2'),
     certificateAuthority: config.get<string>('certificateAuthority'),
@@ -670,10 +672,20 @@ async function getTitleBarOverlay(): Promise<TitleBarOverlayOptions | false> {
 }
 
 async function safeLoadURL(window: BrowserWindow, url: string): Promise<void> {
+  let wasDestroyed = false;
+  const onDestroyed = () => {
+    wasDestroyed = true;
+  };
+
+  window.webContents.on('did-stop-loading', onDestroyed);
+  window.webContents.on('destroyed', onDestroyed);
   try {
     await window.loadURL(url);
   } catch (error) {
-    if (windowState.readyForShutdown() && error?.code === 'ERR_FAILED') {
+    if (
+      (wasDestroyed || windowState.readyForShutdown()) &&
+      error?.code === 'ERR_FAILED'
+    ) {
       getLogger().warn(
         'safeLoadURL: ignoring ERR_FAILED because we are shutting down',
         error
@@ -681,6 +693,14 @@ async function safeLoadURL(window: BrowserWindow, url: string): Promise<void> {
       return;
     }
     throw error;
+  } finally {
+    try {
+      window.webContents.removeListener('did-stop-loading', onDestroyed);
+      window.webContents.removeListener('destroyed', onDestroyed);
+    } catch {
+      // We already logged or thrown an error - don't bother with handling the
+      // error here.
+    }
   }
 }
 
@@ -991,6 +1011,11 @@ ipc.handle('database-ready', async () => {
   getLogger().info('sending `database-ready`');
 });
 
+ipc.handle('open-art-creator', (_event, { username, password }) => {
+  const baseUrl = config.get<string>('artCreatorUrl');
+  drop(shell.openExternal(`${baseUrl}/#auth=${username}:${password}`));
+});
+
 ipc.on('show-window', () => {
   showWindow();
 });
@@ -1228,7 +1253,7 @@ async function showAbout() {
       nodeIntegrationInWorker: false,
       sandbox: false,
       contextIsolation: true,
-      preload: join(__dirname, '../ts/windows/about/preload.js'),
+      preload: join(__dirname, '../about.preload.bundle.js'),
       nativeWindowOpen: true,
     },
   };
@@ -1317,11 +1342,10 @@ async function getIsLinked() {
   }
 }
 
-let stickerCreatorWindow: BrowserWindow | undefined;
-async function showStickerCreator() {
+async function openArtCreator() {
   if (!(await getIsLinked())) {
     const message = getResolvedMessagesLocale().i18n(
-      'StickerCreator--Authentication--error'
+      'icu:ArtCreator--Authentication--error'
     );
 
     await dialog.showMessageBox({
@@ -1332,68 +1356,9 @@ async function showStickerCreator() {
     return;
   }
 
-  if (stickerCreatorWindow) {
-    stickerCreatorWindow.show();
-    return;
+  if (mainWindow) {
+    mainWindow.webContents.send('open-art-creator');
   }
-
-  const { x = 0, y = 0 } = windowConfig || {};
-
-  const titleBarOverlay = await getTitleBarOverlay();
-
-  const options = {
-    x: x + 100,
-    y: y + 100,
-    width: 800,
-    minWidth: 800,
-    height: 650,
-    title: getResolvedMessagesLocale().i18n('signalDesktopStickerCreator'),
-    titleBarStyle: nonMainTitleBarStyle,
-    titleBarOverlay,
-    autoHideMenuBar: true,
-    backgroundColor: await getBackgroundColor(),
-    show: false,
-    webPreferences: {
-      ...defaultWebPrefs,
-      nodeIntegration: false,
-      nodeIntegrationInWorker: false,
-      sandbox: false,
-      contextIsolation: false,
-      preload: join(__dirname, '../sticker-creator/preload.js'),
-      nativeWindowOpen: true,
-      spellcheck: await getSpellCheckSetting(),
-    },
-  };
-
-  stickerCreatorWindow = new BrowserWindow(options);
-  setupSpellChecker(stickerCreatorWindow, getResolvedMessagesLocale());
-
-  handleCommonWindowEvents(stickerCreatorWindow, titleBarOverlay);
-
-  const appUrl = process.env.SIGNAL_ENABLE_HTTP
-    ? prepareUrl(
-        new URL('http://localhost:6380/sticker-creator/dist/index.html')
-      )
-    : prepareFileUrl([__dirname, '../sticker-creator/dist/index.html']);
-
-  stickerCreatorWindow.on('closed', () => {
-    stickerCreatorWindow = undefined;
-  });
-
-  stickerCreatorWindow.once('ready-to-show', () => {
-    if (!stickerCreatorWindow) {
-      return;
-    }
-
-    stickerCreatorWindow.show();
-
-    if (config.get<boolean>('openDevTools')) {
-      // Open the DevTools.
-      stickerCreatorWindow.webContents.openDevTools();
-    }
-  });
-
-  await safeLoadURL(stickerCreatorWindow, await appUrl);
 }
 
 let debugLogWindow: BrowserWindow | undefined;
@@ -1535,6 +1500,20 @@ const runSQLCorruptionHandler = async () => {
   await onDatabaseError(Errors.toLogFormat(error));
 };
 
+const runSQLReadonlyHandler = async () => {
+  // This is a glorified event handler. Normally, this promise never resolves,
+  // but if there is a corruption error triggered by any query that we run
+  // against the database - the promise will resolve and we will call
+  // `onDatabaseError`.
+  const error = await sql.whenReadonly();
+
+  getLogger().error(
+    `Detected readonly sql database in main process: ${error.message}`
+  );
+
+  throw error;
+};
+
 async function initializeSQL(
   userDataPath: string
 ): Promise<{ ok: true; error: undefined } | { ok: false; error: Error }> {
@@ -1581,6 +1560,7 @@ async function initializeSQL(
 
   // Only if we've initialized things successfully do we set up the corruption handler
   drop(runSQLCorruptionHandler());
+  drop(runSQLReadonlyHandler());
 
   return { ok: true, error: undefined };
 }
@@ -1629,6 +1609,11 @@ let sqlInitPromise:
 
 ipc.on('database-error', (_event: Electron.Event, error: string) => {
   drop(onDatabaseError(error));
+});
+
+ipc.on('database-readonly', (_event: Electron.Event, error: string) => {
+  // Just let global_errors.ts handle it
+  throw new Error(error);
 });
 
 function loadPreferredSystemLocales(): Array<string> {
@@ -1691,7 +1676,10 @@ app.on('ready', async () => {
   await setupCrashReports(getLogger);
 
   if (!resolvedTranslationsLocale) {
-    preferredSystemLocales = loadPreferredSystemLocales();
+    preferredSystemLocales = resolveCanonicalLocales(
+      loadPreferredSystemLocales()
+    );
+
     logger.info(
       `app.ready: preferred system locales: ${preferredSystemLocales.join(
         ', '
@@ -1950,6 +1938,7 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
 
     // actions
     forceUpdate,
+    openArtCreator,
     openContactUs,
     openForums,
     openJoinTheBeta,
@@ -1961,7 +1950,6 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
     showDebugLog: showDebugLogWindow,
     showKeyboardShortcuts,
     showSettings: showSettingsWindow,
-    showStickerCreator,
     showWindow,
 
     // overrides
@@ -2288,6 +2276,11 @@ ipc.on('locale-data', event => {
   event.returnValue = getResolvedMessagesLocale().messages;
 });
 
+ipc.on('getHasCustomTitleBar', event => {
+  // eslint-disable-next-line no-param-reassign
+  event.returnValue = OS.hasCustomTitleBar();
+});
+
 ipc.on('user-config-key', event => {
   // eslint-disable-next-line no-param-reassign
   event.returnValue = userConfig.get('key');
@@ -2335,6 +2328,14 @@ function handleSgnlHref(incomingHref: string) {
         ? Buffer.from(packKeyHex, 'hex').toString('base64')
         : '';
       mainWindow.webContents.send('show-sticker-pack', { packId, packKey });
+    } else if (command === 'art-auth') {
+      const token = args?.get('token');
+      const pubKeyBase64 = args?.get('pub_key');
+
+      mainWindow.webContents.send('authorize-art-creator', {
+        token,
+        pubKeyBase64,
+      });
     } else if (command === 'signal.group' && hash) {
       getLogger().info('Showing group from sgnl protocol link');
       mainWindow.webContents.send('show-group-via-link', { hash });
@@ -2536,6 +2537,8 @@ ipc.handle('getMenuOptions', async () => {
 ipc.handle('executeMenuAction', async (_event, action: MenuActionType) => {
   if (action === 'forceUpdate') {
     drop(forceUpdate());
+  } else if (action === 'openArtCreator') {
+    drop(openArtCreator());
   } else if (action === 'openContactUs') {
     openContactUs();
   } else if (action === 'openForums') {
@@ -2558,8 +2561,6 @@ ipc.handle('executeMenuAction', async (_event, action: MenuActionType) => {
     showKeyboardShortcuts();
   } else if (action === 'showSettings') {
     drop(showSettingsWindow());
-  } else if (action === 'showStickerCreator') {
-    drop(showStickerCreator());
   } else if (action === 'showWindow') {
     showWindow();
   } else {
