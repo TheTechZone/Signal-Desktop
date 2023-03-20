@@ -191,6 +191,7 @@ const {
 } = window.Signal.Data;
 
 const FIVE_MINUTES = MINUTE * 5;
+const FETCH_TIMEOUT = SECOND * 30;
 
 const JOB_REPORTING_THRESHOLD_MS = 25;
 const SEND_REPORTING_THRESHOLD_MS = 25;
@@ -1367,10 +1368,12 @@ export class ConversationModel extends window.Backbone
       e164,
       reason: 'ConversationModel.onNewMessage',
     });
-    const typingToken = `${source?.id}.${sourceDevice}`;
+    if (source) {
+      const typingToken = `${source.id}.${sourceDevice}`;
 
-    // Clear typing indicator for a given contact if we receive a message from them
-    this.clearContactTypingTimer(typingToken);
+      // Clear typing indicator for a given contact if we receive a message from them
+      this.clearContactTypingTimer(typingToken);
+    }
 
     // If it's a group story reply or a story message, we don't want to update
     // the last message or add new messages to redux.
@@ -1452,10 +1455,18 @@ export class ConversationModel extends window.Backbone
       resolvePromise = resolve;
     });
 
+    let timeout: NodeJS.Timeout;
     const finish = () => {
       resolvePromise();
+      clearTimeout(timeout);
       this.inProgressFetch = undefined;
     };
+    timeout = setTimeout(() => {
+      log.warn(
+        `setInProgressFetch(${this.idForLogging()}): Calling finish manually after timeout`
+      );
+      finish();
+    }, FETCH_TIMEOUT);
 
     return finish;
   }
@@ -2146,9 +2157,12 @@ export class ConversationModel extends window.Backbone
     return undefined;
   }
 
-  decrementMessageCount(): void {
+  decrementMessageCount(numberOfMessages = 1): void {
     this.set({
-      messageCount: Math.max((this.get('messageCount') || 0) - 1, 0),
+      messageCount: Math.max(
+        (this.get('messageCount') || 0) - numberOfMessages,
+        0
+      ),
     });
     window.Signal.Data.updateConversation(this.attributes);
   }
@@ -2170,10 +2184,16 @@ export class ConversationModel extends window.Backbone
     return undefined;
   }
 
-  decrementSentMessageCount(): void {
+  decrementSentMessageCount(numberOfMessages = 1): void {
     this.set({
-      messageCount: Math.max((this.get('messageCount') || 0) - 1, 0),
-      sentMessageCount: Math.max((this.get('sentMessageCount') || 0) - 1, 0),
+      messageCount: Math.max(
+        (this.get('messageCount') || 0) - numberOfMessages,
+        0
+      ),
+      sentMessageCount: Math.max(
+        (this.get('sentMessageCount') || 0) - numberOfMessages,
+        0
+      ),
     });
     window.Signal.Data.updateConversation(this.attributes);
   }
@@ -3252,7 +3272,8 @@ export class ConversationModel extends window.Backbone
           endedTime,
         } = callHistoryDetails;
         log.info(
-          `addCallHistory: Call ID: ${callId}, ` +
+          `addCallHistory: Conversation ID: ${this.id}, ` +
+            `Call ID: ${callId}, ` +
             'Direct, ' +
             `Incoming: ${wasIncoming}, ` +
             `Video: ${wasVideoCall}, ` +
@@ -3285,19 +3306,22 @@ export class ConversationModel extends window.Backbone
     // awaited it would block on this forever.
     drop(
       this.queueJob('addCallHistory', async () => {
-        const message = {
+        const message: MessageAttributesType = {
+          id: generateGuid(),
           conversationId: this.id,
           type: 'call-history',
           sent_at: timestamp,
+          timestamp,
           received_at:
             receivedAtCounter || window.Signal.Util.incrementMessageCounter(),
           received_at_ms: timestamp,
           readStatus: unread ? ReadStatus.Unread : ReadStatus.Read,
           seenStatus: unread ? SeenStatus.Unseen : SeenStatus.NotApplicable,
           callHistoryDetails: detailsToSave,
-          // TODO: DESKTOP-722
-        } as unknown as MessageAttributesType;
+        };
 
+        // Force save if we're adding a new call history message for a direct call
+        let forceSave = true;
         if (callHistoryDetails.callMode === CallMode.Direct) {
           const messageId =
             await window.Signal.Data.getCallHistoryMessageByCallId(
@@ -3306,19 +3330,24 @@ export class ConversationModel extends window.Backbone
             );
           if (messageId != null) {
             log.info(
-              `addCallHistory: Found existing call history message (Call ID ${callHistoryDetails.callId}, Message ID: ${messageId})`
+              `addCallHistory: Found existing call history message (Call ID: ${callHistoryDetails.callId}, Message ID: ${messageId})`
             );
             message.id = messageId;
+            // We don't want to force save if we're updating an existing message
+            forceSave = false;
           } else {
             log.info(
-              `addCallHistory: No existing call history message found (Call ID ${callHistoryDetails.callId})`
+              `addCallHistory: No existing call history message found (Call ID: ${callHistoryDetails.callId})`
             );
           }
         }
 
         const id = await window.Signal.Data.saveMessage(message, {
           ourUuid: window.textsecure.storage.user.getCheckedUuid().toString(),
+          forceSave,
         });
+
+        log.info(`addCallHistory: Saved call history message (ID: ${id})`);
 
         const model = window.MessageController.register(
           id,
@@ -5538,7 +5567,7 @@ export class ConversationModel extends window.Backbone
       return;
     }
 
-    const typingToken = `${senderId}.${senderDevice}`;
+    const typingToken = `${sender.id}.${senderDevice}`;
 
     this.contactTypingTimers = this.contactTypingTimers || {};
     const record = this.contactTypingTimers[typingToken];
