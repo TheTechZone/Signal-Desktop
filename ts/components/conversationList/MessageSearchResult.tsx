@@ -3,12 +3,13 @@
 
 import type { FunctionComponent, ReactNode } from 'react';
 import React, { useCallback } from 'react';
-import { escapeRegExp } from 'lodash';
+import { escapeRegExp, partition } from 'lodash';
 
 import { MessageBodyHighlight } from './MessageBodyHighlight';
 import { ContactName } from '../conversation/ContactName';
 
 import { assertDev } from '../../util/assert';
+import { BodyRange } from '../../types/BodyRange';
 import type { HydratedBodyRangesType } from '../../types/BodyRange';
 import type { LocalizerType, ThemeType } from '../../types/Util';
 import { BaseConversationListItem } from './BaseConversationListItem';
@@ -98,13 +99,17 @@ function getFilteredBodyRanges(
   const startOfSnippet = match ? match.index : 0;
   const endOfSnippet = startOfSnippet + snippet.length;
 
-  // Filters out the @mentions that are present inside the snippet
+  // We want only the ranges that include the snippet
   const filteredBodyRanges = bodyRanges.filter(bodyRange => {
     return (
       bodyRange.start + bodyRange.length > startOfSnippet &&
       bodyRange.start < endOfSnippet
     );
   });
+  const [filteredMentions, filteredNonMentions] = partition(
+    filteredBodyRanges,
+    BodyRange.isMention
+  );
 
   const snippetBodyRanges = [];
   const MENTIONS_REGEX = /\uFFFC/g;
@@ -115,7 +120,7 @@ function getFilteredBodyRanges(
   // Find the start position within the snippet so these can later be
   // encoded and rendered correctly.
   while (bodyRangeMatch) {
-    const bodyRange = filteredBodyRanges[i];
+    const bodyRange = filteredMentions[i];
 
     if (bodyRange) {
       snippetBodyRanges.push({
@@ -133,7 +138,7 @@ function getFilteredBodyRanges(
     i += 1;
   }
 
-  return snippetBodyRanges;
+  return snippetBodyRanges.concat(filteredNonMentions);
 }
 
 export const MessageSearchResult: FunctionComponent<PropsType> = React.memo(
