@@ -88,18 +88,22 @@ function getFilteredBodyRanges(
   const stripped = snippet
     .replace(/<<left>>/g, '')
     .replace(/<<right>>/g, '')
-    .replace(/^.../, '')
-    .replace(/...$/, '');
+    .replace(/^\.\.\./, '')
+    .replace(/\.\.\.$/, '');
   const rx = new RegExp(escapeRegExp(stripped));
   const match = rx.exec(body);
 
   assertDev(Boolean(match), `No match found for "${snippet}" inside "${body}"`);
 
-  const delta = match ? match.index + snippet.length : 0;
+  const startOfSnippet = match ? match.index : 0;
+  const endOfSnippet = startOfSnippet + snippet.length;
 
   // Filters out the @mentions that are present inside the snippet
   const filteredBodyRanges = bodyRanges.filter(bodyRange => {
-    return bodyRange.start < delta;
+    return (
+      bodyRange.start + bodyRange.length > startOfSnippet &&
+      bodyRange.start < endOfSnippet
+    );
   });
 
   const snippetBodyRanges = [];
