@@ -28,10 +28,11 @@ import {
   getConversationSelector,
 } from './conversations';
 
-import type { DisplayBodyRangeType } from '../../types/BodyRange';
+import type { HydratedBodyRangeType } from '../../types/BodyRange';
 import { BodyRange } from '../../types/BodyRange';
 import * as log from '../../logging/log';
 import { getOwn } from '../../util/getOwn';
+import { missingCaseError } from '../../util';
 
 export const getSearch = (state: StateType): SearchStateType => state.search;
 
@@ -186,17 +187,23 @@ export const getCachedSelectorForMessageSearchResult = createSelector(
           conversationId: message.conversationId,
           sentAt: message.sent_at,
           snippet: message.snippet || '',
-          bodyRanges: bodyRanges.map((range): DisplayBodyRangeType => {
-            if (!BodyRange.isMention(range)) {
+          bodyRanges: bodyRanges.map((range): HydratedBodyRangeType => {
+            // Hydrate user information on mention
+            if (BodyRange.isMention(range)) {
+              const conversation = conversationSelector(range.mentionUuid);
+
+              return {
+                ...range,
+                conversationID: conversation.id,
+                replacementText: conversation.title,
+              };
+            }
+
+            if (BodyRange.isFormatting(range)) {
               return range;
             }
-            const conversation = conversationSelector(range.mentionUuid);
 
-            return {
-              ...range,
-              conversationID: conversation.id,
-              replacementText: conversation.title,
-            };
+            throw missingCaseError(range);
           }),
           body: message.body || '',
 

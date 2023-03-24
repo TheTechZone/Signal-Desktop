@@ -282,7 +282,7 @@ export function processBodyRangesForSearchResult({
 }: {
   snippet: string;
   body: string;
-  bodyRanges: HydratedBodyRangesType;
+  bodyRanges: BodyRangesForDisplayType;
 }): {
   cleanedSnippet: string;
   bodyRanges: BodyRangesForDisplayType;
