@@ -293,8 +293,11 @@ export type ConversationAttributesType = {
   inbox_position?: number;
   isPinned?: boolean;
   lastMessageDeletedForEveryone?: boolean;
-  lastMessageStatus?: LastMessageStatus | null;
+  lastMessage?: string | null;
+  lastMessageBodyRanges?: ReadonlyArray<RawBodyRange>;
+  lastMessageEmoji?: string;
   lastMessageAuthor?: string | null;
+  lastMessageStatus?: LastMessageStatus | null;
   markedUnread?: boolean;
   messageCount?: number;
   messageCountBeforeMessageRequests?: number | null;
@@ -323,7 +326,6 @@ export type ConversationAttributesType = {
   draft?: string | null;
   hasPostedStory?: boolean;
   isArchived?: boolean;
-  lastMessage?: string | null;
   name?: string;
   systemGivenName?: string;
   systemFamilyName?: string;

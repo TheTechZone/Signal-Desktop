@@ -34,7 +34,16 @@
 
     // Note: Spoiler must be last to override any other formatting applied to the section
     &--spoiler {
-      ::after {
+      position: relative;
+
+      &::after {
+        content: ' ';
+        position: absolute;
+        display: block;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
         background-color: red;
       }
     }

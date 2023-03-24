@@ -55,7 +55,10 @@ import type {
   ConversationAttributesType,
   MessageAttributesType,
 } from '../../model-types.d';
-import type { DraftBodyRangeMention } from '../../types/BodyRange';
+import type {
+  DraftBodyRangeMention,
+  HydratedBodyRangesType,
+} from '../../types/BodyRange';
 import { CallMode } from '../../types/Calling';
 import type { MediaItemType } from '../../types/MediaItem';
 import type { UUIDStringType } from '../../types/UUID';
@@ -182,10 +185,11 @@ export type ConversationTypeType = ReadonlyDeep<
 
 export type LastMessageType = ReadonlyDeep<
   | {
+      deletedForEveryone: false;
+      author?: string;
+      bodyRanges?: HydratedBodyRangesType;
       status?: LastMessageStatus;
       text: string;
-      author?: string;
-      deletedForEveryone: false;
     }
   | { deletedForEveryone: true }
 >;

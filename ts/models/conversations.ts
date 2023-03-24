@@ -163,6 +163,8 @@ import { removePendingMember } from '../util/removePendingMember';
 import { isMemberPending } from '../util/isMemberPending';
 import { imageToBlurHash } from '../util/imageToBlurHash';
 import { ReceiptType } from '../types/Receipt';
+import { stripNewlinesForLeftPane } from '../util/stripNewlinesForLeftPane';
+import { findAndFormatContact } from '../util/findAndFormatContact';
 
 const EMPTY_ARRAY: Readonly<[]> = [];
 const EMPTY_GROUP_COLLISIONS: GroupNameCollisionsWithIdsByTitle = {};
@@ -3718,10 +3720,45 @@ export class ConversationModel extends window.Backbone
     if (!lastMessageText) {
       return undefined;
     }
+
+    const rawBodyRanges = this.get('lastMessageBodyRanges') || [];
+    const bodyRanges = rawBodyRanges.map(range => {
+      // Hydrate user information on mention
+      if (BodyRange.isMention(range)) {
+        const conversation = findAndFormatContact(range.mentionUuid);
+
+        return {
+          ...range,
+          conversationID: conversation.id,
+          replacementText: conversation.title,
+        };
+      }
+
+      if (BodyRange.isFormatting(range)) {
+        return range;
+      }
+
+      throw missingCaseError(range);
+    });
+
+    const rawText = stripNewlinesForLeftPane(lastMessageText);
+    const emoji = this.get('lastMessageEmoji');
+
+    // Note: this modification of last message text with emoji is not compatible with
+    //   bodyRanges. At the moment, emoji are only added to various notification types,
+    //   messages with just one attachment, etc.
+    const text = emoji
+      ? window.i18n('message--getNotificationText--text-with-emoji', {
+          text: rawText,
+          emoji,
+        })
+      : rawText;
+
     return {
-      status: dropNull(this.get('lastMessageStatus')),
-      text: lastMessageText,
       author: dropNull(this.get('lastMessageAuthor')),
+      bodyRanges,
+      status: dropNull(this.get('lastMessageStatus')),
+      text,
       deletedForEveryone: false,
     };
   });
@@ -4424,9 +4461,12 @@ export class ConversationModel extends window.Backbone
     }
     timestamp = timestamp || currentTimestamp;
 
+    const notificationData = previewMessage?.getNotificationData();
+
     this.set({
-      lastMessage:
-        (previewMessage ? previewMessage.getNotificationText() : '') || '',
+      lastMessage: notificationData?.text || '',
+      lastMessageBodyRanges: notificationData?.bodyRanges,
+      lastMessageEmoji: notificationData?.emoji,
       lastMessageAuthor: previewMessage?.getAuthorText(),
       lastMessageStatus:
         (previewMessage

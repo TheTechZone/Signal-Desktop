@@ -28,6 +28,7 @@ type Props = {
   messageText: string;
   bodyRanges: BodyRangesForDisplayType;
   direction: 'incoming' | 'outgoing' | undefined;
+  disableClickableMentions: boolean;
   disableLinks: boolean;
   emojiSizeClass: SizeClassType | undefined;
   onMentionTrigger: (conversationId: string) => void;
@@ -37,6 +38,7 @@ export function MessageTextRenderer({
   messageText,
   bodyRanges,
   direction,
+  disableClickableMentions,
   disableLinks,
   emojiSizeClass,
   onMentionTrigger,
@@ -51,6 +53,7 @@ export function MessageTextRenderer({
 
   const processor = createRangeProcessor({
     direction,
+    disableClickableMentions,
     emojiSizeClass,
     onMentionTrigger,
   });
@@ -60,10 +63,12 @@ export function MessageTextRenderer({
 
 function createRangeProcessor({
   direction,
+  disableClickableMentions,
   emojiSizeClass,
   onMentionTrigger,
 }: {
   direction: 'incoming' | 'outgoing' | undefined;
+  disableClickableMentions: boolean;
   emojiSizeClass: SizeClassType | undefined;
   onMentionTrigger: ((conversationId: string) => void) | undefined;
 }) {
@@ -76,6 +81,15 @@ function createRangeProcessor({
     name: string;
     key: string;
   }) {
+    if (disableClickableMentions) {
+      return (
+        <bdi>
+          @
+          <Emojify text={name} />
+        </bdi>
+      );
+    }
+
     return (
       <AtMention
         key={key}

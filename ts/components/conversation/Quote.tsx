@@ -11,11 +11,7 @@ import * as GoogleChrome from '../../util/GoogleChrome';
 
 import { MessageBody } from './MessageBody';
 import type { AttachmentType, ThumbnailType } from '../../types/Attachment';
-import type {
-  HydratedBodyRangeMention,
-  HydratedBodyRangesType,
-} from '../../types/BodyRange';
-import { BodyRange } from '../../types/BodyRange';
+import type { HydratedBodyRangesType } from '../../types/BodyRange';
 import type { LocalizerType } from '../../types/Util';
 import type {
   ConversationColorType,
@@ -24,7 +20,6 @@ import type {
 import { ContactName } from './ContactName';
 import { Emojify } from './Emojify';
 import { TextAttachment } from '../TextAttachment';
-import { getTextWithMentions } from '../../util/getTextWithMentions';
 import { getClassNamesFor } from '../../util/getClassNamesFor';
 import { getCustomColorStyle } from '../../util/getCustomColorStyle';
 import type { AnyPaymentEvent } from '../../types/Payment';
@@ -371,13 +366,6 @@ export class Quote extends React.Component<Props, State> {
     } = this.props;
 
     if (text && !isGiftBadge) {
-      const draftMentions = bodyRanges?.filter<HydratedBodyRangeMention>(
-        BodyRange.isMention
-      );
-      const quoteText = draftMentions
-        ? getTextWithMentions(draftMentions, text)
-        : text;
-
       return (
         <div
           dir="auto"
@@ -387,9 +375,11 @@ export class Quote extends React.Component<Props, State> {
           )}
         >
           <MessageBody
+            disableClickableMentions
             disableLinks
             disableJumbomoji
-            text={quoteText}
+            text={text}
+            bodyRanges={bodyRanges}
             i18n={i18n}
           />
         </div>

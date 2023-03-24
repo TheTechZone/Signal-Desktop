@@ -160,6 +160,7 @@ export const MessageSearchResult: FunctionComponent<PropsType> = React.memo(
         messageText={cleanedSnippet}
         bodyRanges={displayBodyRanges}
         direction={undefined}
+        disableClickableMentions
         disableLinks
         emojiSizeClass={undefined}
         onMentionTrigger={() => null}

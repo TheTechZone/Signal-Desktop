@@ -181,6 +181,7 @@ import {
 } from '../util/attachmentDownloadQueue';
 import { getTitleNoDefault, getNumber } from '../util/getTitle';
 import dataInterface from '../sql/Client';
+import type { RawBodyRange } from '../types/BodyRange';
 
 function isSameUuid(
   a: UUID | string | null | undefined,
@@ -482,7 +483,11 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
     return window.ConversationController.get(this.get('conversationId'));
   }
 
-  getNotificationData(): { emoji?: string; text: string } {
+  getNotificationData(): {
+    emoji?: string;
+    text: string;
+    bodyRanges?: ReadonlyArray<RawBodyRange>;
+  } {
     // eslint-disable-next-line prefer-destructuring
     const attributes: MessageAttributesType = this.attributes;
 
@@ -744,9 +749,13 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
           emoji: '🔈',
         };
       }
+
+      // Note: we can't combine emoji and bodyRanges at the moment
+      const bodyRanges = this.get('bodyRanges');
       return {
         text: body || window.i18n('message--getNotificationText--file'),
-        emoji: '📎',
+        emoji: bodyRanges?.length ? undefined : '📎',
+        bodyRanges,
       };
     }
 
@@ -841,7 +850,10 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
     }
 
     if (body) {
-      return { text: body };
+      return {
+        text: body,
+        bodyRanges: this.get('bodyRanges'),
+      };
     }
 
     return { text: '' };

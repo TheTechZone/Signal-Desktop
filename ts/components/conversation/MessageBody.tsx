@@ -18,6 +18,8 @@ export type Props = {
   author?: string;
   bodyRanges?: HydratedBodyRangesType;
   direction?: 'incoming' | 'outgoing';
+  /** If set, mentions will render as plain text */
+  disableClickableMentions?: boolean;
   /** If set, all emoji will be the same size. Otherwise, just one emoji will be large. */
   disableJumbomoji?: boolean;
   /** If set, links will be left alone instead of turned into clickable `<a>` tags. */
@@ -40,6 +42,7 @@ export function MessageBody({
   author,
   bodyRanges,
   direction,
+  disableClickableMentions,
   disableJumbomoji,
   disableLinks,
   i18n,
@@ -104,6 +107,7 @@ export function MessageBody({
         messageText={textWithSuffix}
         bodyRanges={bodyRanges ?? []}
         direction={direction}
+        disableClickableMentions={disableClickableMentions ?? false}
         disableLinks={disableLinks ?? false}
         emojiSizeClass={sizeClass}
         onMentionTrigger={conversationId =>

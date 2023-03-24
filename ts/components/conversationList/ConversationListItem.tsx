@@ -19,6 +19,7 @@ import type { LocalizerType, ThemeType } from '../../types/Util';
 import type { ConversationType } from '../../state/ducks/conversations';
 import type { BadgeType } from '../../badges/types';
 import { isSignalConversation } from '../../util/isSignalConversation';
+import { stripNewlinesForLeftPane } from '../../util/stripNewlinesForLeftPane';
 
 const MESSAGE_STATUS_ICON_CLASS_NAME = `${MESSAGE_TEXT_CLASS_NAME}__status-icon`;
 
@@ -140,7 +141,8 @@ export const ConversationListItem: FunctionComponent<Props> = React.memo(
             {i18n('ConversationListItem--draft-prefix')}
           </span>
           <MessageBody
-            text={truncateMessageText(draftPreview)}
+            text={stripNewlinesForLeftPane(draftPreview)}
+            disableClickableMentions
             disableJumbomoji
             disableLinks
             i18n={i18n}
@@ -156,8 +158,10 @@ export const ConversationListItem: FunctionComponent<Props> = React.memo(
     } else if (lastMessage) {
       messageText = (
         <MessageBody
-          text={truncateMessageText(lastMessage.text)}
+          text={lastMessage.text}
+          bodyRanges={lastMessage.bodyRanges}
           author={type === 'group' ? lastMessage.author : undefined}
+          disableClickableMentions
           disableJumbomoji
           disableLinks
           i18n={i18n}
@@ -208,13 +212,3 @@ export const ConversationListItem: FunctionComponent<Props> = React.memo(
     );
   }
 );
-
-// This takes `unknown` because, sometimes, values from the database don't match our
-//   types. In the long term, we should fix that. In the short term, this smooths over the
-//   problem.
-function truncateMessageText(text: unknown): string {
-  if (typeof text !== 'string') {
-    return '';
-  }
-  return text.replace(/(?:\r?\n)+/g, ' ');
-}
