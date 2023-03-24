@@ -28,7 +28,7 @@ import {
   getConversationSelector,
 } from './conversations';
 
-import type { HydratedBodyRangeType } from '../../types/BodyRange';
+import type { DisplayBodyRangeType } from '../../types/BodyRange';
 import { BodyRange } from '../../types/BodyRange';
 import * as log from '../../logging/log';
 import { getOwn } from '../../util/getOwn';
@@ -186,17 +186,18 @@ export const getCachedSelectorForMessageSearchResult = createSelector(
           conversationId: message.conversationId,
           sentAt: message.sent_at,
           snippet: message.snippet || '',
-          bodyRanges: bodyRanges
-            .filter(BodyRange.isMention)
-            .map((mention): HydratedBodyRangeType => {
-              const conversation = conversationSelector(mention.mentionUuid);
+          bodyRanges: bodyRanges.map((range): DisplayBodyRangeType => {
+            if (!BodyRange.isMention(range)) {
+              return range;
+            }
+            const conversation = conversationSelector(range.mentionUuid);
 
-              return {
-                ...mention,
-                conversationID: conversation.id,
-                replacementText: conversation.title,
-              };
-            }),
+            return {
+              ...range,
+              conversationID: conversation.id,
+              replacementText: conversation.title,
+            };
+          }),
           body: message.body || '',
 
           isSelected: Boolean(

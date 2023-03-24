@@ -6,7 +6,7 @@ import React, { useCallback } from 'react';
 
 import { ContactName } from '../conversation/ContactName';
 
-import type { HydratedBodyRangesType } from '../../types/BodyRange';
+import type { BodyRangesForDisplayType } from '../../types/BodyRange';
 import { processBodyRangesForSearchResult } from '../../types/BodyRange';
 import type { LocalizerType, ThemeType } from '../../types/Util';
 import { BaseConversationListItem } from './BaseConversationListItem';
@@ -28,7 +28,7 @@ export type PropsDataType = {
 
   snippet: string;
   body: string;
-  bodyRanges: HydratedBodyRangesType;
+  bodyRanges: BodyRangesForDisplayType;
 
   from: Pick<
     ConversationType,
