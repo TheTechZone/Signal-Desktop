@@ -25,5 +25,18 @@
         text-decoration: none;
       }
     }
+
+    // Note: this should only render in the left pane, not in message bubbles
+    &--keywordHighlight {
+      font-weight: 600;
+      // TODO: make the font a different, more saturated color as well?
+    }
+
+    // Note: Spoiler must be last to override any other formatting applied to the section
+    &--spoiler {
+      ::after {
+        background-color: red;
+      }
+    }
   }
 }

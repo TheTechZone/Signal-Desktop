@@ -518,9 +518,12 @@ class Message {
         bodyRange.length = range.length;
         if (BodyRange.isMention(range)) {
           bodyRange.mentionUuid = range.mentionUuid;
-        }
-        if (BodyRange.isFormatting(range)) {
+        } else if (BodyRange.isFormatting(range)) {
           bodyRange.style = range.style;
+        } else {
+          throw new Error(
+            'Message.toProto: Unexpected quote.bodyRange - neither Mention nor Formatting'
+          );
         }
         return bodyRange;
       });

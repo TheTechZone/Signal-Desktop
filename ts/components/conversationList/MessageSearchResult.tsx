@@ -3,14 +3,11 @@
 
 import type { FunctionComponent, ReactNode } from 'react';
 import React, { useCallback } from 'react';
-import { escapeRegExp, partition } from 'lodash';
 
-import { MessageBodyHighlight } from './MessageBodyHighlight';
 import { ContactName } from '../conversation/ContactName';
 
-import { assertDev } from '../../util/assert';
-import { BodyRange } from '../../types/BodyRange';
 import type { HydratedBodyRangesType } from '../../types/BodyRange';
+import { processBodyRangesForSearchResult } from '../../types/BodyRange';
 import type { LocalizerType, ThemeType } from '../../types/Util';
 import { BaseConversationListItem } from './BaseConversationListItem';
 import type {
@@ -19,6 +16,7 @@ import type {
 } from '../../state/ducks/conversations';
 import type { PreferredBadgeSelectorType } from '../../state/selectors/badges';
 import { Intl } from '../Intl';
+import { MessageTextRenderer } from '../conversation/MessageTextRenderer';
 
 export type PropsDataType = {
   isSelected?: boolean;
@@ -70,76 +68,6 @@ const renderPerson = (
   }>
 ): ReactNode =>
   person.isMe ? i18n('you') : <ContactName title={person.title} />;
-
-// This function exists because bodyRanges tells us the character position
-// where the at-mention starts at according to the full body text. The snippet
-// we get back is a portion of the text and we don't know where it starts. This
-// function will find the relevant bodyRanges that apply to the snippet and
-// then update the proper start position of each body range.
-function getFilteredBodyRanges(
-  snippet: string,
-  body: string,
-  bodyRanges: HydratedBodyRangesType
-): HydratedBodyRangesType {
-  if (!bodyRanges.length) {
-    return [];
-  }
-
-  // Find where the snippet starts in the full text
-  const stripped = snippet
-    .replace(/<<left>>/g, '')
-    .replace(/<<right>>/g, '')
-    .replace(/^\.\.\./, '')
-    .replace(/\.\.\.$/, '');
-  const rx = new RegExp(escapeRegExp(stripped));
-  const match = rx.exec(body);
-
-  assertDev(Boolean(match), `No match found for "${snippet}" inside "${body}"`);
-
-  const startOfSnippet = match ? match.index : 0;
-  const endOfSnippet = startOfSnippet + snippet.length;
-
-  // We want only the ranges that include the snippet
-  const filteredBodyRanges = bodyRanges.filter(bodyRange => {
-    return (
-      bodyRange.start + bodyRange.length > startOfSnippet &&
-      bodyRange.start < endOfSnippet
-    );
-  });
-  const [filteredMentions, filteredNonMentions] = partition(
-    filteredBodyRanges,
-    BodyRange.isMention
-  );
-
-  const snippetBodyRanges = [];
-  const MENTIONS_REGEX = /\uFFFC/g;
-
-  let bodyRangeMatch = MENTIONS_REGEX.exec(snippet);
-  let i = 0;
-
-  // Find the start position within the snippet so these can later be
-  // encoded and rendered correctly.
-  while (bodyRangeMatch) {
-    const bodyRange = filteredMentions[i];
-
-    if (bodyRange) {
-      snippetBodyRanges.push({
-        ...bodyRange,
-        start: bodyRangeMatch.index,
-      });
-    } else {
-      assertDev(
-        false,
-        `Body range does not exist? Count: ${i}, Length: ${filteredBodyRanges.length}`
-      );
-    }
-
-    bodyRangeMatch = MENTIONS_REGEX.exec(snippet);
-    i += 1;
-  }
-
-  return snippetBodyRanges.concat(filteredNonMentions);
-}
 
 export const MessageSearchResult: FunctionComponent<PropsType> = React.memo(
   function MessageSearchResult({
@@ -225,12 +153,16 @@ export const MessageSearchResult: FunctionComponent<PropsType> = React.memo(
       }
     }
 
-    const snippetBodyRanges = getFilteredBodyRanges(snippet, body, bodyRanges);
+    const { cleanedSnippet, bodyRanges: displayBodyRanges } =
+      processBodyRangesForSearchResult({ snippet, body, bodyRanges });
     const messageText = (
-      <MessageBodyHighlight
-        text={snippet}
-        bodyRanges={snippetBodyRanges}
-        i18n={i18n}
+      <MessageTextRenderer
+        messageText={cleanedSnippet}
+        bodyRanges={displayBodyRanges}
+        direction={undefined}
+        disableLinks
+        emojiSizeClass={undefined}
+        onMentionTrigger={() => null}
       />
     );
 

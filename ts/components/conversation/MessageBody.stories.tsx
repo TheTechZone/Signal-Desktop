@@ -3,8 +3,6 @@
 
 import * as React from 'react';
 
-import { boolean, text } from '@storybook/addon-knobs';
-
 import type { Props } from './MessageBody';
 import { MessageBody } from './MessageBody';
 import { setupI18n } from '../../util/setupI18n';
@@ -19,16 +17,13 @@ export default {
 
 const createProps = (overrideProps: Partial<Props> = {}): Props => ({
   bodyRanges: overrideProps.bodyRanges,
-  disableJumbomoji: boolean(
-    'disableJumbomoji',
-    overrideProps.disableJumbomoji || false
-  ),
-  disableLinks: boolean('disableLinks', overrideProps.disableLinks || false),
+  disableJumbomoji: overrideProps.disableJumbomoji || false,
+  disableLinks: overrideProps.disableLinks || false,
   direction: 'incoming',
   i18n,
-  text: text('text', overrideProps.text || ''),
+  text: overrideProps.text || '',
   textAttachment: overrideProps.textAttachment || {
-    pending: boolean('textPending', false),
+    pending: false,
   },
 });
 
@@ -247,7 +242,52 @@ export function FormattingBasic(): JSX.Element {
   return <MessageBody {...props} />;
 }
 
+export function FormattingNesting(): JSX.Element {
+  const props = createProps({
+    bodyRanges: [
+      {
+        start: 0,
+        length: 40,
+        style: BodyRange.Style.BOLD,
+      },
+      {
+        start: 0,
+        length: 111,
+        style: BodyRange.Style.ITALIC,
+      },
+      {
+        start: 40,
+        length: 60,
+        style: BodyRange.Style.STRIKETHROUGH,
+      },
+      {
+        start: 64,
+        length: 14,
+        style: BodyRange.Style.MONOSPACE,
+      },
+    ],
+    /* eslint-disable max-len */
+    //                                                                     m            m
+    //     b                                      bs                                                          s
+    //     i                                                                                                             i
+    /* eslint-enable max-len */
+    text: 'Italic Start and Bold Start ... Bold EndStrikethrough Start ... Monospace Pop! ... Strikethrough End Italic End',
+  });
+
+  return <MessageBody {...props} />;
+}
+
 export function FormattingComplex(): JSX.Element {
+  const text =
+    'Computational processes \uFFFC are abstract beings that inhabit computers. ' +
+    'As they evolve, processes manipulate other abstract things called data. ' +
+    'The evolution of a process is directed by a pattern of rules called a program. ' +
+    'People create programs to direct processes. In effect, we conjure the spirits of ' +
+    'the computer with our spells.\n\n' +
+    'link preceded by emoji: 🤖https://signal.org/\n\n' +
+    'link overlapping strikethrough: https://signal.org/ (up to "...//signal")\n\n' +
+    'strikethrough going through mention \uFFFC all the way';
+
   const props = createProps({
     bodyRanges: [
       // mention
@@ -276,30 +316,22 @@ export function FormattingComplex(): JSX.Element {
         length: 29,
         style: BodyRange.Style.STRIKETHROUGH,
       },
-      // strikethrough over metion
+      // strikethrough over mention
       {
         start: 465,
-        length: 49,
+        length: 31,
         style: BodyRange.Style.STRIKETHROUGH,
       },
       // mention 2
       {
-        start: 501,
+        start: 491,
         length: 1,
         mentionUuid: 'abc',
         conversationID: 'x',
         replacementText: '🤖 Hello',
       },
     ],
-    text:
-      'Computational processes \uFFFC are abstract beings that inhabit computers. ' +
-      'As they evolve, processes manipulate other abstract things called data. ' +
-      'The evolution of a process is directed by a pattern of rules called a program. ' +
-      'People create programs to direct processes. In effect, we conjure the spirits of ' +
-      'the computer with our spells.\n\n' +
-      'link preceded by emoji: 🤖https://signal.org/\n\n' +
-      'link overlapping strikethrough: https://signal.org/ (up to "...//signal")\n\n' +
-      'strikethrough going through mention \uFFFC all the way',
+    text,
   });
 
   return <MessageBody {...props} />;

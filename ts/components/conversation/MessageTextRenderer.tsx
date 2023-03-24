@@ -5,19 +5,28 @@ import React from 'react';
 import type { ReactNode } from 'react';
 import emojiRegex from 'emoji-regex';
 import { linkify, SUPPORTED_PROTOCOLS } from './Linkify';
-import type { HydratedBodyRangeType, RangeNode } from '../../types/BodyRange';
-import { BodyRange, insertRange } from '../../types/BodyRange';
+import type {
+  BodyRangesForDisplayType,
+  RangeNode,
+} from '../../types/BodyRange';
+import {
+  BodyRange,
+  DisplayStyle,
+  insertRange,
+  sortRanges,
+} from '../../types/BodyRange';
 import { AtMention } from './AtMention';
 import { isLinkSneaky } from '../../types/LinkPreview';
 import { Emojify } from './Emojify';
 import { AddNewLines } from './AddNewLines';
 import type { SizeClassType } from '../emoji/lib';
+import * as log from '../../logging/log';
 
 const EMOJI_REGEXP = emojiRegex();
 
 type Props = {
   messageText: string;
-  bodyRanges: ReadonlyArray<HydratedBodyRangeType>;
+  bodyRanges: BodyRangesForDisplayType;
   direction: 'incoming' | 'outgoing' | undefined;
   disableLinks: boolean;
   emojiSizeClass: SizeClassType | undefined;
@@ -29,22 +38,12 @@ export function MessageTextRenderer({
   bodyRanges,
   direction,
   disableLinks,
+  emojiSizeClass,
   onMentionTrigger,
 }: Props): JSX.Element {
   // get the ranges that cannot be split up first
   const links = disableLinks ? [] : extractLinks(messageText);
-
-  // put mentions last, so they are fully wrapped by other ranges
-  const sortedRanges = [...bodyRanges].sort((a, b) => {
-    if (BodyRange.isMention(a)) {
-      if (BodyRange.isMention(b)) {
-        return 0;
-      }
-      return 1;
-    }
-    return -1;
-  });
-
+  const sortedRanges = sortRanges([...bodyRanges]);
   const rangesTree = sortedRanges.reduce<ReadonlyArray<RangeNode>>(
     (acc, range) => insertRange(range, acc),
     links.map(b => ({ ...b, ranges: [] }))
@@ -52,6 +51,7 @@ export function MessageTextRenderer({
 
   const processor = createRangeProcessor({
     direction,
+    emojiSizeClass,
     onMentionTrigger,
   });
 
@@ -60,9 +60,11 @@ export function MessageTextRenderer({
 
 function createRangeProcessor({
   direction,
+  emojiSizeClass,
   onMentionTrigger,
 }: {
   direction: 'incoming' | 'outgoing' | undefined;
+  emojiSizeClass: SizeClassType | undefined;
   onMentionTrigger: ((conversationId: string) => void) | undefined;
 }) {
   function renderMention({
@@ -88,7 +90,7 @@ function createRangeProcessor({
         onKeyUp={e => {
           if (
             e.target === e.currentTarget &&
-            e.keyCode === 13 &&
+            e.key === 'Enter' &&
             onMentionTrigger
           ) {
             onMentionTrigger(conversationId);
@@ -99,15 +101,15 @@ function createRangeProcessor({
   }
 
   function renderLink({
-    url,
-    text,
     innerRanges,
     key,
+    text,
+    url,
   }: {
-    url: string;
-    text: string;
     innerRanges: ReadonlyArray<RangeNode>;
     key: string;
+    text: string;
+    url: string;
   }) {
     if (SUPPORTED_PROTOCOLS.test(url) && !isLinkSneaky(url)) {
       return (
@@ -116,7 +118,7 @@ function createRangeProcessor({
         </a>
       );
     }
-    return renderText({ text, key });
+    return renderText({ text, emojiSizeClass, key });
   }
 
   function renderFormatting({
@@ -174,8 +176,40 @@ function createRangeProcessor({
             {inner}
           </span>
         );
-      default:
+      default: {
+        const unexpected: never = style;
+        log.warn(`renderFormatting: unexpected style ${unexpected}`);
         return <span key={key}>{inner}</span>;
+      }
+    }
+  }
+  function renderDisplayOnly({
+    text,
+    displayStyle,
+    innerRanges,
+    key,
+  }: {
+    text: string;
+    displayStyle: DisplayStyle;
+    innerRanges: ReadonlyArray<RangeNode>;
+    key: string;
+  }) {
+    const inner = process(text, innerRanges);
+    switch (displayStyle) {
+      case DisplayStyle.SearchKeywordHighlight:
+        return (
+          <span
+            key={key}
+            className="MessageTextRenderer__formatting--keywordHighlight"
+          >
+            {inner}
+          </span>
+        );
+      default: {
+        const unexpected: never = displayStyle;
+        log.warn(`renderDisplayOnly: unexpected displayStyle ${unexpected}`);
+        return <span key={key}>{inner}</span>;
+      }
     }
   }
 
@@ -189,6 +223,7 @@ function createRangeProcessor({
       if (rangeNode.start > offset) {
         result.push(
           renderText({
+            emojiSizeClass,
             key: result.length.toString(),
             text: text.slice(offset, rangeNode.start),
           })
@@ -221,6 +256,19 @@ function createRangeProcessor({
           })
         );
       }
+      if (BodyRange.isDisplayOnly(rangeNode)) {
+        result.push(
+          renderDisplayOnly({
+            key: result.length.toString(),
+            text: text.slice(
+              rangeNode.start,
+              rangeNode.start + rangeNode.length
+            ),
+            displayStyle: rangeNode.displayStyle,
+            innerRanges: rangeNode.ranges,
+          })
+        );
+      }
       if (BodyRange.isMention(rangeNode)) {
         result.push(
           renderMention({
@@ -236,6 +284,7 @@ function createRangeProcessor({
     // collect any text after
     result.push(
       renderText({
+        emojiSizeClass,
         key: result.length.toString(),
         text: text.slice(offset, text.length),
       })
@@ -250,11 +299,20 @@ function createRangeProcessor({
 }
 
 /** Render text that does not contain body ranges or is in between body ranges */
-function renderText({ text, key }: { text: string; key: string }) {
+function renderText({
+  text,
+  emojiSizeClass,
+  key,
+}: {
+  text: string;
+  emojiSizeClass: SizeClassType | undefined;
+  key: string;
+}) {
   return (
     <Emojify
       key={key}
       text={text}
+      sizeClass={emojiSizeClass}
       renderNonEmoji={({ text: innerText, key: innerKey }) => (
         <AddNewLines key={innerKey} text={innerText} />
       )}
