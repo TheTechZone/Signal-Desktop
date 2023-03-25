@@ -711,6 +711,7 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
     }
 
     const body = (this.get('body') || '').trim();
+    const bodyRanges = this.get('bodyRanges') || [];
 
     if (attachments.length) {
       // This should never happen but we want to be extra-careful.
@@ -719,43 +720,46 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
 
       if (contentType === MIME.IMAGE_GIF || Attachment.isGIF(attachments)) {
         return {
-          text: body || window.i18n('message--getNotificationText--gif'),
+          bodyRanges,
           emoji: '🎡',
+          text: body || window.i18n('message--getNotificationText--gif'),
         };
       }
       if (Attachment.isImage(attachments)) {
         return {
-          text: body || window.i18n('message--getNotificationText--photo'),
+          bodyRanges,
           emoji: '📷',
+          text: body || window.i18n('message--getNotificationText--photo'),
         };
       }
       if (Attachment.isVideo(attachments)) {
         return {
-          text: body || window.i18n('message--getNotificationText--video'),
+          bodyRanges,
           emoji: '🎥',
+          text: body || window.i18n('message--getNotificationText--video'),
         };
       }
       if (Attachment.isVoiceMessage(attachment)) {
         return {
+          bodyRanges,
+          emoji: '🎤',
           text:
             body || window.i18n('message--getNotificationText--voice-message'),
-          emoji: '🎤',
         };
       }
       if (Attachment.isAudio(attachments)) {
         return {
+          bodyRanges,
+          emoji: '🔈',
           text:
             body || window.i18n('message--getNotificationText--audio-message'),
-          emoji: '🔈',
         };
       }
 
-      // Note: we can't combine emoji and bodyRanges at the moment
-      const bodyRanges = this.get('bodyRanges');
       return {
-        text: body || window.i18n('message--getNotificationText--file'),
-        emoji: bodyRanges?.length ? undefined : '📎',
         bodyRanges,
+        text: body || window.i18n('message--getNotificationText--file'),
+        emoji: '📎',
       };
     }
 
@@ -852,7 +856,7 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
     if (body) {
       return {
         text: body,
-        bodyRanges: this.get('bodyRanges'),
+        bodyRanges,
       };
     }
 

@@ -295,7 +295,7 @@ export type ConversationAttributesType = {
   lastMessageDeletedForEveryone?: boolean;
   lastMessage?: string | null;
   lastMessageBodyRanges?: ReadonlyArray<RawBodyRange>;
-  lastMessageEmoji?: string;
+  lastMessagePrefix?: string;
   lastMessageAuthor?: string | null;
   lastMessageStatus?: LastMessageStatus | null;
   markedUnread?: boolean;

@@ -188,11 +188,17 @@ export type LastMessageType = ReadonlyDeep<
       deletedForEveryone: false;
       author?: string;
       bodyRanges?: HydratedBodyRangesType;
+      prefix?: string;
       status?: LastMessageStatus;
       text: string;
     }
   | { deletedForEveryone: true }
 >;
+export type DraftPreviewType = ReadonlyDeep<{
+  text: string;
+  prefix?: string;
+  bodyRanges?: HydratedBodyRangesType;
+}>;
 
 export type ConversationType = ReadonlyDeep<
   {
@@ -278,9 +284,11 @@ export type ConversationType = ReadonlyDeep<
     profileSharing?: boolean;
 
     shouldShowDraft?: boolean;
+    // Full information for re-hydrating composition area
     draftText?: string;
     draftBodyRanges?: ReadonlyArray<DraftBodyRangeMention>;
-    draftPreview?: string;
+    // Summary for the left pane
+    draftPreview?: DraftPreviewType;
 
     sharedGroupNames: ReadonlyArray<string>;
     groupDescription?: string;

@@ -83,7 +83,7 @@ function createRangeProcessor({
   }) {
     if (disableClickableMentions) {
       return (
-        <bdi>
+        <bdi key={key}>
           @
           <Emojify text={name} />
         </bdi>

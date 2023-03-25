@@ -51,6 +51,7 @@ import type {
 } from '../textsecure/Types.d';
 import type {
   ConversationType,
+  DraftPreviewType,
   LastMessageType,
 } from '../state/ducks/conversations';
 import type {
@@ -85,7 +86,6 @@ import {
 import * as Bytes from '../Bytes';
 import type { DraftBodyRangeMention } from '../types/BodyRange';
 import { BodyRange } from '../types/BodyRange';
-import { getTextWithMentions } from '../util/getTextWithMentions';
 import { migrateColor } from '../util/migrateColor';
 import { isNotNil } from '../util/isNotNil';
 import { dropNull } from '../util/dropNull';
@@ -1025,32 +1025,59 @@ export class ConversationModel extends window.Backbone
       draftAttachments.length > 0) as boolean;
   }
 
-  getDraftPreview(): string {
+  getDraftPreview(): DraftPreviewType {
     const draft = this.get('draft');
 
-    if (draft) {
-      const mentions = this.get('draftBodyRanges') || [];
+    const rawBodyRanges = this.get('draftBodyRanges') || [];
+    const bodyRanges = rawBodyRanges.map(range => {
+      // Hydrate user information on mention
+      if (BodyRange.isMention(range)) {
+        const conversation = findAndFormatContact(range.mentionUuid);
 
-      return getTextWithMentions(mentions, draft);
+        return {
+          ...range,
+          conversationID: conversation.id,
+          replacementText: conversation.title,
+        };
+      }
+
+      if (BodyRange.isFormatting(range)) {
+        return range;
+      }
+
+      throw missingCaseError(range);
+    });
+
+    if (draft) {
+      return {
+        text: stripNewlinesForLeftPane(draft),
+        bodyRanges,
+      };
     }
 
     const draftAttachments = this.get('draftAttachments') || [];
     if (draftAttachments.length > 0) {
       if (isVoiceMessage(draftAttachments[0])) {
-        return window.i18n('message--getNotificationText--text-with-emoji', {
+        return {
           text: window.i18n('message--getNotificationText--voice-message'),
-          emoji: '🎤',
-        });
+          prefix: '🎤',
+        };
       }
-      return window.i18n('Conversation--getDraftPreview--attachment');
+      return {
+        text: window.i18n('Conversation--getDraftPreview--attachment'),
+      };
     }
 
     const quotedMessageId = this.get('quotedMessageId');
     if (quotedMessageId) {
-      return window.i18n('Conversation--getDraftPreview--quote');
+      return {
+        text: window.i18n('Conversation--getDraftPreview--quote'),
+      };
     }
 
-    return window.i18n('Conversation--getDraftPreview--draft');
+    return {
+      text: window.i18n('Conversation--getDraftPreview--draft'),
+    };
   }
 
   bumpTyping(): void {
@@ -3741,25 +3768,16 @@ export class ConversationModel extends window.Backbone
       throw missingCaseError(range);
     });
 
-    const rawText = stripNewlinesForLeftPane(lastMessageText);
-    const emoji = this.get('lastMessageEmoji');
-
-    // Note: this modification of last message text with emoji is not compatible with
-    //   bodyRanges. At the moment, emoji are only added to various notification types,
-    //   messages with just one attachment, etc.
-    const text = emoji
-      ? window.i18n('message--getNotificationText--text-with-emoji', {
-          text: rawText,
-          emoji,
-        })
-      : rawText;
+    const text = stripNewlinesForLeftPane(lastMessageText);
+    const prefix = this.get('lastMessagePrefix');
 
     return {
       author: dropNull(this.get('lastMessageAuthor')),
       bodyRanges,
+      deletedForEveryone: false,
+      prefix,
       status: dropNull(this.get('lastMessageStatus')),
       text,
-      deletedForEveryone: false,
     };
   });
 
@@ -4466,7 +4484,7 @@ export class ConversationModel extends window.Backbone
     this.set({
       lastMessage: notificationData?.text || '',
       lastMessageBodyRanges: notificationData?.bodyRanges,
-      lastMessageEmoji: notificationData?.emoji,
+      lastMessagePrefix: notificationData?.emoji,
       lastMessageAuthor: previewMessage?.getAuthorText(),
       lastMessageStatus:
         (previewMessage

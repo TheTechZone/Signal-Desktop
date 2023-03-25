@@ -19,7 +19,6 @@ import type { LocalizerType, ThemeType } from '../../types/Util';
 import type { ConversationType } from '../../state/ducks/conversations';
 import type { BadgeType } from '../../badges/types';
 import { isSignalConversation } from '../../util/isSignalConversation';
-import { stripNewlinesForLeftPane } from '../../util/stripNewlinesForLeftPane';
 
 const MESSAGE_STATUS_ICON_CLASS_NAME = `${MESSAGE_TEXT_CLASS_NAME}__status-icon`;
 
@@ -141,10 +140,12 @@ export const ConversationListItem: FunctionComponent<Props> = React.memo(
             {i18n('ConversationListItem--draft-prefix')}
           </span>
           <MessageBody
-            text={stripNewlinesForLeftPane(draftPreview)}
+            bodyRanges={draftPreview.bodyRanges}
             disableClickableMentions
             disableJumbomoji
             disableLinks
+            prefix={draftPreview.prefix}
+            text={draftPreview.text}
             i18n={i18n}
           />
         </>
@@ -158,12 +159,13 @@ export const ConversationListItem: FunctionComponent<Props> = React.memo(
     } else if (lastMessage) {
       messageText = (
         <MessageBody
-          text={lastMessage.text}
           bodyRanges={lastMessage.bodyRanges}
           author={type === 'group' ? lastMessage.author : undefined}
           disableClickableMentions
           disableJumbomoji
           disableLinks
+          prefix={lastMessage.prefix}
+          text={lastMessage.text}
           i18n={i18n}
         />
       );

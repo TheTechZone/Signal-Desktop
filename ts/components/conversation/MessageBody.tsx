@@ -27,6 +27,7 @@ export type Props = {
   i18n: LocalizerType;
   kickOffBodyDownload?: () => void;
   onIncreaseTextLength?: () => unknown;
+  prefix?: string;
   showConversation?: ShowConversationType;
   text: string;
   textAttachment?: Pick<AttachmentType, 'pending' | 'digest' | 'key'>;
@@ -48,6 +49,7 @@ export function MessageBody({
   i18n,
   kickOffBodyDownload,
   onIncreaseTextLength,
+  prefix,
   showConversation,
   text,
   textAttachment,
@@ -97,9 +99,16 @@ export function MessageBody({
       {author && (
         <>
           <span className="MessageBody__author">
-            <Emojify text={author} sizeClass={sizeClass} />
+            <Emojify text={author} />
           </span>
           :{' '}
+        </>
+      )}
+      {prefix && (
+        <>
+          <span className="MessageBody__prefix">
+            <Emojify text={prefix} />
+          </span>{' '}
         </>
       )}
 
