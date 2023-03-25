@@ -6,6 +6,7 @@ import type { RangeNode } from '../../types/BodyRange';
 import {
   BodyRange,
   DisplayStyle,
+  applyRangesForText,
   insertRange,
   processBodyRangesForSearchResult,
   sortRanges,
@@ -589,6 +590,126 @@ describe('BodyRanges', () => {
         length: 3,
         displayStyle: DisplayStyle.SearchKeywordHighlight,
       });
+    });
+  });
+
+  describe('applyRangesForText', () => {
+    it('handles mentions, replaces in reverse order', () => {
+      const mentions = [
+        {
+          start: 0,
+          length: 1,
+          mentionUuid: 'blarg',
+          replacementText: 'jerry',
+          conversationID: 'x',
+        },
+        {
+          start: 7,
+          length: 1,
+          mentionUuid: 'abcdef',
+          replacementText: 'fred',
+          conversationID: 'x',
+        },
+      ];
+      const text = "\uFFFC says \uFFFC, I'm here";
+      assert.strictEqual(
+        applyRangesForText({ text, mentions, spoilers: [] }),
+        "@jerry says @fred, I'm here"
+      );
+    });
+
+    it('handles spoilers, replaces in reverse order', () => {
+      const spoilers = [
+        {
+          start: 18,
+          length: 16,
+          style: BodyRange.Style.SPOILER,
+        },
+        {
+          start: 46,
+          length: 17,
+          style: BodyRange.Style.SPOILER,
+        },
+      ];
+      const text =
+        "It's so cool when the balrog fight happens in Lord of the Rings!";
+      assert.strictEqual(
+        applyRangesForText({ text, mentions: [], spoilers }),
+        "It's so cool when ■■■■ happens in ■■■■!"
+      );
+    });
+
+    it('handles mentions that are removed by spoilers', () => {
+      const mentions = [
+        {
+          start: 49,
+          length: 1,
+          mentionUuid: 'abcdef',
+          replacementText: 'alice',
+          conversationID: 'x',
+        },
+        {
+          start: 55,
+          length: 1,
+          mentionUuid: 'abcdef',
+          replacementText: 'bob',
+          conversationID: 'x',
+        },
+      ];
+      const spoilers = [
+        {
+          start: 49,
+          length: 7,
+          style: BodyRange.Style.SPOILER,
+        },
+      ];
+
+      const text =
+        "The recipients of today's appreciation award are \uFFFC and \uFFFC!";
+      assert.strictEqual(
+        applyRangesForText({ text, mentions, spoilers }),
+        "The recipients of today's appreciation award are ■■■■!"
+      );
+    });
+
+    it('handles mentions that need to be moved because of spoilers', () => {
+      const mentions = [
+        {
+          start: 0,
+          length: 1,
+          mentionUuid: 'abcdef',
+          replacementText: 'eve',
+          conversationID: 'x',
+        },
+        {
+          start: 52,
+          length: 1,
+          mentionUuid: 'abcdef',
+          replacementText: 'alice',
+          conversationID: 'x',
+        },
+        {
+          start: 58,
+          length: 1,
+          mentionUuid: 'abcdef',
+          replacementText: 'bob',
+          conversationID: 'x',
+        },
+      ];
+      const spoilers = [
+        {
+          start: 21,
+          length: 26,
+          style: BodyRange.Style.SPOILER,
+        },
+      ];
+
+      const text =
+        "\uFFFC: The recipients of today's appreciation award are \uFFFC and \uFFFC!";
+      assert.strictEqual(
+        applyRangesForText({ text, mentions, spoilers }),
+        '@eve: The recipients of ■■■■ are @alice and @bob!'
+      );
     });
   });
 });

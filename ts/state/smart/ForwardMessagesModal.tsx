@@ -33,11 +33,10 @@ import {
 import { useGlobalModalActions } from '../ducks/globalModals';
 import { useLinkPreviewActions } from '../ducks/linkPreviews';
 import { processBodyRanges } from '../selectors/message';
-import { getTextWithMentions } from '../../util/getTextWithMentions';
 import { SmartCompositionTextArea } from './CompositionTextArea';
 import { useToastActions } from '../ducks/toast';
 import type { HydratedBodyRangeMention } from '../../types/BodyRange';
-import { BodyRange } from '../../types/BodyRange';
+import { applyRangesForText, BodyRange } from '../../types/BodyRange';
 
 function renderMentions(
   message: ForwardMessagePropsType,
@@ -54,10 +53,13 @@ function renderMentions(
   });
 
   if (bodyRanges && bodyRanges.length) {
-    return getTextWithMentions(
-      bodyRanges.filter<HydratedBodyRangeMention>(BodyRange.isMention),
-      text
-    );
+    return applyRangesForText({
+      mentions: bodyRanges.filter<HydratedBodyRangeMention>(
+        BodyRange.isMention
+      ),
+      spoilers: [],
+      text,
+    });
   }
 
   return text;

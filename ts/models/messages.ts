@@ -182,6 +182,7 @@ import {
 import { getTitleNoDefault, getNumber } from '../util/getTitle';
 import dataInterface from '../sql/Client';
 import type { RawBodyRange } from '../types/BodyRange';
+import { BodyRange, applyRangesForText } from '../types/BodyRange';
 
 function isSameUuid(
   a: UUID | string | null | undefined,
@@ -261,7 +262,7 @@ window.Whisper = window.Whisper || {};
 
 const { Message: TypedMessage } = window.Signal.Types;
 const { upgradeMessageSchema } = window.Signal.Migrations;
-const { getTextWithMentions, GoogleChrome } = window.Signal.Util;
+const { GoogleChrome } = window.Signal.Util;
 const { getMessageBySender } = window.Signal.Data;
 
 export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
@@ -917,15 +918,15 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
       return window.i18n('Quote__story-reaction--single');
     }
 
-    let modifiedText = text;
-
-    const mentions = extractHydratedMentions(attributes, {
-      conversationSelector: findAndFormatContact,
-    });
-
-    if (mentions && mentions.length) {
-      modifiedText = getTextWithMentions(mentions, modifiedText);
-    }
+    const mentions =
+      extractHydratedMentions(attributes, {
+        conversationSelector: findAndFormatContact,
+      }) || [];
+    const spoilers = (attributes.bodyRanges || []).filter(
+      range =>
+        BodyRange.isFormatting(range) && range.style === BodyRange.Style.SPOILER
+    ) as Array<BodyRange<BodyRange.Formatting>>;
+    const modifiedText = applyRangesForText({ text, mentions, spoilers });
 
     // Linux emoji support is mixed, so we disable it. (Note that this doesn't touch
     //   the `text`, which can contain emoji.)
@@ -936,7 +937,8 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
         emoji,
       });
     }
-    return modifiedText;
+
+    return modifiedText || '';
   }
 
   // General

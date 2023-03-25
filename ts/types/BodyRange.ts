@@ -357,3 +357,58 @@ export function processBodyRangesForSearchResult({
     bodyRanges: adjustedBodyRanges,
   };
 }
+
+const SPOILER_REPLACEMENT = '■■■■';
+
+export function applyRangesForText({
+  text,
+  mentions,
+  spoilers,
+}: {
+  text: string | undefined;
+  mentions: ReadonlyArray<HydratedBodyRangeMention>;
+  spoilers: ReadonlyArray<BodyRange<BodyRange.Formatting>>;
+}): string | undefined {
+  if (!text) {
+    return text;
+  }
+
+  let updatedText = text;
+  let sortableMentions: Array<HydratedBodyRangeMention> = mentions.slice();
+
+  const sortableSpoilers: Array<BodyRange<BodyRange.Formatting>> =
+    spoilers.slice();
+  updatedText = sortableSpoilers
+    .sort((a, b) => b.start - a.start)
+    .reduce((acc, { start, length }) => {
+      const left = acc.slice(0, start);
+      const end = start + length;
+      const right = acc.slice(end);
+
+      // Note: this is a simplified filter because mentions always have length=1
+      sortableMentions = sortableMentions
+        .filter(mention => {
+          return mention.start < start || mention.start >= end;
+        })
+        .map(mention => {
+          if (mention.start >= end) {
+            return {
+              ...mention,
+              start: mention.start - (length - SPOILER_REPLACEMENT.length),
+            };
+          }
+
+          return mention;
+        });
+
+      return `${left}${SPOILER_REPLACEMENT}${right}`;
+    }, updatedText);
+
+  return sortableMentions
+    .sort((a, b) => b.start - a.start)
+    .reduce((acc, { start, length, replacementText }) => {
+      const left = acc.slice(0, start);
+      const right = acc.slice(start + length);
+      return `${left}@${replacementText}${right}`;
+    }, updatedText);
+}
