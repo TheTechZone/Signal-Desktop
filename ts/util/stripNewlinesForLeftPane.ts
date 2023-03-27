@@ -1,3 +1,6 @@
+// Copyright 2020 Signal Messenger, LLC
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // This takes `unknown` because, sometimes, values from the database don't match our
 //   types. In the long term, we should fix that. In the short term, this smoothes over
 //   the problem.
