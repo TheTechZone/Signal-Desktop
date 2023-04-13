@@ -88,6 +88,7 @@ const mapStateToProps = (state: StateType, ownProps: OwnProps) => {
       'isMe',
       'isPinned',
       'isVerified',
+      'verifiedState',
       'left',
       'markedUnread',
       'muteExpiresAt',

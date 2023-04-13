@@ -178,6 +178,10 @@
         &__verified {
           @include icon-element('../images/icons/v2/check-24.svg');
         }
+
+        &__not_verified {
+          @include icon-element('../images/icons/v2/warning-outline-24.svg');
+        }
       }
     }
   }

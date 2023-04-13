@@ -605,6 +605,21 @@
   "verified": {
     "message": "Verified"
   },
+  "manually_verified": {
+    "message": "Manually Verified"
+  },
+  "directly_verified": {
+    "message": "QR Verified"
+  },
+  "introduced": {
+    "message": "Introduced"
+  },
+  "duplex_verified": {
+    "message": "Strongly Verified"
+  },
+  "unverified":{
+    "message": "Unverified"
+  },
   "newIdentity": {
     "message": "New safety number",
     "description": "Header for a key change dialog"

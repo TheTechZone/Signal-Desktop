@@ -225,6 +225,7 @@ export type ConversationType = ReadonlyDeep<
     isPinned?: boolean;
     isUntrusted?: boolean;
     isVerified?: boolean;
+    verifiedState?: number;
     activeAt?: number;
     timestamp?: number;
     inboxPosition?: number;

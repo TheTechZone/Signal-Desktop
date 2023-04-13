@@ -1898,6 +1898,7 @@ export class ConversationModel extends window.Backbone
       isPinned: this.get('isPinned'),
       isUntrusted: this.isUntrusted(),
       isVerified: this.isVerified(),
+      verifiedState: this.get('verified'),
       isFetchingUUID: this.isFetchingUUID,
       lastMessage: this.getLastMessage(),
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -2696,13 +2697,18 @@ export class ConversationModel extends window.Backbone
     return this.queueJob('setVerified', () => this._setVerified(VERIFIED));
   }
 
+  setIntroduced(): Promise<boolean> {
+    const {INTRODUCED} = this.verifiedEnum;
+    return this.queueJob('setVerified', () => this._setVerified(INTRODUCED));
+  }
+
   setUnverified(): Promise<boolean> {
     const { UNVERIFIED } = this.verifiedEnum;
     return this.queueJob('setUnverified', () => this._setVerified(UNVERIFIED));
   }
 
   private async _setVerified(verified: number): Promise<boolean> {
-    const { VERIFIED, DEFAULT } = this.verifiedEnum;
+    const { VERIFIED, MANUALLY_VERIFIED, DIRECTLY_VERIFIED, INTRODUCED, DEFAULT } = this.verifiedEnum;
 
     if (!isDirectConversation(this.attributes)) {
       throw new Error(
@@ -2718,6 +2724,15 @@ export class ConversationModel extends window.Backbone
       if (verified === this.verifiedEnum.DEFAULT) {
         await window.textsecure.storage.protocol.setVerified(uuid, verified);
       } else {
+        if(verified === this.verifiedEnum.MANUALLY_VERIFIED){
+          log.warn(`_setVerified(${this.id}): TI - setting as manually verified`);
+        }
+        if(verified === this.verifiedEnum.DIRECTLY_VERIFIED){
+          log.warn(`_setVerified(${this.id}): TI - setting as directly verified`);
+        }
+        if(verified === this.verifiedEnum.INTRODUCED){
+          log.warn(`_setVerified(${this.id}): TI - setting as introduced`);
+        }
         await window.textsecure.storage.protocol.setVerified(uuid, verified, {
           firstUse: false,
           nonblockingApproval: true,
@@ -2746,9 +2761,13 @@ export class ConversationModel extends window.Backbone
       // Our local verification status is VERIFIED and it hasn't changed, but the key did
       //   change (Key1/VERIFIED -> Key2/VERIFIED), but we don't want to show DEFAULT ->
       //   DEFAULT or UNVERIFIED -> UNVERIFIED
-      (keyChange && verified === VERIFIED)
+      (keyChange && verified === VERIFIED) ||
+      // TI - manual verification on the desktop
+      (keyChange && verified === MANUALLY_VERIFIED) ||
+      (keyChange && verified === DIRECTLY_VERIFIED) ||
+      (keyChange && verified === INTRODUCED)
     ) {
-      await this.addVerifiedChange(this.id, verified === VERIFIED, {
+      await this.addVerifiedChange(this.id, verified === VERIFIED || verified === MANUALLY_VERIFIED || verified === DIRECTLY_VERIFIED, {
         local: isExplicitUserAction,
       });
     }
@@ -2801,7 +2820,9 @@ export class ConversationModel extends window.Backbone
 
   isVerified(): boolean {
     if (isDirectConversation(this.attributes)) {
-      return this.get('verified') === this.verifiedEnum.VERIFIED;
+      return this.get('verified') === this.verifiedEnum.VERIFIED || this.get('verified') === this.verifiedEnum.MANUALLY_VERIFIED
+        || this.get('verified') === this.verifiedEnum.DIRECTLY_VERIFIED
+        || this.get('verified') === this.verifiedEnum.INTRODUCED || this.get('verified') === this.verifiedEnum.DUPLEX_VERIFIED;
     }
 
     if (!this.contactCollection?.length) {
@@ -2964,7 +2985,8 @@ export class ConversationModel extends window.Backbone
     if (this.isVerified()) {
       return this.setVerifiedDefault();
     }
-    return this.setVerified();
+    //return this.setVerified();
+    return this.setIntroduced();
   }
 
   async addChatSessionRefreshed({

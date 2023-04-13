@@ -39,6 +39,7 @@ import {
   useKeyboardShortcuts,
 } from '../../hooks/useKeyboardShortcuts';
 import { PanelType } from '../../types/Panels';
+import { lookupVerifiedStatus } from '../../SignalProtocolStore';
 
 export enum OutgoingCallButtonStyle {
   None,
@@ -72,6 +73,7 @@ export type PropsDataType = {
   | 'isMe'
   | 'isPinned'
   | 'isVerified'
+  | 'verifiedState'
   | 'left'
   | 'markedUnread'
   | 'muteExpiresAt'
@@ -200,16 +202,16 @@ export class ConversationHeader extends React.Component<PropsType, StateType> {
     const expirationNode = this.renderExpirationLength();
     const verifiedNode = this.renderVerifiedIcon();
 
-    if (expirationNode || verifiedNode) {
+    //if (expirationNode || verifiedNode) {
       return (
         <div className="module-ConversationHeader__header__info__subtitle">
           {expirationNode}
           {verifiedNode}
         </div>
       );
-    }
+    //}
 
-    return null;
+    //return null;
   }
 
   private renderAvatar(): ReactNode {
@@ -282,15 +284,24 @@ export class ConversationHeader extends React.Component<PropsType, StateType> {
   }
 
   private renderVerifiedIcon(): ReactNode {
-    const { i18n, isVerified } = this.props;
+    const { i18n, isVerified, verifiedState } = this.props;
 
+    let verifiedName = "unverified";
+    if (verifiedState !== undefined){
+      verifiedName = lookupVerifiedStatus(verifiedState);
+    }
+    
     if (!isVerified) {
-      return null;
+      return (
+        <div className="module-ConversationHeader__header__info__subtitle__not_verified">
+          {i18n(verifiedName)}
+        </div>
+      );
     }
 
     return (
       <div className="module-ConversationHeader__header__info__subtitle__verified">
-        {i18n('verified')}
+        {i18n(verifiedName)}
       </div>
     );
   }

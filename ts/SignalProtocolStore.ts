@@ -62,15 +62,40 @@ const TIMESTAMP_THRESHOLD = 5 * 1000; // 5 seconds
 
 const VerifiedStatus = {
   DEFAULT: 0,
-  VERIFIED: 1,
+  VERIFIED: 1, // todo: remove once done
   UNVERIFIED: 2,
+  DIRECTLY_VERIFIED: 3,
+  INTRODUCED: 4,
+  DUPLEX_VERIFIED: 5,
+  MANUALLY_VERIFIED: 6, // todo: replace verified once done
 };
+
+export function lookupVerifiedStatus(status: number): string {
+  if(!validateVerifiedStatus(status)) return "unverified";
+  switch(status) {
+    case VerifiedStatus.VERIFIED:
+    case VerifiedStatus.MANUALLY_VERIFIED:
+      return "manually_verified";
+    case VerifiedStatus.DIRECTLY_VERIFIED:
+      return "directly_verified";
+    case VerifiedStatus.INTRODUCED:
+      return "introduced";
+    case VerifiedStatus.DUPLEX_VERIFIED:
+      return "duplex_verified";
+    default:
+      return "unverified";
+  }
+}
 
 function validateVerifiedStatus(status: number): boolean {
   if (
     status === VerifiedStatus.DEFAULT ||
     status === VerifiedStatus.VERIFIED ||
-    status === VerifiedStatus.UNVERIFIED
+    status === VerifiedStatus.UNVERIFIED ||
+    status === VerifiedStatus.MANUALLY_VERIFIED ||
+    status === VerifiedStatus.DIRECTLY_VERIFIED ||
+    status === VerifiedStatus.DUPLEX_VERIFIED ||
+    status === VerifiedStatus.INTRODUCED
   ) {
     return true;
   }

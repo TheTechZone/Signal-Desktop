@@ -88,6 +88,14 @@ function toRecordVerified(verified: number): Proto.ContactRecord.IdentityState {
   switch (verified) {
     case VERIFIED_ENUM.VERIFIED:
       return STATE_ENUM.VERIFIED;
+    case VERIFIED_ENUM.MANUALLY_VERIFIED: //todo: Need to handle manually verified state :/
+      return STATE_ENUM.VERIFIED;
+    case VERIFIED_ENUM.DIRECTLY_VERIFIED:
+      return STATE_ENUM.DIRECTLY_VERIFIED;
+    case VERIFIED_ENUM.INTRODUCED:
+      return STATE_ENUM.INTRODUCED;
+    case VERIFIED_ENUM.DUPLEX_VERIFIED:
+      return STATE_ENUM.DUPLEX_VERIFIED;
     case VERIFIED_ENUM.UNVERIFIED:
       return STATE_ENUM.UNVERIFIED;
     default:
@@ -106,6 +114,13 @@ function fromRecordVerified(
       return VERIFIED_ENUM.VERIFIED;
     case STATE_ENUM.UNVERIFIED:
       return VERIFIED_ENUM.UNVERIFIED;
+    //todo: Need to handle manually verified state :/
+    case STATE_ENUM.DIRECTLY_VERIFIED:
+      return VERIFIED_ENUM.DIRECTLY_VERIFIED;
+    case STATE_ENUM.INTRODUCED:
+      return VERIFIED_ENUM.INTRODUCED;
+    case STATE_ENUM.DUPLEX_VERIFIED:
+      return VERIFIED_ENUM.DUPLEX_VERIFIED;
     default:
       return VERIFIED_ENUM.DEFAULT;
   }
@@ -1039,6 +1054,7 @@ export async function mergeContactRecord(
 
   // https://github.com/signalapp/Signal-Android/blob/fc3db538bcaa38dc149712a483d3032c9c1f3998/app/src/main/java/org/thoughtcrime/securesms/database/RecipientDatabase.kt#L921-L936
   if (contactRecord.identityKey) {
+    debugger;
     const verified = await conversation.safeGetVerified();
     const newVerified = fromRecordVerified(contactRecord.identityState ?? 0);
 
@@ -1062,7 +1078,8 @@ export async function mergeContactRecord(
       details.push('adding a verified notification');
       await conversation.addVerifiedChange(
         conversation.id,
-        newVerified === VERIFIED_ENUM.VERIFIED,
+        newVerified === VERIFIED_ENUM.VERIFIED || newVerified === VERIFIED_ENUM.MANUALLY_VERIFIED || newVerified === VERIFIED_ENUM.DIRECTLY_VERIFIED
+          || newVerified === VERIFIED_ENUM.INTRODUCED || newVerified === VERIFIED_ENUM.DUPLEX_VERIFIED,
         { local: false }
       );
     }
