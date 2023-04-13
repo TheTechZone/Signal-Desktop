@@ -12,6 +12,11 @@
   // eslint-disable-next-line
   const noop = () => {};
 
+  window.Whisper = window.Whisper || {};
+  window.Whisper.events = {
+    on: noop,
+  };
+
   window.SignalWindow = window.SignalWindow || {};
   window.SignalWindow.log = {
     fatal: console.error.bind(console),
@@ -45,5 +50,9 @@
       hasCustomTitleBar: () => false,
     },
   };
+
+  window.ConversationController = window.ConversationController || {};
+  window.ConversationController.isSignalConversation = () => false;
+  window.ConversationController.onConvoMessageMount = noop;
   window.getPreferredSystemLocales = () => ['en'];
 </script>

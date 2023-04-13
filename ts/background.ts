@@ -114,6 +114,8 @@ import { areAnyCallsActiveOrRinging } from './state/selectors/calling';
 import { badgeImageFileDownloader } from './badges/badgeImageFileDownloader';
 import { actionCreators } from './state/actions';
 import { Deletes } from './messageModifiers/Deletes';
+import type { EditAttributesType } from './messageModifiers/Edits';
+import * as Edits from './messageModifiers/Edits';
 import {
   MessageReceipts,
   MessageReceiptType,
@@ -182,7 +184,7 @@ export function isOverHourIntoPast(timestamp: number): boolean {
 export async function cleanupSessionResets(): Promise<void> {
   const sessionResets = window.storage.get(
     'sessionResets',
-    <SessionResetsType>{}
+    {} as SessionResetsType
   );
 
   const keys = Object.keys(sessionResets);
@@ -626,10 +628,10 @@ export async function startApp(): Promise<void> {
             showConfirmationDialog({
               dialogName: 'deleteOldIndexedDBData',
               onTopOfEverything: true,
-              cancelText: window.i18n('quit'),
+              cancelText: window.i18n('icu:quit'),
               confirmStyle: 'negative',
-              message: window.i18n('deleteOldIndexedDBData'),
-              okText: window.i18n('deleteOldData'),
+              title: window.i18n('icu:deleteOldIndexedDBData'),
+              okText: window.i18n('icu:deleteOldData'),
               reject: () => reject(),
               resolve: () => resolve(),
             });
@@ -738,11 +740,13 @@ export async function startApp(): Promise<void> {
         sleeper.shutdown();
 
         const shutdownQueues = async () => {
+          log.info('background/shutdown: shutting down queues');
           await Promise.allSettled([
             StartupQueue.shutdown(),
             shutdownAllJobQueues(),
           ]);
 
+          log.info('background/shutdown: shutting down conversation queues');
           await Promise.allSettled(
             window.ConversationController.getAll().map(async convo => {
               try {
@@ -755,9 +759,11 @@ export async function startApp(): Promise<void> {
               }
             })
           );
+
+          log.info('background/shutdown: all queues shutdown');
         };
 
-        // wait for at most 2 minutes for startup queue and job queues to drain
+        // wait for at most 1 minutes for startup queue and job queues to drain
         let timeout: NodeJS.Timeout | undefined;
         await Promise.race([
           shutdownQueues(),
@@ -768,7 +774,7 @@ export async function startApp(): Promise<void> {
               );
               timeout = undefined;
               resolve();
-            }, 2 * MINUTE);
+            }, 1 * MINUTE);
           }),
         ]);
         if (timeout) {
@@ -913,7 +919,7 @@ export async function startApp(): Promise<void> {
     }
 
     setAppLoadingScreenMessage(
-      window.i18n('optimizingApplication'),
+      window.i18n('icu:optimizingApplication'),
       window.i18n
     );
 
@@ -932,7 +938,7 @@ export async function startApp(): Promise<void> {
       log.error('SQL failed to initialize', Errors.toLogFormat(err));
     }
 
-    setAppLoadingScreenMessage(window.i18n('loading'), window.i18n);
+    setAppLoadingScreenMessage(window.i18n('icu:loading'), window.i18n);
 
     let isMigrationWithIndexComplete = false;
     let isIdleTaskProcessing = false;
@@ -1082,7 +1088,6 @@ export async function startApp(): Promise<void> {
       devTools: false,
       includeSetup: false,
       isProduction: true,
-      isStaging: false,
       platform: 'unknown',
     };
 
@@ -1180,6 +1185,7 @@ export async function startApp(): Promise<void> {
         actionCreators.crashReports,
         store.dispatch
       ),
+      inbox: bindActionCreators(actionCreators.inbox, store.dispatch),
       emojis: bindActionCreators(actionCreators.emojis, store.dispatch),
       expiration: bindActionCreators(actionCreators.expiration, store.dispatch),
       globalModals: bindActionCreators(
@@ -1650,15 +1656,15 @@ export async function startApp(): Promise<void> {
         event.preventDefault();
         event.stopPropagation();
 
-        const { selectedMessage } = state.conversations;
-        if (!selectedMessage) {
+        const { targetedMessage } = state.conversations;
+        if (!targetedMessage) {
           return;
         }
 
         window.reduxActions.conversations.pushPanelForConversation({
           type: PanelType.MessageDetails,
           args: {
-            messageId: selectedMessage,
+            messageId: targetedMessage,
           },
         });
         return;
@@ -1674,14 +1680,14 @@ export async function startApp(): Promise<void> {
         event.preventDefault();
         event.stopPropagation();
 
-        const { selectedMessage } = state.conversations;
+        const { targetedMessage } = state.conversations;
 
         const quotedMessageSelector = getQuotedMessageSelector(state);
         const quote = quotedMessageSelector(conversation.id);
 
         window.reduxActions.composer.setQuoteByMessageId(
           conversation.id,
-          quote ? undefined : selectedMessage
+          quote ? undefined : targetedMessage
         );
 
         return;
@@ -1697,11 +1703,11 @@ export async function startApp(): Promise<void> {
         event.preventDefault();
         event.stopPropagation();
 
-        const { selectedMessage } = state.conversations;
+        const { targetedMessage } = state.conversations;
 
-        if (selectedMessage) {
+        if (targetedMessage) {
           window.reduxActions.conversations.saveAttachmentFromMessage(
-            selectedMessage
+            targetedMessage
           );
           return;
         }
@@ -1713,24 +1719,60 @@ export async function startApp(): Promise<void> {
         shiftKey &&
         (key === 'd' || key === 'D')
       ) {
-        const { selectedMessage } = state.conversations;
+        const { forwardMessagesProps } = state.globalModals;
+        const { targetedMessage, selectedMessageIds } = state.conversations;
 
-        if (selectedMessage) {
+        const messageIds =
+          selectedMessageIds ??
+          (targetedMessage != null ? [targetedMessage] : null);
+
+        if (forwardMessagesProps == null && messageIds != null) {
           event.preventDefault();
           event.stopPropagation();
 
           showConfirmationDialog({
-            dialogName: 'deleteMessage',
+            dialogName: 'ConfirmDeleteForMeModal',
             confirmStyle: 'negative',
-            message: window.i18n('deleteWarning'),
-            okText: window.i18n('delete'),
+            title: window.i18n('icu:ConfirmDeleteForMeModal--title', {
+              count: messageIds.length,
+            }),
+            description: window.i18n(
+              'icu:ConfirmDeleteForMeModal--description',
+              { count: messageIds.length }
+            ),
+            okText: window.i18n('icu:ConfirmDeleteForMeModal--confirm'),
             resolve: () => {
-              window.reduxActions.conversations.deleteMessage({
+              window.reduxActions.conversations.deleteMessages({
                 conversationId: conversation.id,
-                messageId: selectedMessage,
+                messageIds,
               });
             },
           });
+
+          return;
+        }
+      }
+
+      if (
+        conversation &&
+        commandOrCtrl &&
+        shiftKey &&
+        (key === 's' || key === 'S')
+      ) {
+        const { hasConfirmationModal } = state.globalModals;
+        const { targetedMessage, selectedMessageIds } = state.conversations;
+
+        const messageIds =
+          selectedMessageIds ??
+          (targetedMessage != null ? [targetedMessage] : null);
+
+        if (!hasConfirmationModal && messageIds != null) {
+          event.preventDefault();
+          event.stopPropagation();
+
+          window.reduxActions.globalModals.toggleForwardMessagesModal(
+            messageIds
+          );
 
           return;
         }
@@ -1782,6 +1824,7 @@ export async function startApp(): Promise<void> {
   }
 
   window.Whisper.events.on('setupAsNewDevice', () => {
+    window.IPC.readyForUpdates();
     window.reduxActions.app.openInstaller();
   });
 
@@ -1968,6 +2011,7 @@ export async function startApp(): Promise<void> {
       void connect();
       window.reduxActions.app.openInbox();
     } else {
+      window.IPC.readyForUpdates();
       window.reduxActions.app.openInstaller();
     }
 
@@ -2903,9 +2947,19 @@ export async function startApp(): Promise<void> {
     maxSize: Infinity,
   });
 
+  const throttledSetInboxEnvelopeTimestamp = throttle(
+    serverTimestamp => {
+      window.reduxActions.inbox.setInboxEnvelopeTimestamp(serverTimestamp);
+    },
+    100,
+    { leading: false }
+  );
+
   async function onEnvelopeReceived({
     envelope,
   }: EnvelopeEvent): Promise<void> {
+    throttledSetInboxEnvelopeTimestamp(envelope.serverTimestamp);
+
     const ourUuid = window.textsecure.storage.user.getUuid()?.toString();
     if (envelope.sourceUuid && envelope.sourceUuid !== ourUuid) {
       const { mergePromises, conversation } =
@@ -3052,6 +3106,35 @@ export async function startApp(): Promise<void> {
 
       // Note: We do not wait for completion here
       void Deletes.getSingleton().onDelete(deleteModel);
+
+      confirm();
+      return;
+    }
+
+    if (data.message.editedMessageTimestamp) {
+      const { editedMessageTimestamp } = data.message;
+
+      strictAssert(editedMessageTimestamp, 'Edit missing targetSentTimestamp');
+      const fromConversation = window.ConversationController.lookupOrCreate({
+        e164: data.source,
+        uuid: data.sourceUuid,
+        reason: 'onMessageReceived:edit',
+      });
+      strictAssert(fromConversation, 'Edit missing fromConversation');
+
+      log.info('Queuing incoming edit for', {
+        editedMessageTimestamp,
+        sentAt: data.timestamp,
+      });
+
+      const editAttributes: EditAttributesType = {
+        dataMessage: data.message,
+        fromId: fromConversation.id,
+        message: message.attributes,
+        targetSentTimestamp: editedMessageTimestamp,
+      };
+
+      drop(Edits.onEdit(editAttributes));
 
       confirm();
       return;
@@ -3399,6 +3482,29 @@ export async function startApp(): Promise<void> {
       const deleteModel = Deletes.getSingleton().add(attributes);
       // Note: We do not wait for completion here
       void Deletes.getSingleton().onDelete(deleteModel);
+      confirm();
+      return;
+    }
+
+    if (data.message.editedMessageTimestamp) {
+      const { editedMessageTimestamp } = data.message;
+
+      strictAssert(editedMessageTimestamp, 'Edit missing targetSentTimestamp');
+
+      log.info('Queuing sent edit for', {
+        editedMessageTimestamp,
+        sentAt: data.timestamp,
+      });
+
+      const editAttributes: EditAttributesType = {
+        dataMessage: data.message,
+        fromId: window.ConversationController.getOurConversationIdOrThrow(),
+        message: message.attributes,
+        targetSentTimestamp: editedMessageTimestamp,
+      };
+
+      drop(Edits.onEdit(editAttributes));
+
       confirm();
       return;
     }

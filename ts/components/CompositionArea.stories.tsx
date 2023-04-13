@@ -35,6 +35,7 @@ const useProps = (overrideProps: Partial<Props> = {}): Props => ({
   addAttachment: action('addAttachment'),
   conversationId: '123',
   focusCounter: 0,
+  sendCounter: 0,
   i18n,
   isDisabled: false,
   messageCompositionId: '456',
@@ -44,6 +45,7 @@ const useProps = (overrideProps: Partial<Props> = {}): Props => ({
   theme: React.useContext(StorybookThemeContext),
   setComposerFocus: action('setComposerFocus'),
   setQuoteByMessageId: action('setQuoteByMessageId'),
+  showToast: action('showToast'),
 
   // AttachmentList
   draftAttachments: overrideProps.draftAttachments || [],
@@ -128,6 +130,11 @@ const useProps = (overrideProps: Partial<Props> = {}): Props => ({
   isFetchingUUID: overrideProps.isFetchingUUID || false,
   renderSmartCompositionRecording: _ => <div>RECORDING</div>,
   renderSmartCompositionRecordingDraft: _ => <div>RECORDING DRAFT</div>,
+  // Select mode
+  selectedMessageIds: undefined,
+  lastSelectedMessage: undefined,
+  toggleSelectMode: action('toggleSelectMode'),
+  toggleForwardMessagesModal: action('toggleForwardMessagesModal'),
 });
 
 export function Default(): JSX.Element {

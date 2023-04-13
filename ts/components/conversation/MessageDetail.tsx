@@ -26,6 +26,7 @@ import * as log from '../../logging/log';
 import { formatDateTimeLong } from '../../util/timestamp';
 import { DurationInSeconds } from '../../util/durations';
 import { format as formatRelativeTime } from '../../util/expirationTimer';
+import { missingCaseError } from '../../util';
 
 export type Contact = Pick<
   ConversationType,
@@ -66,6 +67,7 @@ export type PropsData = {
   sentAt: number;
 
   i18n: LocalizerType;
+  platform: string;
   theme: ThemeType;
   getPreferredBadge: PreferredBadgeSelectorType;
 } & Pick<MessagePropsType, 'getPreferredBadge' | 'interactionMode'>;
@@ -75,7 +77,7 @@ export type PropsSmartActions = Pick<MessagePropsType, 'renderAudioAttachment'>;
 export type PropsReduxActions = Pick<
   MessagePropsType,
   | 'checkForAccount'
-  | 'clearSelectedMessage'
+  | 'clearTargetedMessage'
   | 'doubleCheckMissingQuoteReference'
   | 'kickOffAttachmentDownload'
   | 'markAttachmentAsCorrupted'
@@ -162,7 +164,7 @@ export class MessageDetail extends React.Component<Props> {
           className="module-message-detail__contact__show-safety-number"
           onClick={() => toggleSafetyNumberModal(contact.id)}
         >
-          {i18n('showSafetyNumber')}
+          {i18n('icu:showSafetyNumber')}
         </button>
       </div>
     ) : null;
@@ -200,24 +202,49 @@ export class MessageDetail extends React.Component<Props> {
     );
   }
 
+  private renderContactGroupHeaderText(
+    sendStatus: undefined | SendStatus
+  ): string {
+    const { i18n } = this.props;
+
+    if (sendStatus === undefined) {
+      return i18n('icu:from');
+    }
+
+    switch (sendStatus) {
+      case SendStatus.Failed:
+        return i18n('icu:MessageDetailsHeader--Failed');
+      case SendStatus.Pending:
+        return i18n('icu:MessageDetailsHeader--Pending');
+      case SendStatus.Sent:
+        return i18n('icu:MessageDetailsHeader--Sent');
+      case SendStatus.Delivered:
+        return i18n('icu:MessageDetailsHeader--Delivered');
+      case SendStatus.Read:
+        return i18n('icu:MessageDetailsHeader--Read');
+      case SendStatus.Viewed:
+        return i18n('icu:MessageDetailsHeader--Viewed');
+      default:
+        throw missingCaseError(sendStatus);
+    }
+  }
+
   private renderContactGroup(
     sendStatus: undefined | SendStatus,
     contacts: undefined | ReadonlyArray<Contact>
   ): ReactNode {
-    const { i18n } = this.props;
     if (!contacts || !contacts.length) {
       return null;
     }
-
-    const i18nKey =
-      sendStatus === undefined ? 'from' : `MessageDetailsHeader--${sendStatus}`;
 
     const sortedContacts = [...contacts].sort((a, b) =>
       contactSortCollator.compare(a.title, b.title)
     );
 
+    const headerText = this.renderContactGroupHeaderText(sendStatus);
+
     return (
-      <div key={i18nKey} className="module-message-detail__contact-group">
+      <div key={headerText} className="module-message-detail__contact-group">
         <div
           className={classNames(
             'module-message-detail__contact-group__header',
@@ -225,8 +252,7 @@ export class MessageDetail extends React.Component<Props> {
               `module-message-detail__contact-group__header--${sendStatus}`
           )}
         >
-          {/* eslint-disable-next-line local-rules/valid-i18n-keys */}
-          {i18n(i18nKey)}
+          {headerText}
         </div>
         {sortedContacts.map(contact => this.renderContact(contact))}
       </div>
@@ -268,7 +294,7 @@ export class MessageDetail extends React.Component<Props> {
       sentAt,
 
       checkForAccount,
-      clearSelectedMessage,
+      clearTargetedMessage,
       contactNameColor,
       showLightboxForViewOnceMedia,
       doubleCheckMissingQuoteReference,
@@ -278,6 +304,7 @@ export class MessageDetail extends React.Component<Props> {
       kickOffAttachmentDownload,
       markAttachmentAsCorrupted,
       openGiftBadge,
+      platform,
       pushPanelForConversation,
       renderAudioAttachment,
       saveAttachment,
@@ -306,7 +333,7 @@ export class MessageDetail extends React.Component<Props> {
             {...message}
             renderingContext="conversation/MessageDetail"
             checkForAccount={checkForAccount}
-            clearSelectedMessage={clearSelectedMessage}
+            clearTargetedMessage={clearTargetedMessage}
             contactNameColor={contactNameColor}
             containerElementRef={this.messageContainerRef}
             containerWidthBreakpoint={WidthBreakpoint.Wide}
@@ -321,6 +348,7 @@ export class MessageDetail extends React.Component<Props> {
             kickOffAttachmentDownload={kickOffAttachmentDownload}
             markAttachmentAsCorrupted={markAttachmentAsCorrupted}
             messageExpanded={noop}
+            platform={platform}
             showConversation={showConversation}
             openGiftBadge={openGiftBadge}
             pushPanelForConversation={pushPanelForConversation}
@@ -343,6 +371,8 @@ export class MessageDetail extends React.Component<Props> {
             startConversation={startConversation}
             theme={theme}
             viewStory={viewStory}
+            onToggleSelect={noop}
+            onReplyToMessage={noop}
           />
         </div>
         <table className="module-message-detail__info">
@@ -350,7 +380,7 @@ export class MessageDetail extends React.Component<Props> {
             {(errors || []).map(error => (
               <tr key={_keyForError(error)}>
                 <td className="module-message-detail__label">
-                  {i18n('error')}
+                  {i18n('icu:error')}
                 </td>
                 <td>
                   {' '}
@@ -359,14 +389,16 @@ export class MessageDetail extends React.Component<Props> {
               </tr>
             ))}
             <tr>
-              <td className="module-message-detail__label">{i18n('sent')}</td>
+              <td className="module-message-detail__label">
+                {i18n('icu:sent')}
+              </td>
               <td>
                 <ContextMenu
                   i18n={i18n}
                   menuOptions={[
                     {
                       icon: 'StoryDetailsModal__copy-icon',
-                      label: i18n('StoryDetailsModal__copy-timestamp'),
+                      label: i18n('icu:StoryDetailsModal__copy-timestamp'),
                       onClick: () => {
                         void window.navigator.clipboard.writeText(
                           String(sentAt)
@@ -389,7 +421,7 @@ export class MessageDetail extends React.Component<Props> {
             {receivedAt && message.direction === 'incoming' ? (
               <tr>
                 <td className="module-message-detail__label">
-                  {i18n('received')}
+                  {i18n('icu:received')}
                 </td>
                 <td>
                   <Time timestamp={receivedAt}>
@@ -404,7 +436,7 @@ export class MessageDetail extends React.Component<Props> {
             {timeRemaining && timeRemaining > 0 && (
               <tr>
                 <td className="module-message-detail__label">
-                  {i18n('MessageDetail--disappears-in')}
+                  {i18n('icu:MessageDetail--disappears-in')}
                 </td>
                 <td>
                   {formatRelativeTime(i18n, timeRemaining, {

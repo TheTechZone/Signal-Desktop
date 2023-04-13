@@ -22,12 +22,14 @@ type PropsType = {
   hasText: boolean;
   i18n: LocalizerType;
   id: string;
+  isEditedMessage?: boolean;
   isInline?: boolean;
   isShowingImage: boolean;
   isSticker?: boolean;
   isTapToViewExpired?: boolean;
   onWidthMeasured?: (width: number) => unknown;
   pushPanelForConversation: PushPanelForConversationActionType;
+  showEditHistoryModal?: (id: string) => unknown;
   status?: MessageStatusType;
   textPending?: boolean;
   timestamp: number;
@@ -41,12 +43,14 @@ export function MessageMetadata({
   hasText,
   i18n,
   id,
+  isEditedMessage,
   isInline,
   isShowingImage,
   isSticker,
   isTapToViewExpired,
   onWidthMeasured,
   pushPanelForConversation,
+  showEditHistoryModal,
   status,
   textPending,
   timestamp,
@@ -65,10 +69,10 @@ export function MessageMetadata({
       let statusInfo: React.ReactChild;
       if (isError) {
         statusInfo = deletedForEveryone
-          ? i18n('deleteFailed')
-          : i18n('sendFailed');
+          ? i18n('icu:deleteFailed')
+          : i18n('icu:sendFailed');
       } else if (isPaused) {
-        statusInfo = i18n('sendPaused');
+        statusInfo = i18n('icu:sendPaused');
       } else {
         statusInfo = (
           <button
@@ -85,8 +89,8 @@ export function MessageMetadata({
             }}
           >
             {deletedForEveryone
-              ? i18n('partiallyDeleted')
-              : i18n('partiallySent')}
+              ? i18n('icu:partiallyDeleted')
+              : i18n('icu:partiallySent')}
           </button>
         );
       }
@@ -130,6 +134,15 @@ export function MessageMetadata({
   );
   const children = (
     <>
+      {isEditedMessage && showEditHistoryModal && (
+        <button
+          className="module-message__metadata__edited"
+          onClick={() => showEditHistoryModal(id)}
+          type="button"
+        >
+          {i18n('icu:MessageMetadata__edited')}
+        </button>
+      )}
       {timestampNode}
       {expirationLength ? (
         <ExpireTimer

@@ -161,10 +161,14 @@ export class LeftPaneSearchHelper extends LeftPaneHelper<LeftPaneSearchPropsType
     } else {
       noResults = (
         <>
-          <div>{i18n('noSearchResults', [searchTerm])}</div>
+          <div>
+            {i18n('icu:noSearchResults', {
+              searchTerm,
+            })}
+          </div>
           {primarySendsSms && (
             <div className="module-left-pane__no-search-results__sms-only">
-              {i18n('noSearchResults--sms-only')}
+              {i18n('icu:noSearchResults--sms-only')}
             </div>
           )}
         </>
@@ -225,7 +229,7 @@ export class LeftPaneSearchHelper extends LeftPaneHelper<LeftPaneSearchPropsType
       if (rowIndex === 0) {
         return {
           type: RowType.Header,
-          i18nKey: 'conversationsHeader',
+          getHeaderText: i18n => i18n('icu:conversationsHeader'),
         };
       }
       assertDev(
@@ -246,7 +250,7 @@ export class LeftPaneSearchHelper extends LeftPaneHelper<LeftPaneSearchPropsType
       if (localIndex === 0) {
         return {
           type: RowType.Header,
-          i18nKey: 'contactsHeader',
+          getHeaderText: i18n => i18n('icu:contactsHeader'),
         };
       }
       assertDev(
@@ -270,7 +274,7 @@ export class LeftPaneSearchHelper extends LeftPaneHelper<LeftPaneSearchPropsType
     if (localIndex === 0) {
       return {
         type: RowType.Header,
-        i18nKey: 'messagesHeader',
+        getHeaderText: i18n => i18n('icu:messagesHeader'),
       };
     }
     assertDev(
@@ -335,7 +339,7 @@ export class LeftPaneSearchHelper extends LeftPaneHelper<LeftPaneSearchPropsType
   getConversationAndMessageInDirection(
     _toFind: Readonly<ToFindType>,
     _selectedConversationId: undefined | string,
-    _selectedMessageId: unknown
+    _targetedMessageId: unknown
   ): undefined | { conversationId: string } {
     return undefined;
   }

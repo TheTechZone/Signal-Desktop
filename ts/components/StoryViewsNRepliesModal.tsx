@@ -43,11 +43,15 @@ import { ConfirmationDialog } from './ConfirmationDialog';
 const MESSAGE_DEFAULT_PROPS = {
   canDeleteForEveryone: false,
   checkForAccount: shouldNeverBeCalled,
-  clearSelectedMessage: shouldNeverBeCalled,
+  clearTargetedMessage: shouldNeverBeCalled,
   containerWidthBreakpoint: WidthBreakpoint.Medium,
   doubleCheckMissingQuoteReference: shouldNeverBeCalled,
   isBlocked: false,
   isMessageRequestAccepted: true,
+  isSelected: false,
+  isSelectMode: false,
+  onToggleSelect: shouldNeverBeCalled,
+  onReplyToMessage: shouldNeverBeCalled,
   kickOffAttachmentDownload: shouldNeverBeCalled,
   markAttachmentAsCorrupted: shouldNeverBeCalled,
   messageExpanded: shouldNeverBeCalled,
@@ -83,6 +87,7 @@ export type PropsType = {
   hasViewReceiptSetting: boolean;
   hasViewsCapability: boolean;
   i18n: LocalizerType;
+  platform: string;
   isInternalUser?: boolean;
   onChangeViewTarget: (target: StoryViewTargetType) => unknown;
   onClose: () => unknown;
@@ -116,6 +121,7 @@ export function StoryViewsNRepliesModal({
   hasViewReceiptSetting,
   hasViewsCapability,
   i18n,
+  platform,
   isInternalUser,
   onChangeViewTarget,
   onClose,
@@ -219,7 +225,7 @@ export function StoryViewsNRepliesModal({
               i18n={i18n}
               inputApi={inputApiRef}
               moduleClassName="StoryViewsNRepliesModal__input"
-              onEditorStateChange={(_conversationId, messageText) => {
+              onEditorStateChange={({ messageText }) => {
                 setMessageBodyText(messageText);
               }}
               onPickEmoji={onUseEmoji}
@@ -231,11 +237,12 @@ export function StoryViewsNRepliesModal({
               onTextTooLong={onTextTooLong}
               placeholder={
                 group
-                  ? i18n('StoryViewer__reply-group')
+                  ? i18n('icu:StoryViewer__reply-group')
                   : i18n('icu:StoryViewer__reply-placeholder', {
                       firstName: authorTitle,
                     })
               }
+              sendCounter={0}
               sortedGroupMembers={sortedGroupMembers}
               theme={ThemeType.dark}
             >
@@ -282,6 +289,7 @@ export function StoryViewsNRepliesModal({
               }
               getPreferredBadge={getPreferredBadge}
               i18n={i18n}
+              platform={platform}
               id={reply.id}
               isInternalUser={isInternalUser}
               reply={reply}
@@ -297,7 +305,7 @@ export function StoryViewsNRepliesModal({
   } else if (group) {
     repliesElement = (
       <div className="StoryViewsNRepliesModal__replies--none">
-        {i18n('StoryViewsNRepliesModal__no-replies')}
+        {i18n('icu:StoryViewsNRepliesModal__no-replies')}
       </div>
     );
   }
@@ -306,7 +314,7 @@ export function StoryViewsNRepliesModal({
   if (hasViewsCapability && !hasViewReceiptSetting) {
     viewsElement = (
       <div className="StoryViewsNRepliesModal__read-receipts-off">
-        {i18n('StoryViewsNRepliesModal__read-receipts-off')}
+        {i18n('icu:StoryViewsNRepliesModal__read-receipts-off')}
       </div>
     );
   } else if (views.length) {
@@ -349,7 +357,7 @@ export function StoryViewsNRepliesModal({
   } else if (hasViewsCapability) {
     viewsElement = (
       <div className="StoryViewsNRepliesModal__replies--none">
-        {i18n('StoryViewsNRepliesModal__no-views')}
+        {i18n('icu:StoryViewsNRepliesModal__no-views')}
       </div>
     );
   }
@@ -363,11 +371,11 @@ export function StoryViewsNRepliesModal({
         tabs={[
           {
             id: StoryViewsNRepliesTab.Views,
-            label: i18n('StoryViewsNRepliesModal__tab--views'),
+            label: i18n('icu:StoryViewsNRepliesModal__tab--views'),
           },
           {
             id: StoryViewsNRepliesTab.Replies,
-            label: i18n('StoryViewsNRepliesModal__tab--replies'),
+            label: i18n('icu:StoryViewsNRepliesModal__tab--replies'),
           },
         ]}
       >
@@ -419,12 +427,12 @@ export function StoryViewsNRepliesModal({
           dialogName="confirmDialog"
           actions={[
             {
-              text: i18n('delete'),
+              text: i18n('icu:delete'),
               action: () => deleteGroupStoryReply(deleteReplyId),
               style: 'negative',
             },
           ]}
-          title={i18n('deleteWarning')}
+          title={i18n('icu:deleteWarning')}
           onClose={() => setDeleteReplyId(undefined)}
           onCancel={() => setDeleteReplyId(undefined)}
         />
@@ -436,17 +444,17 @@ export function StoryViewsNRepliesModal({
           dialogName="confirmDialog"
           actions={[
             {
-              text: i18n('delete'),
+              text: i18n('icu:delete'),
               action: () =>
                 deleteGroupStoryReplyForEveryone(deleteForEveryoneReplyId),
               style: 'negative',
             },
           ]}
-          title={i18n('deleteWarning')}
+          title={i18n('icu:deleteWarning')}
           onClose={() => setDeleteForEveryoneReplyId(undefined)}
           onCancel={() => setDeleteForEveryoneReplyId(undefined)}
         >
-          {i18n('deleteForEveryoneWarning')}
+          {i18n('icu:deleteForEveryoneWarning')}
         </ConfirmationDialog>
       )}
     </>
@@ -459,6 +467,7 @@ type ReplyOrReactionMessageProps = {
   deleteGroupStoryReplyForEveryone: (replyId: string) => void;
   getPreferredBadge: PreferredBadgeSelectorType;
   i18n: LocalizerType;
+  platform: string;
   id: string;
   isInternalUser?: boolean;
   onContextMenu?: (ev: React.MouseEvent) => void;
@@ -477,6 +486,7 @@ function ReplyOrReactionMessage({
   deleteGroupStoryReplyForEveryone,
   containerElementRef,
   getPreferredBadge,
+  platform,
   shouldCollapseAbove,
   shouldCollapseBelow,
   showContactModal,
@@ -508,10 +518,12 @@ function ReplyOrReactionMessage({
               <div className="StoryViewsNRepliesModal__reply--title">
                 <ContactName
                   contactNameColor={reply.contactNameColor}
-                  title={reply.author.isMe ? i18n('you') : reply.author.title}
+                  title={
+                    reply.author.isMe ? i18n('icu:you') : reply.author.title
+                  }
                 />
               </div>
-              {i18n('StoryViewsNRepliesModal__reacted')}
+              {i18n('icu:StoryViewsNRepliesModal__reacted')}
               <MessageTimestamp
                 i18n={i18n}
                 isRelativeTime
@@ -543,6 +555,7 @@ function ReplyOrReactionMessage({
           onContextMenu={onContextMenu}
           getPreferredBadge={getPreferredBadge}
           i18n={i18n}
+          platform={platform}
           id={reply.id}
           interactionMode="mouse"
           readStatus={reply.readStatus}

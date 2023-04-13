@@ -128,12 +128,14 @@ class NotificationService extends EventEmitter {
   public notify({
     icon,
     message,
+    messageId,
     onNotificationClick,
     silent,
     title,
   }: Readonly<{
     icon?: string;
     message: string;
+    messageId?: string;
     onNotificationClick: () => void;
     silent: boolean;
     title: string;
@@ -149,6 +151,7 @@ class NotificationService extends EventEmitter {
       icon,
       silent:
         silent || audioNotificationSupport !== AudioNotificationSupport.Native,
+      tag: messageId,
     });
     notification.onclick = onNotificationClick;
 
@@ -297,20 +300,20 @@ class NotificationService extends EventEmitter {
         ({ notificationIconUrl } = notificationData);
 
         if (isExpiringMessage && shouldHideExpiringMessageBody()) {
-          notificationMessage = i18n('newMessage');
+          notificationMessage = i18n('icu:newMessage');
         } else if (userSetting === NotificationSetting.NameOnly) {
           if (reaction) {
-            notificationMessage = i18n('notificationReaction', {
+            notificationMessage = i18n('icu:notificationReaction', {
               sender: senderTitle,
               emoji: reaction.emoji,
             });
           } else {
-            notificationMessage = i18n('newMessage');
+            notificationMessage = i18n('icu:newMessage');
           }
         } else if (storyId) {
           notificationMessage = message;
         } else if (reaction) {
-          notificationMessage = i18n('notificationReactionMessage', {
+          notificationMessage = i18n('icu:notificationReactionMessage', {
             sender: senderTitle,
             emoji: reaction.emoji,
             message,
@@ -322,12 +325,12 @@ class NotificationService extends EventEmitter {
       }
       case NotificationSetting.NoNameOrMessage:
         notificationTitle = FALLBACK_NOTIFICATION_TITLE;
-        notificationMessage = i18n('newMessage');
+        notificationMessage = i18n('icu:newMessage');
         break;
       default:
         log.error(missingCaseError(userSetting));
         notificationTitle = FALLBACK_NOTIFICATION_TITLE;
-        notificationMessage = i18n('newMessage');
+        notificationMessage = i18n('icu:newMessage');
         break;
     }
 

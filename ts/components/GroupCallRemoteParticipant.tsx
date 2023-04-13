@@ -35,8 +35,10 @@ type BasePropsType = {
   getFrameBuffer: () => Buffer;
   getGroupCallVideoFrameSource: (demuxId: number) => VideoFrameSource;
   i18n: LocalizerType;
+  isActiveSpeakerInSpeakerView: boolean;
   onVisibilityChanged?: (demuxId: number, isVisible: boolean) => unknown;
   remoteParticipant: GroupCallRemoteParticipantType;
+  remoteParticipantsCount: number;
 };
 
 type InPipPropsType = {
@@ -65,6 +67,8 @@ export const GroupCallRemoteParticipant: React.FC<PropsType> = React.memo(
       getGroupCallVideoFrameSource,
       i18n,
       onVisibilityChanged,
+      remoteParticipantsCount,
+      isActiveSpeakerInSpeakerView,
     } = props;
 
     const {
@@ -255,7 +259,7 @@ export const GroupCallRemoteParticipant: React.FC<PropsType> = React.memo(
         {showBlockInfo && (
           <ConfirmationDialog
             dialogName="GroupCallRemoteParticipant.blockInfo"
-            cancelText={i18n('ok')}
+            cancelText={i18n('icu:ok')}
             i18n={i18n}
             onClose={() => {
               setShowBlockInfo(false);
@@ -264,13 +268,15 @@ export const GroupCallRemoteParticipant: React.FC<PropsType> = React.memo(
               <div className="module-ongoing-call__group-call-remote-participant__blocked--modal-title">
                 <Intl
                   i18n={i18n}
-                  id="calling__you-have-blocked"
-                  components={[<ContactName key="name" title={title} />]}
+                  id="icu:calling__you-have-blocked"
+                  components={{
+                    name: <ContactName key="name" title={title} />,
+                  }}
                 />
               </div>
             }
           >
-            {i18n('calling__block-info')}
+            {i18n('icu:calling__block-info')}
           </ConfirmationDialog>
         )}
 
@@ -278,6 +284,8 @@ export const GroupCallRemoteParticipant: React.FC<PropsType> = React.memo(
           className={classNames(
             'module-ongoing-call__group-call-remote-participant',
             isSpeaking &&
+              !isActiveSpeakerInSpeakerView &&
+              remoteParticipantsCount > 1 &&
               'module-ongoing-call__group-call-remote-participant--speaking'
           )}
           ref={intersectionRef}
@@ -336,7 +344,7 @@ export const GroupCallRemoteParticipant: React.FC<PropsType> = React.memo(
                       setShowBlockInfo(true);
                     }}
                   >
-                    {i18n('moreInfo')}
+                    {i18n('icu:moreInfo')}
                   </button>
                 </>
               ) : (

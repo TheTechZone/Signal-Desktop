@@ -117,16 +117,20 @@ export function ContactModal({
             {
               action: () => toggleAdmin(conversation.id, contact.id),
               text: isAdmin
-                ? i18n('ContactModal--rm-admin')
-                : i18n('ContactModal--make-admin'),
+                ? i18n('icu:ContactModal--rm-admin')
+                : i18n('icu:ContactModal--make-admin'),
             },
           ]}
           i18n={i18n}
           onClose={() => setSubModalState(SubModalState.None)}
         >
           {isAdmin
-            ? i18n('ContactModal--rm-admin-info', [contact.title])
-            : i18n('ContactModal--make-admin-info', [contact.title])}
+            ? i18n('icu:ContactModal--rm-admin-info', {
+                contact: contact.title,
+              })
+            : i18n('icu:ContactModal--make-admin-info', {
+                contact: contact.title,
+              })}
         </ConfirmationDialog>
       );
       break;
@@ -229,7 +233,7 @@ export function ContactModal({
                 <div className="ContactModal__bubble-icon">
                   <div className="ContactModal__send-message__bubble-icon" />
                 </div>
-                <span>{i18n('ContactModal--message')}</span>
+                <span>{i18n('icu:ContactModal--message')}</span>
               </button>
               {!contact.isMe && (
                 <button
@@ -243,7 +247,7 @@ export function ContactModal({
                   <div className="ContactModal__bubble-icon">
                     <div className="ContactModal__safety-number__bubble-icon" />
                   </div>
-                  <span>{i18n('showSafetyNumber')}</span>
+                  <span>{i18n('icu:showSafetyNumber')}</span>
                 </button>
               )}
               {!contact.isMe && isMember && conversation?.id && (
@@ -272,9 +276,9 @@ export function ContactModal({
                       <div className="ContactModal__make-admin__bubble-icon" />
                     </div>
                     {isAdmin ? (
-                      <span>{i18n('ContactModal--rm-admin')}</span>
+                      <span>{i18n('icu:ContactModal--rm-admin')}</span>
                     ) : (
-                      <span>{i18n('ContactModal--make-admin')}</span>
+                      <span>{i18n('icu:ContactModal--make-admin')}</span>
                     )}
                   </button>
                   <button
@@ -285,7 +289,7 @@ export function ContactModal({
                     <div className="ContactModal__bubble-icon">
                       <div className="ContactModal__remove-from-group__bubble-icon" />
                     </div>
-                    <span>{i18n('ContactModal--remove-from-group')}</span>
+                    <span>{i18n('icu:ContactModal--remove-from-group')}</span>
                   </button>
                 </>
               )}

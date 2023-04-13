@@ -15,6 +15,7 @@ import type {
   ConversationVerificationData,
   MessageLookupType,
   MessagesByConversationType,
+  MessageTimestamps,
   PreJoinConversationType,
 } from '../ducks/conversations';
 import type { StoriesStateType, StoryDataType } from '../ducks/stories';
@@ -76,7 +77,7 @@ export const getPlaceholderContact = (): ConversationType => {
     badges: [],
     id: 'placeholder-contact',
     type: 'direct',
-    title: window.i18n('unknownContact'),
+    title: window.i18n('icu:unknownContact'),
     isMe: false,
     sharedGroupNames: [],
   };
@@ -151,21 +152,33 @@ export const getSelectedConversationId = createSelector(
   }
 );
 
-type SelectedMessageType = {
+type TargetedMessageType = {
   id: string;
   counter: number;
 };
-export const getSelectedMessage = createSelector(
+export const getTargetedMessage = createSelector(
   getConversations,
-  (state: ConversationsStateType): SelectedMessageType | undefined => {
-    if (!state.selectedMessage) {
+  (state: ConversationsStateType): TargetedMessageType | undefined => {
+    if (!state.targetedMessage) {
       return undefined;
     }
 
     return {
-      id: state.selectedMessage,
-      counter: state.selectedMessageCounter,
+      id: state.targetedMessage,
+      counter: state.targetedMessageCounter,
     };
+  }
+);
+export const getSelectedMessageIds = createSelector(
+  getConversations,
+  (state: ConversationsStateType): ReadonlyArray<string> | undefined => {
+    return state.selectedMessageIds;
+  }
+);
+export const getLastSelectedMessage = createSelector(
+  getConversations,
+  (state: ConversationsStateType): MessageTimestamps | undefined => {
+    return state.lastSelectedMessage;
   }
 );
 
@@ -458,6 +471,7 @@ function canComposeConversation(conversation: ConversationType): boolean {
   return Boolean(
     !isSignalConversation(conversation) &&
       !conversation.isBlocked &&
+      !conversation.removalStage &&
       !isConversationUnregistered(conversation) &&
       hasDisplayInfo(conversation) &&
       isTrusted(conversation)
@@ -471,6 +485,7 @@ export const getAllComposableConversations = createSelector(
       conversation =>
         !isSignalConversation(conversation) &&
         !conversation.isBlocked &&
+        !conversation.removalStage &&
         !conversation.isGroupV1AndDisabled &&
         !isConversationUnregistered(conversation) &&
         // All conversation should have a title except in weird cases where
@@ -1095,8 +1110,8 @@ export const getHideStoryConversationIds = createSelector(
 export const getTopPanel = createSelector(
   getConversations,
   (conversations): PanelRenderType | undefined =>
-    conversations.selectedConversationPanels[
-      conversations.selectedConversationPanels.length - 1
+    conversations.targetedConversationPanels[
+      conversations.targetedConversationPanels.length - 1
     ]
 );
 

@@ -85,7 +85,7 @@ import {
   ComposerStep,
   ConversationVerificationState,
   OneTimeModalState,
-  SelectedMessageSource,
+  TargetedMessageSource,
 } from './conversationsEnums';
 import { markViewed as messageUpdaterMarkViewed } from '../../services/MessageUpdater';
 import type { BoundActionCreatorsMapObject } from '../../hooks/useBoundActions';
@@ -148,6 +148,7 @@ import {
   handleLeaveConversation,
 } from './composer';
 import { ReceiptType } from '../../types/Receipt';
+import { sortByMessageOrder } from '../../util/maybeForwardMessages';
 
 // State
 
@@ -160,6 +161,10 @@ export type DBConversationType = ReadonlyDeep<{
 
 export const InteractionModes = ['mouse', 'keyboard'] as const;
 export type InteractionModeType = ReadonlyDeep<typeof InteractionModes[number]>;
+
+export type MessageTimestamps = ReadonlyDeep<
+  Pick<MessageAttributesType, 'sent_at' | 'received_at'>
+>;
 
 // eslint-disable-next-line local-rules/type-alias-readonlydeep
 export type MessageType = MessageAttributesType & {
@@ -221,6 +226,7 @@ export type ConversationType = ReadonlyDeep<
     hideStory?: boolean;
     isArchived?: boolean;
     isBlocked?: boolean;
+    removalStage?: 'justNotification' | 'messageRequest';
     isGroupV1AndDisabled?: boolean;
     isPinned?: boolean;
     isUntrusted?: boolean;
@@ -439,11 +445,14 @@ export type ConversationsStateType = Readonly<{
   conversationsByGroupId: ConversationLookupType;
   conversationsByUsername: ConversationLookupType;
   selectedConversationId?: string;
-  selectedMessage: string | undefined;
-  selectedMessageCounter: number;
-  selectedMessageSource: SelectedMessageSource | undefined;
-  selectedConversationPanels: ReadonlyArray<PanelRenderType>;
-  selectedMessageForDetails?: MessageAttributesType;
+  targetedMessage: string | undefined;
+  targetedMessageCounter: number;
+  targetedMessageSource: TargetedMessageSource | undefined;
+  targetedConversationPanels: ReadonlyArray<PanelRenderType>;
+  targetedMessageForDetails?: MessageAttributesType;
+
+  lastSelectedMessage: MessageTimestamps | undefined;
+  selectedMessageIds: ReadonlyArray<string> | undefined;
 
   showArchived: boolean;
   composer?: ComposerStateType;
@@ -506,8 +515,8 @@ const CONVERSATION_STOPPED_BY_MISSING_VERIFICATION =
   'conversations/CONVERSATION_STOPPED_BY_MISSING_VERIFICATION';
 const DISCARD_MESSAGES = 'conversations/DISCARD_MESSAGES';
 const REPLACE_AVATARS = 'conversations/REPLACE_AVATARS';
-export const SELECTED_CONVERSATION_CHANGED =
-  'conversations/SELECTED_CONVERSATION_CHANGED';
+export const TARGETED_CONVERSATION_CHANGED =
+  'conversations/TARGETED_CONVERSATION_CHANGED';
 const PUSH_PANEL = 'conversations/PUSH_PANEL';
 const POP_PANEL = 'conversations/POP_PANEL';
 export const MESSAGE_CHANGED = 'MESSAGE_CHANGED';
@@ -649,11 +658,25 @@ export type RemoveAllConversationsActionType = ReadonlyDeep<{
   type: 'CONVERSATIONS_REMOVE_ALL';
   payload: null;
 }>;
-export type MessageSelectedActionType = ReadonlyDeep<{
-  type: 'MESSAGE_SELECTED';
+export type MessageTargetedActionType = ReadonlyDeep<{
+  type: 'MESSAGE_TARGETED';
   payload: {
     messageId: string;
     conversationId: string;
+  };
+}>;
+export type ToggleSelectMessagesActionType = ReadonlyDeep<{
+  type: 'TOGGLE_SELECT_MESSAGES';
+  payload: {
+    toggledMessageId: string;
+    messageIds: Array<string>;
+    selected: boolean;
+  };
+}>;
+export type ToggleSelectModeActionType = ReadonlyDeep<{
+  type: 'TOGGLE_SELECT_MODE';
+  payload: {
+    on: boolean;
   };
 }>;
 type ConversationStoppedByMissingVerificationActionType = ReadonlyDeep<{
@@ -753,8 +776,8 @@ export type ScrollToMessageActionType = ReadonlyDeep<{
     messageId: string;
   };
 }>;
-export type ClearSelectedMessageActionType = ReadonlyDeep<{
-  type: 'CLEAR_SELECTED_MESSAGE';
+export type ClearTargetedMessageActionType = ReadonlyDeep<{
+  type: 'CLEAR_TARGETED_MESSAGE';
   payload: null;
 }>;
 export type ClearUnreadMetricsActionType = ReadonlyDeep<{
@@ -763,8 +786,8 @@ export type ClearUnreadMetricsActionType = ReadonlyDeep<{
     conversationId: string;
   };
 }>;
-export type SelectedConversationChangedActionType = ReadonlyDeep<{
-  type: typeof SELECTED_CONVERSATION_CHANGED;
+export type TargetedConversationChangedActionType = ReadonlyDeep<{
+  type: typeof TARGETED_CONVERSATION_CHANGED;
   payload: {
     conversationId?: string;
     messageId?: string;
@@ -866,7 +889,7 @@ export type ConversationActionType =
   | ClearCancelledVerificationActionType
   | ClearGroupCreationErrorActionType
   | ClearInvitedUuidsForNewlyCreatedGroupActionType
-  | ClearSelectedMessageActionType
+  | ClearTargetedMessageActionType
   | ClearUnreadMetricsActionType
   | ClearVerificationDataByConversationActionType
   | CloseContactSpoofingReviewActionType
@@ -891,7 +914,7 @@ export type ConversationActionType =
   | MessageDeletedActionType
   | MessageExpandedActionType
   | MessageExpiredActionType
-  | MessageSelectedActionType
+  | MessageTargetedActionType
   | MessagesAddedActionType
   | MessagesResetActionType
   | PopPanelActionType
@@ -903,7 +926,7 @@ export type ConversationActionType =
   | ReviewGroupMemberNameCollisionActionType
   | ReviewMessageRequestNameCollisionActionType
   | ScrollToMessageActionType
-  | SelectedConversationChangedActionType
+  | TargetedConversationChangedActionType
   | SetComposeGroupAvatarActionType
   | SetComposeGroupExpireTimerActionType
   | SetComposeGroupNameActionType
@@ -920,7 +943,9 @@ export type ConversationActionType =
   | StartComposingActionType
   | StartSettingGroupMetadataActionType
   | ToggleComposeEditingAvatarActionType
-  | ToggleConversationInChooseMembersActionType;
+  | ToggleConversationInChooseMembersActionType
+  | ToggleSelectMessagesActionType
+  | ToggleSelectModeActionType;
 
 // Action Creators
 
@@ -939,7 +964,7 @@ export const actions = {
   clearCancelledConversationVerification,
   clearGroupCreationError,
   clearInvitedUuidsForNewlyCreatedGroup,
-  clearSelectedMessage,
+  clearTargetedMessage,
   clearUnreadMetrics,
   closeContactSpoofingReview,
   closeMaximumGroupSizeModal,
@@ -955,7 +980,7 @@ export const actions = {
   createGroup,
   deleteAvatarFromDisk,
   deleteConversation,
-  deleteMessage,
+  deleteMessages,
   deleteMessageForEveryone,
   destroyMessages,
   discardMessages,
@@ -986,6 +1011,7 @@ export const actions = {
   popPanelForConversation,
   pushPanelForConversation,
   removeAllConversations,
+  removeConversation,
   removeCustomColorOnConversations,
   removeMember,
   removeMemberFromGroup,
@@ -1002,7 +1028,7 @@ export const actions = {
   saveAttachmentFromMessage,
   saveAvatarToDisk,
   scrollToMessage,
-  selectMessage,
+  targetMessage,
   setAccessControlAddFromInviteLinkSetting,
   setAccessControlAttributesSetting,
   setAccessControlMembersSetting,
@@ -1034,6 +1060,8 @@ export const actions = {
   toggleConversationInChooseMembers,
   toggleGroupsForStorySend,
   toggleHideStories,
+  toggleSelectMessage,
+  toggleSelectMode,
   unblurAvatar,
   updateConversationModelSharedGroups,
   updateGroupAttributes,
@@ -1084,7 +1112,7 @@ function onUndoArchive(
   void,
   RootStateType,
   unknown,
-  SelectedConversationChangedActionType
+  TargetedConversationChangedActionType
 > {
   return (dispatch, getState) => {
     const conversation = window.ConversationController.get(conversationId);
@@ -1554,17 +1582,19 @@ function setPinned(
   };
 }
 
-function deleteMessage({
+function deleteMessages({
   conversationId,
-  messageId,
+  messageIds,
+  lastSelectedMessage,
 }: {
   conversationId: string;
-  messageId: string;
+  messageIds: ReadonlyArray<string>;
+  lastSelectedMessage?: MessageTimestamps;
 }): ThunkAction<void, RootStateType, unknown, NoopActionType> {
   return async (dispatch, getState) => {
-    const message = await getMessageById(messageId);
-    if (!message) {
-      throw new Error(`deleteMessage: Message ${messageId} missing!`);
+    if (!messageIds || messageIds.length === 0) {
+      log.warn('deleteMessages: No message ids provided');
+      return;
     }
 
     const conversation = window.ConversationController.get(conversationId);
@@ -1572,25 +1602,61 @@ function deleteMessage({
       throw new Error('deleteMessage: No conversation found');
     }
 
-    const messageConversationId = message.get('conversationId');
-    if (conversationId !== messageConversationId) {
-      throw new Error(
-        `deleteMessage: message conversation ${messageConversationId} doesn't match provided conversation ${conversationId}`
-      );
+    let outgoingDeleted = 0;
+    let incomingDeleted = 0;
+
+    await Promise.all(
+      messageIds.map(async messageId => {
+        const message = await getMessageById(messageId);
+        if (!message) {
+          throw new Error(`deleteMessages: Message ${messageId} missing!`);
+        }
+
+        const messageConversationId = message.get('conversationId');
+        if (conversationId !== messageConversationId) {
+          throw new Error(
+            `deleteMessages: message conversation ${messageConversationId} doesn't match provided conversation ${conversationId}`
+          );
+        }
+
+        if (isOutgoing(message.attributes)) {
+          outgoingDeleted += 1;
+        } else {
+          incomingDeleted += 1;
+        }
+      })
+    );
+
+    let nearbyMessageId: string | null = null;
+
+    if (nearbyMessageId == null && lastSelectedMessage != null) {
+      const foundMessageId =
+        await window.Signal.Data.getNearbyMessageFromDeletedSet({
+          conversationId,
+          lastSelectedMessage,
+          deletedMessageIds: messageIds,
+          includeStoryReplies: false,
+          storyId: undefined,
+        });
+
+      if (foundMessageId != null) {
+        nearbyMessageId = foundMessageId;
+      }
     }
 
-    void window.Signal.Data.removeMessage(messageId);
-    if (isOutgoing(message.attributes)) {
-      conversation.decrementSentMessageCount();
-    } else {
-      conversation.decrementMessageCount();
+    await window.Signal.Data.removeMessages(messageIds);
+
+    if (outgoingDeleted > 0) {
+      conversation.decrementSentMessageCount(outgoingDeleted);
+    }
+    if (incomingDeleted > 0) {
+      conversation.decrementMessageCount(incomingDeleted);
     }
     popPanelForConversation()(dispatch, getState, undefined);
 
-    dispatch({
-      type: 'NOOP',
-      payload: null,
-    });
+    if (nearbyMessageId != null) {
+      dispatch(scrollToMessage(conversationId, nearbyMessageId));
+    }
   };
 }
 
@@ -1928,7 +1994,15 @@ function kickOffAttachmentDownload(
         `kickOffAttachmentDownload: Message ${options.messageId} missing!`
       );
     }
-    await message.queueAttachmentDownloads();
+    const didUpdateValues = await message.queueAttachmentDownloads();
+
+    if (didUpdateValues) {
+      drop(
+        window.Signal.Data.saveMessage(message.attributes, {
+          ourUuid: window.textsecure.storage.user.getCheckedUuid().toString(),
+        })
+      );
+    }
 
     dispatch({
       type: 'NOOP',
@@ -2331,7 +2405,7 @@ function createGroup(
   | CreateGroupPendingActionType
   | CreateGroupFulfilledActionType
   | CreateGroupRejectedActionType
-  | SelectedConversationChangedActionType
+  | TargetedConversationChangedActionType
 > {
   return async (dispatch, getState) => {
     const { composer } = getState().conversations;
@@ -2381,16 +2455,89 @@ function removeAllConversations(): RemoveAllConversationsActionType {
   };
 }
 
-function selectMessage(
+function targetMessage(
   messageId: string,
   conversationId: string
-): MessageSelectedActionType {
+): MessageTargetedActionType {
   return {
-    type: 'MESSAGE_SELECTED',
+    type: 'MESSAGE_TARGETED',
     payload: {
       messageId,
       conversationId,
     },
+  };
+}
+
+function toggleSelectMessage(
+  conversationId: string,
+  messageId: string,
+  shift: boolean,
+  selected: boolean
+): ThunkAction<void, RootStateType, unknown, ToggleSelectMessagesActionType> {
+  return async (dispatch, getState) => {
+    const state = getState();
+    const { conversations } = state;
+
+    let toggledMessageIds: ReadonlyArray<string>;
+    if (shift && conversations.lastSelectedMessage != null) {
+      if (conversationId !== conversations.selectedConversationId) {
+        throw new Error("toggleSelectMessage: conversationId doesn't match");
+      }
+
+      const conversation = window.ConversationController.get(conversationId);
+
+      if (conversation == null) {
+        throw new Error('toggleSelectMessage: conversation not found');
+      }
+
+      const toggledMessage = getOwn(conversations.messagesLookup, messageId);
+
+      strictAssert(
+        toggledMessage != null,
+        'toggleSelectMessage: toggled message not found'
+      );
+
+      // Sort the messages by their order in the conversation
+      const [after, before] = sortByMessageOrder(
+        [toggledMessage, conversations.lastSelectedMessage],
+        message => message
+      );
+
+      const betweenIds = await window.Signal.Data.getMessagesBetween(
+        conversationId,
+        {
+          after: {
+            sent_at: after.sent_at,
+            received_at: after.received_at,
+          },
+          before: {
+            sent_at: before.sent_at,
+            received_at: before.received_at,
+          },
+          includeStoryReplies: !isGroup(conversation.attributes),
+        }
+      );
+
+      toggledMessageIds = [messageId, ...betweenIds];
+    } else {
+      toggledMessageIds = [messageId];
+    }
+
+    dispatch({
+      type: 'TOGGLE_SELECT_MESSAGES',
+      payload: {
+        toggledMessageId: messageId,
+        messageIds: toggledMessageIds,
+        selected,
+      },
+    });
+  };
+}
+
+function toggleSelectMode(on: boolean): ToggleSelectModeActionType {
+  return {
+    type: 'TOGGLE_SELECT_MODE',
+    payload: { on },
   };
 }
 
@@ -2663,7 +2810,8 @@ function popPanelForConversation(): ThunkAction<
 > {
   return (dispatch, getState) => {
     const { conversations } = getState();
-    const { selectedConversationPanels } = conversations;
+    const { targetedConversationPanels: selectedConversationPanels } =
+      conversations;
 
     if (!selectedConversationPanels.length) {
       return;
@@ -2919,6 +3067,27 @@ function acceptConversation(conversationId: string): NoopActionType {
   };
 }
 
+function removeConversation(conversationId: string): ShowToastActionType {
+  const conversation = window.ConversationController.get(conversationId);
+  if (!conversation) {
+    throw new Error(
+      'acceptConversation: Expected a conversation to be found. Doing nothing'
+    );
+  }
+
+  drop(conversation.removeContact());
+
+  return {
+    type: SHOW_TOAST,
+    payload: {
+      toastType: ToastType.ConversationRemoved,
+      parameters: {
+        title: conversation.getTitle(),
+      },
+    },
+  };
+}
+
 function blockConversation(conversationId: string): NoopActionType {
   const conversation = window.ConversationController.get(conversationId);
   if (!conversation) {
@@ -3131,9 +3300,9 @@ function clearInvitedUuidsForNewlyCreatedGroup(): ClearInvitedUuidsForNewlyCreat
 function clearGroupCreationError(): ClearGroupCreationErrorActionType {
   return { type: 'CLEAR_GROUP_CREATION_ERROR' };
 }
-function clearSelectedMessage(): ClearSelectedMessageActionType {
+function clearTargetedMessage(): ClearTargetedMessageActionType {
   return {
-    type: 'CLEAR_SELECTED_MESSAGE',
+    type: 'CLEAR_TARGETED_MESSAGE',
     payload: null,
   };
 }
@@ -3524,7 +3693,7 @@ function showConversation({
   void,
   RootStateType,
   unknown,
-  SelectedConversationChangedActionType
+  TargetedConversationChangedActionType
 > {
   return (dispatch, getState) => {
     const { conversations } = getState();
@@ -3544,7 +3713,7 @@ function showConversation({
     }
 
     dispatch({
-      type: SELECTED_CONVERSATION_CHANGED,
+      type: TARGETED_CONVERSATION_CHANGED,
       payload: {
         conversationId,
         messageId,
@@ -3727,11 +3896,13 @@ export function getEmptyState(): ConversationsStateType {
     verificationDataByConversation: {},
     messagesByConversation: {},
     messagesLookup: {},
-    selectedMessage: undefined,
-    selectedMessageCounter: 0,
-    selectedMessageSource: undefined,
+    targetedMessage: undefined,
+    targetedMessageCounter: 0,
+    targetedMessageSource: undefined,
+    lastSelectedMessage: undefined,
+    selectedMessageIds: undefined,
     showArchived: false,
-    selectedConversationPanels: [],
+    targetedConversationPanels: [],
   };
 }
 
@@ -3967,24 +4138,24 @@ function visitListsInVerificationData(
 function maybeUpdateSelectedMessageForDetails(
   {
     messageId,
-    selectedMessageForDetails,
+    targetedMessageForDetails,
   }: {
     messageId: string;
-    selectedMessageForDetails: MessageAttributesType | undefined;
+    targetedMessageForDetails: MessageAttributesType | undefined;
   },
   state: ConversationsStateType
 ): ConversationsStateType {
-  if (!state.selectedMessageForDetails) {
+  if (!state.targetedMessageForDetails) {
     return state;
   }
 
-  if (state.selectedMessageForDetails.id !== messageId) {
+  if (state.targetedMessageForDetails.id !== messageId) {
     return state;
   }
 
   return {
     ...state,
-    selectedMessageForDetails,
+    targetedMessageForDetails,
   };
 }
 
@@ -4093,6 +4264,11 @@ export function reducer(
   }
 
   if (action.type === DISCARD_MESSAGES) {
+    if (state.selectedMessageIds != null) {
+      log.info('Not discarding messages because we are in select mode');
+      return state;
+    }
+
     const { conversationId } = action.payload;
     if ('numberToKeepAtBottom' in action.payload) {
       const { numberToKeepAtBottom } = action.payload;
@@ -4262,7 +4438,7 @@ export function reducer(
     return {
       ...omit(state, 'contactSpoofingReview'),
       selectedConversationId,
-      selectedConversationPanels: [],
+      targetedConversationPanels: [],
       messagesLookup: omit(state.messagesLookup, [...messageIds]),
       messagesByConversation: omit(state.messagesByConversation, [
         conversationId,
@@ -4312,7 +4488,7 @@ export function reducer(
       },
     };
   }
-  if (action.type === 'MESSAGE_SELECTED') {
+  if (action.type === 'MESSAGE_TARGETED') {
     const { messageId, conversationId } = action.payload;
 
     if (state.selectedConversationId !== conversationId) {
@@ -4321,9 +4497,44 @@ export function reducer(
 
     return {
       ...state,
-      selectedMessage: messageId,
-      selectedMessageCounter: state.selectedMessageCounter + 1,
-      selectedMessageSource: SelectedMessageSource.Focus,
+      targetedMessage: messageId,
+      targetedMessageCounter: state.targetedMessageCounter + 1,
+      targetedMessageSource: TargetedMessageSource.Focus,
+    };
+  }
+
+  if (action.type === 'TOGGLE_SELECT_MESSAGES') {
+    const { toggledMessageId, messageIds, selected } = action.payload;
+    let { selectedMessageIds = [] } = state;
+
+    if (selected) {
+      selectedMessageIds = selectedMessageIds.concat(messageIds);
+    } else {
+      selectedMessageIds = selectedMessageIds.filter(
+        id => !messageIds.includes(id)
+      );
+    }
+
+    const lastSelectedMessage = getOwn(state.messagesLookup, toggledMessageId);
+
+    strictAssert(lastSelectedMessage, 'Message not found in lookup');
+
+    return {
+      ...state,
+      lastSelectedMessage: selected
+        ? pick(lastSelectedMessage, 'sent_at', 'received_at')
+        : undefined,
+      selectedMessageIds,
+    };
+  }
+
+  if (action.type === 'TOGGLE_SELECT_MODE') {
+    const { on } = action.payload;
+    const { selectedMessageIds = [] } = state;
+    return {
+      ...state,
+      lastSelectedMessage: undefined,
+      selectedMessageIds: on ? selectedMessageIds : undefined,
     };
   }
 
@@ -4522,7 +4733,7 @@ export function reducer(
     // We don't keep track of messages unless their conversation is loaded...
     if (!existingConversation) {
       return maybeUpdateSelectedMessageForDetails(
-        { messageId: id, selectedMessageForDetails: data },
+        { messageId: id, targetedMessageForDetails: data },
         state
       );
     }
@@ -4531,7 +4742,7 @@ export function reducer(
     const existingMessage = getOwn(state.messagesLookup, id);
     if (!existingMessage) {
       return maybeUpdateSelectedMessageForDetails(
-        { messageId: id, selectedMessageForDetails: data },
+        { messageId: id, targetedMessageForDetails: data },
         state
       );
     }
@@ -4542,13 +4753,17 @@ export function reducer(
       return state;
     }
 
-    const toIncrement = data.reactions?.length ? 1 : 0;
+    const toIncrement =
+      data.reactions?.length ||
+      existingMessage.editHistory?.length !== data.editHistory?.length
+        ? 1
+        : 0;
 
     return {
       ...maybeUpdateSelectedMessageForDetails(
         {
           messageId: id,
-          selectedMessageForDetails: data,
+          targetedMessageForDetails: data,
         },
         state
       ),
@@ -4572,7 +4787,7 @@ export function reducer(
 
   if (action.type === MESSAGE_EXPIRED) {
     return maybeUpdateSelectedMessageForDetails(
-      { messageId: action.payload.id, selectedMessageForDetails: undefined },
+      { messageId: action.payload.id, targetedMessageForDetails: undefined },
       state
     );
   }
@@ -4639,9 +4854,9 @@ export function reducer(
       ...state,
       ...(state.selectedConversationId === conversationId
         ? {
-            selectedMessage: scrollToMessageId,
-            selectedMessageCounter: state.selectedMessageCounter + 1,
-            selectedMessageSource: SelectedMessageSource.Reset,
+            targetedMessage: scrollToMessageId,
+            targetedMessageCounter: state.targetedMessageCounter + 1,
+            targetedMessageSource: TargetedMessageSource.Reset,
           }
         : {}),
       messagesLookup: {
@@ -4732,9 +4947,9 @@ export function reducer(
 
     return {
       ...state,
-      selectedMessage: messageId,
-      selectedMessageCounter: state.selectedMessageCounter + 1,
-      selectedMessageSource: SelectedMessageSource.NavigateToMessage,
+      targetedMessage: messageId,
+      targetedMessageCounter: state.targetedMessageCounter + 1,
+      targetedMessageSource: TargetedMessageSource.NavigateToMessage,
       messagesByConversation: {
         ...messagesByConversation,
         [conversationId]: {
@@ -4754,7 +4969,7 @@ export function reducer(
     const existingConversation = messagesByConversation[conversationId];
     if (!existingConversation) {
       return maybeUpdateSelectedMessageForDetails(
-        { messageId: id, selectedMessageForDetails: undefined },
+        { messageId: id, targetedMessageForDetails: undefined },
         state
       );
     }
@@ -4801,7 +5016,7 @@ export function reducer(
 
     return {
       ...maybeUpdateSelectedMessageForDetails(
-        { messageId: id, selectedMessageForDetails: undefined },
+        { messageId: id, targetedMessageForDetails: undefined },
         state
       ),
       messagesLookup: omit(messagesLookup, id),
@@ -5022,12 +5237,12 @@ export function reducer(
       },
     };
   }
-  if (action.type === 'CLEAR_SELECTED_MESSAGE') {
+  if (action.type === 'CLEAR_TARGETED_MESSAGE') {
     return {
       ...state,
-      selectedMessage: undefined,
-      selectedMessageCounter: 0,
-      selectedMessageSource: undefined,
+      targetedMessage: undefined,
+      targetedMessageCounter: 0,
+      targetedMessageSource: undefined,
     };
   }
   if (action.type === 'CLEAR_UNREAD_METRICS') {
@@ -5054,15 +5269,15 @@ export function reducer(
       },
     };
   }
-  if (action.type === SELECTED_CONVERSATION_CHANGED) {
+  if (action.type === TARGETED_CONVERSATION_CHANGED) {
     const { payload } = action;
     const { conversationId, messageId, switchToAssociatedView } = payload;
 
     const nextState = {
       ...omit(state, 'contactSpoofingReview'),
       selectedConversationId: conversationId,
-      selectedMessage: messageId,
-      selectedMessageSource: SelectedMessageSource.NavigateToMessage,
+      targetedMessage: messageId,
+      targetedMessageSource: TargetedMessageSource.NavigateToMessage,
     };
 
     if (switchToAssociatedView && conversationId) {
@@ -5071,7 +5286,7 @@ export function reducer(
         return nextState;
       }
       return {
-        ...omit(nextState, 'composer'),
+        ...omit(nextState, 'composer', 'selectedMessageIds'),
         showArchived: Boolean(conversation.isArchived),
       };
     }
@@ -5095,25 +5310,25 @@ export function reducer(
     if (action.payload.type === PanelType.MessageDetails) {
       return {
         ...state,
-        selectedConversationPanels: [
-          ...state.selectedConversationPanels,
+        targetedConversationPanels: [
+          ...state.targetedConversationPanels,
           action.payload,
         ],
-        selectedMessageForDetails: action.payload.args.message,
+        targetedMessageForDetails: action.payload.args.message,
       };
     }
 
     return {
       ...state,
-      selectedConversationPanels: [
-        ...state.selectedConversationPanels,
+      targetedConversationPanels: [
+        ...state.targetedConversationPanels,
         action.payload,
       ],
     };
   }
 
   if (action.type === POP_PANEL) {
-    const { selectedConversationPanels } = state;
+    const { targetedConversationPanels: selectedConversationPanels } = state;
     const nextPanels = [...selectedConversationPanels];
     const panel = nextPanels.pop();
 
@@ -5124,14 +5339,14 @@ export function reducer(
     if (panel.type === PanelType.MessageDetails) {
       return {
         ...state,
-        selectedConversationPanels: nextPanels,
-        selectedMessageForDetails: undefined,
+        targetedConversationPanels: nextPanels,
+        targetedMessageForDetails: undefined,
       };
     }
 
     return {
       ...state,
-      selectedConversationPanels: nextPanels,
+      targetedConversationPanels: nextPanels,
     };
   }
 

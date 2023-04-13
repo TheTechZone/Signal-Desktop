@@ -71,19 +71,19 @@ const VerifiedStatus = {
 };
 
 export function lookupVerifiedStatus(status: number): string {
-  if(!validateVerifiedStatus(status)) return "unverified";
-  switch(status) {
+  if (!validateVerifiedStatus(status)) return 'unverified';
+  switch (status) {
     case VerifiedStatus.VERIFIED:
     case VerifiedStatus.MANUALLY_VERIFIED:
-      return "manually_verified";
+      return 'manually_verified';
     case VerifiedStatus.DIRECTLY_VERIFIED:
-      return "directly_verified";
+      return 'directly_verified';
     case VerifiedStatus.INTRODUCED:
-      return "introduced";
+      return 'introduced';
     case VerifiedStatus.DUPLEX_VERIFIED:
-      return "duplex_verified";
+      return 'duplex_verified';
     default:
-      return "unverified";
+      return 'unverified';
   }
 }
 
@@ -1429,7 +1429,7 @@ export class SignalProtocolStore extends EventEmitter {
 
     const sessionResets = window.storage.get(
       'sessionResets',
-      <SessionResetsType>{}
+      {} as SessionResetsType
     );
 
     const lastReset = sessionResets[id];

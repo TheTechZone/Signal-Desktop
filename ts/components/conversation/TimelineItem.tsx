@@ -50,6 +50,7 @@ import type { PropsType as PaymentEventNotificationPropsType } from './PaymentEv
 import { PaymentEventNotification } from './PaymentEventNotification';
 import type { PropsDataType as ConversationMergeNotificationPropsType } from './ConversationMergeNotification';
 import { ConversationMergeNotification } from './ConversationMergeNotification';
+import { SystemMessage } from './SystemMessage';
 import type { FullJSXType } from '../Intl';
 import { TimelineMessage } from './TimelineMessage';
 
@@ -79,6 +80,10 @@ type TimerNotificationType = {
 };
 type UniversalTimerNotificationType = {
   type: 'universalTimerNotification';
+  data: null;
+};
+type ContactRemovedNotificationType = {
+  type: 'contactRemovedNotification';
   data: null;
 };
 type ChangeNumberNotificationType = {
@@ -137,6 +142,7 @@ export type TimelineItemType = (
   | SafetyNumberNotificationType
   | TimerNotificationType
   | UniversalTimerNotificationType
+  | ContactRemovedNotificationType
   | UnsupportedMessageType
   | VerificationNotificationType
   | PaymentEventType
@@ -148,9 +154,10 @@ type PropsLocalType = {
   item?: TimelineItemType;
   id: string;
   isNextItemCallingNotification: boolean;
-  isSelected: boolean;
-  selectMessage: (messageId: string, conversationId: string) => unknown;
+  isTargeted: boolean;
+  targetMessage: (messageId: string, conversationId: string) => unknown;
   shouldRenderDateHeader: boolean;
+  platform: string;
   renderContact: SmartContactRendererType<FullJSXType>;
   renderUniversalTimerNotification: () => JSX.Element;
   i18n: LocalizerType;
@@ -186,11 +193,12 @@ export class TimelineItem extends React.PureComponent<PropsType> {
       i18n,
       id,
       isNextItemCallingNotification,
-      isSelected,
+      isTargeted,
       item,
+      platform,
       renderUniversalTimerNotification,
       returnToActiveCall,
-      selectMessage,
+      targetMessage,
       shouldCollapseAbove,
       shouldCollapseBelow,
       shouldHideMetadata,
@@ -216,13 +224,14 @@ export class TimelineItem extends React.PureComponent<PropsType> {
         <TimelineMessage
           {...reducedProps}
           {...item.data}
-          isSelected={isSelected}
-          selectMessage={selectMessage}
+          isTargeted={isTargeted}
+          targetMessage={targetMessage}
           shouldCollapseAbove={shouldCollapseAbove}
           shouldCollapseBelow={shouldCollapseBelow}
           shouldHideMetadata={shouldHideMetadata}
           containerElementRef={containerElementRef}
           getPreferredBadge={getPreferredBadge}
+          platform={platform}
           i18n={i18n}
           theme={theme}
         />
@@ -263,6 +272,13 @@ export class TimelineItem extends React.PureComponent<PropsType> {
         );
       } else if (item.type === 'universalTimerNotification') {
         notification = renderUniversalTimerNotification();
+      } else if (item.type === 'contactRemovedNotification') {
+        notification = (
+          <SystemMessage
+            icon="info"
+            contents={i18n('icu:ContactRemovedNotification__text')}
+          />
+        );
       } else if (item.type === 'changeNumberNotification') {
         notification = (
           <ChangeNumberNotification
@@ -346,8 +362,8 @@ export class TimelineItem extends React.PureComponent<PropsType> {
         <InlineNotificationWrapper
           id={id}
           conversationId={conversationId}
-          isSelected={isSelected}
-          selectMessage={selectMessage}
+          isTargeted={isTargeted}
+          targetMessage={targetMessage}
         >
           {notification}
         </InlineNotificationWrapper>

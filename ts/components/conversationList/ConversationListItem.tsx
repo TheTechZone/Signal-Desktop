@@ -53,6 +53,7 @@ export type PropsData = Pick<
   | 'muteExpiresAt'
   | 'phoneNumber'
   | 'profileName'
+  | 'removalStage'
   | 'sharedGroupNames'
   | 'shouldShowDraft'
   | 'title'
@@ -92,6 +93,7 @@ export const ConversationListItem: FunctionComponent<Props> = React.memo(
     onClick,
     phoneNumber,
     profileName,
+    removalStage,
     sharedGroupNames,
     shouldShowDraft,
     theme,
@@ -109,7 +111,7 @@ export const ConversationListItem: FunctionComponent<Props> = React.memo(
           <ContactName
             module={HEADER_CONTACT_NAME_CLASS_NAME}
             isMe={isMe}
-            title={i18n('noteToSelf')}
+            title={i18n('icu:noteToSelf')}
           />
         ) : (
           <ContactName
@@ -125,10 +127,10 @@ export const ConversationListItem: FunctionComponent<Props> = React.memo(
     let messageText: ReactNode = null;
     let messageStatusIcon: ReactNode = null;
 
-    if (!acceptedMessageRequest) {
+    if (!acceptedMessageRequest && removalStage !== 'justNotification') {
       messageText = (
         <span className={`${MESSAGE_TEXT_CLASS_NAME}__message-request`}>
-          {i18n('ConversationListItem--message-request')}
+          {i18n('icu:ConversationListItem--message-request')}
         </span>
       );
     } else if (typingContactId) {
@@ -137,7 +139,7 @@ export const ConversationListItem: FunctionComponent<Props> = React.memo(
       messageText = (
         <>
           <span className={`${MESSAGE_TEXT_CLASS_NAME}__draft-prefix`}>
-            {i18n('ConversationListItem--draft-prefix')}
+            {i18n('icu:ConversationListItem--draft-prefix')}
           </span>
           <MessageBody
             text={truncateMessageText(draftPreview)}
@@ -150,7 +152,7 @@ export const ConversationListItem: FunctionComponent<Props> = React.memo(
     } else if (lastMessage?.deletedForEveryone) {
       messageText = (
         <span className={`${MESSAGE_TEXT_CLASS_NAME}__deleted-for-everyone`}>
-          {i18n('message--deletedForEveryone')}
+          {i18n('icu:message--deletedForEveryone')}
         </span>
       );
     } else if (lastMessage) {

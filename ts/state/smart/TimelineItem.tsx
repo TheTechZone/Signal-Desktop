@@ -16,8 +16,13 @@ import { useLightboxActions } from '../ducks/lightbox';
 import { useStoriesActions } from '../ducks/stories';
 import { useCallingActions } from '../ducks/calling';
 import { getPreferredBadgeSelector } from '../selectors/badges';
-import { getIntl, getInteractionMode, getTheme } from '../selectors/user';
-import { getSelectedMessage } from '../selectors/conversations';
+import {
+  getIntl,
+  getInteractionMode,
+  getTheme,
+  getPlatform,
+} from '../selectors/user';
+import { getTargetedMessage } from '../selectors/conversations';
 import { getTimelineItem } from '../selectors/timeline';
 import {
   areMessagesInSameGroup,
@@ -67,13 +72,14 @@ export function SmartTimelineItem(props: ExternalProps): JSX.Element {
   const getPreferredBadge = useSelector(getPreferredBadgeSelector);
   const interactionMode = useSelector(getInteractionMode);
   const theme = useSelector(getTheme);
+  const platform = useSelector(getPlatform);
   const item = useProxySelector(getTimelineItem, messageId);
   const previousItem = useProxySelector(getTimelineItem, previousMessageId);
   const nextItem = useProxySelector(getTimelineItem, nextMessageId);
 
-  const selectedMessage = useSelector(getSelectedMessage);
-  const isSelected = Boolean(
-    selectedMessage && messageId === selectedMessage.id
+  const targetedMessage = useSelector(getTargetedMessage);
+  const isTargeted = Boolean(
+    targetedMessage && messageId === targetedMessage.id
   );
 
   const isNextItemCallingNotification = nextItem?.type === 'callHistory';
@@ -105,8 +111,8 @@ export function SmartTimelineItem(props: ExternalProps): JSX.Element {
 
   const {
     blockGroupLinkRequests,
-    clearSelectedMessage,
-    deleteMessage,
+    clearTargetedMessage: clearSelectedMessage,
+    deleteMessages,
     deleteMessageForEveryone,
     doubleCheckMissingQuoteReference,
     kickOffAttachmentDownload,
@@ -117,7 +123,8 @@ export function SmartTimelineItem(props: ExternalProps): JSX.Element {
     retryDeleteForEveryone,
     retryMessageSend,
     saveAttachment,
-    selectMessage,
+    targetMessage,
+    toggleSelectMessage,
     showConversation,
     showExpiredIncomingTapToViewToast,
     showExpiredOutgoingTapToViewToast,
@@ -129,7 +136,8 @@ export function SmartTimelineItem(props: ExternalProps): JSX.Element {
 
   const {
     showContactModal,
-    toggleForwardMessageModal,
+    showEditHistoryModal,
+    toggleForwardMessagesModal,
     toggleSafetyNumberModal,
   } = useGlobalModalActions();
 
@@ -150,7 +158,7 @@ export function SmartTimelineItem(props: ExternalProps): JSX.Element {
       conversationId={conversationId}
       getPreferredBadge={getPreferredBadge}
       isNextItemCallingNotification={isNextItemCallingNotification}
-      isSelected={isSelected}
+      isTargeted={isTargeted}
       renderAudioAttachment={renderAudioAttachment}
       renderContact={renderContact}
       renderEmojiPicker={renderEmojiPicker}
@@ -160,13 +168,15 @@ export function SmartTimelineItem(props: ExternalProps): JSX.Element {
       shouldCollapseBelow={shouldCollapseBelow}
       shouldHideMetadata={shouldHideMetadata}
       shouldRenderDateHeader={shouldRenderDateHeader}
+      showEditHistoryModal={showEditHistoryModal}
       i18n={i18n}
       interactionMode={interactionMode}
       theme={theme}
+      platform={platform}
       blockGroupLinkRequests={blockGroupLinkRequests}
       checkForAccount={checkForAccount}
-      clearSelectedMessage={clearSelectedMessage}
-      deleteMessage={deleteMessage}
+      clearTargetedMessage={clearSelectedMessage}
+      deleteMessages={deleteMessages}
       deleteMessageForEveryone={deleteMessageForEveryone}
       doubleCheckMissingQuoteReference={doubleCheckMissingQuoteReference}
       kickOffAttachmentDownload={kickOffAttachmentDownload}
@@ -180,7 +190,7 @@ export function SmartTimelineItem(props: ExternalProps): JSX.Element {
       returnToActiveCall={returnToActiveCall}
       saveAttachment={saveAttachment}
       scrollToQuotedMessage={scrollToQuotedMessage}
-      selectMessage={selectMessage}
+      targetMessage={targetMessage}
       setQuoteByMessageId={setQuoteByMessageId}
       showContactModal={showContactModal}
       showConversation={showConversation}
@@ -190,9 +200,10 @@ export function SmartTimelineItem(props: ExternalProps): JSX.Element {
       showLightboxForViewOnceMedia={showLightboxForViewOnceMedia}
       startCallingLobby={startCallingLobby}
       startConversation={startConversation}
-      toggleForwardMessageModal={toggleForwardMessageModal}
+      toggleForwardMessagesModal={toggleForwardMessagesModal}
       toggleSafetyNumberModal={toggleSafetyNumberModal}
       viewStory={viewStory}
+      toggleSelectMessage={toggleSelectMessage}
     />
   );
 }

@@ -77,17 +77,18 @@ import { enqueueReactionForSend } from '../../reactions/enqueueReactionForSend';
 import { useBoundActions } from '../../hooks/useBoundActions';
 import {
   CONVERSATION_UNLOADED,
-  SELECTED_CONVERSATION_CHANGED,
+  TARGETED_CONVERSATION_CHANGED,
   scrollToMessage,
 } from './conversations';
 import type {
   ConversationUnloadedActionType,
-  SelectedConversationChangedActionType,
+  TargetedConversationChangedActionType,
   ScrollToMessageActionType,
 } from './conversations';
 import { longRunningTaskWrapper } from '../../util/longRunningTaskWrapper';
 import { drop } from '../../util/drop';
 import { strictAssert } from '../../util/assert';
+import { makeQuote } from '../../util/makeQuote';
 
 // State
 // eslint-disable-next-line local-rules/type-alias-readonlydeep
@@ -99,6 +100,7 @@ type ComposerStateByConversationType = {
   linkPreviewResult?: LinkPreviewType;
   messageCompositionId: UUIDStringType;
   quotedMessage?: Pick<MessageAttributesType, 'conversationId' | 'quote'>;
+  sendCounter: number;
   shouldSendHighQualityAttachments?: boolean;
 };
 
@@ -120,6 +122,7 @@ function getEmptyComposerState(): ComposerStateByConversationType {
     isDisabled: false,
     linkPreviewLoading: false,
     messageCompositionId: UUID.generate().toString(),
+    sendCounter: 0,
   };
 }
 
@@ -133,6 +136,7 @@ export function getComposerStateForConversation(
 // Actions
 
 const ADD_PENDING_ATTACHMENT = 'composer/ADD_PENDING_ATTACHMENT';
+const INCREMENT_SEND_COUNTER = 'composer/INCREMENT_SEND_COUNTER';
 const REPLACE_ATTACHMENTS = 'composer/REPLACE_ATTACHMENTS';
 const RESET_COMPOSER = 'composer/RESET_COMPOSER';
 const SET_FOCUS = 'composer/SET_FOCUS';
@@ -145,6 +149,13 @@ type AddPendingAttachmentActionType = ReadonlyDeep<{
   payload: {
     conversationId: string;
     attachment: AttachmentDraftType;
+  };
+}>;
+
+export type IncrementSendActionType = ReadonlyDeep<{
+  type: typeof INCREMENT_SEND_COUNTER;
+  payload: {
+    conversationId: string;
   };
 }>;
 
@@ -201,10 +212,11 @@ type ComposerActionType =
   | AddLinkPreviewActionType
   | AddPendingAttachmentActionType
   | ConversationUnloadedActionType
+  | IncrementSendActionType
   | RemoveLinkPreviewActionType
   | ReplaceAttachmentsActionType
   | ResetComposerActionType
-  | SelectedConversationChangedActionType
+  | TargetedConversationChangedActionType
   | SetComposerDisabledStateActionType
   | SetFocusActionType
   | SetHighQualitySettingActionType
@@ -216,6 +228,7 @@ export const actions = {
   addAttachment,
   addPendingAttachment,
   cancelJoinRequest,
+  incrementSendCounter,
   onClearAttachments,
   onCloseLinkPreview,
   onEditorStateChange,
@@ -234,6 +247,15 @@ export const actions = {
   setQuoteByMessageId,
   setQuotedMessage,
 };
+
+function incrementSendCounter(conversationId: string): IncrementSendActionType {
+  return {
+    type: INCREMENT_SEND_COUNTER,
+    payload: {
+      conversationId,
+    },
+  };
+}
 
 export const useComposerActions = (): BoundActionCreatorsMapObject<
   typeof actions
@@ -369,6 +391,7 @@ function sendMultiMediaMessage(
   void,
   RootStateType,
   unknown,
+  | IncrementSendActionType
   | NoopActionType
   | ResetComposerActionType
   | SetComposerDisabledStateActionType
@@ -494,7 +517,7 @@ function sendMultiMediaMessage(
               getState,
               undefined
             );
-            dispatch(resetComposer(conversationId));
+            dispatch(incrementSendCounter(conversationId));
             dispatch(setComposerDisabledState(conversationId, false));
           },
         }
@@ -630,7 +653,7 @@ export function setQuoteByMessageId(
     }
 
     if (message) {
-      const quote = await conversation.makeQuote(message);
+      const quote = await makeQuote(message.attributes);
 
       // In case the conversation changed while we were about to set the quote
       if (getState().conversations.selectedConversationId !== conversationId) {
@@ -786,44 +809,66 @@ export function setComposerFocus(
   };
 }
 
-function onEditorStateChange(
-  conversationId: string | undefined,
-  messageText: string,
-  bodyRanges: DraftBodyRangesType,
-  caretLocation?: number
-): NoopActionType {
-  if (!conversationId) {
-    throw new Error(
-      'onEditorStateChange: Got falsey conversationId, needs local override'
-    );
-  }
+function onEditorStateChange({
+  bodyRanges,
+  caretLocation,
+  conversationId,
+  messageText,
+  sendCounter,
+}: {
+  bodyRanges: DraftBodyRangesType;
+  caretLocation?: number;
+  conversationId: string | undefined;
+  messageText: string;
+  sendCounter: number;
+}): ThunkAction<void, RootStateType, unknown, NoopActionType> {
+  return (dispatch, getState) => {
+    if (!conversationId) {
+      throw new Error(
+        'onEditorStateChange: Got falsey conversationId, needs local override'
+      );
+    }
 
-  const conversation = window.ConversationController.get(conversationId);
-  if (!conversation) {
-    throw new Error('processAttachments: Unable to find conversation');
-  }
+    const conversation = window.ConversationController.get(conversationId);
+    if (!conversation) {
+      throw new Error('processAttachments: Unable to find conversation');
+    }
 
-  if (messageText.length && conversation.throttledBumpTyping) {
-    conversation.throttledBumpTyping();
-  }
+    const state = getState().composer.conversations[conversationId];
+    if (!state) {
+      return;
+    }
 
-  debouncedSaveDraft(conversationId, messageText, bodyRanges);
+    if (state.sendCounter !== sendCounter) {
+      log.warn(
+        `onEditorStateChange: Got update for conversation ${conversation.idForLogging()}`,
+        `but sendCounter doesnt match (old: ${state.sendCounter}, new: ${sendCounter})`
+      );
+      return;
+    }
 
-  // If we have attachments, don't add link preview
-  if (
-    !hasDraftAttachments(conversation.attributes.draftAttachments, {
-      includePending: true,
-    })
-  ) {
-    maybeGrabLinkPreview(messageText, LinkPreviewSourceType.Composer, {
-      caretLocation,
-      conversationId,
+    if (messageText.length && conversation.throttledBumpTyping) {
+      conversation.throttledBumpTyping();
+    }
+
+    debouncedSaveDraft(conversationId, messageText, bodyRanges);
+
+    // If we have attachments, don't add link preview
+    if (
+      !hasDraftAttachments(conversation.attributes.draftAttachments, {
+        includePending: true,
+      })
+    ) {
+      maybeGrabLinkPreview(messageText, LinkPreviewSourceType.Composer, {
+        caretLocation,
+        conversationId,
+      });
+    }
+
+    dispatch({
+      type: 'NOOP',
+      payload: null,
     });
-  }
-
-  return {
-    type: 'NOOP',
-    payload: null,
   };
 }
 
@@ -1267,7 +1312,7 @@ export function reducer(
     };
   }
 
-  if (action.type === SELECTED_CONVERSATION_CHANGED) {
+  if (action.type === TARGETED_CONVERSATION_CHANGED) {
     if (action.payload.conversationId) {
       return {
         ...state,
@@ -1292,6 +1337,12 @@ export function reducer(
       ...(attachments.length
         ? {}
         : { shouldSendHighQualityAttachments: undefined }),
+    }));
+  }
+
+  if (action.type === INCREMENT_SEND_COUNTER) {
+    return updateComposerState(state, action, prevState => ({
+      sendCounter: prevState.sendCounter + 1,
     }));
   }
 

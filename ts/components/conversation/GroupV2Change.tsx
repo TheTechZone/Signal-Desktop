@@ -55,7 +55,7 @@ export type PropsType = PropsDataType &
 function renderStringToIntl(
   id: string,
   i18n: LocalizerType,
-  components?: Array<FullJSXType> | ReplacementValuesType<FullJSXType>
+  components?: ReplacementValuesType<FullJSXType>
 ): FullJSXType {
   // eslint-disable-next-line local-rules/valid-i18n-keys
   return <Intl id={id} i18n={i18n} components={components} />;
@@ -216,11 +216,11 @@ function GroupV2Detail({
       modalNode = (
         <ConfirmationDialog
           dialogName="GroupV2Change.confirmBlockLinkRequests"
-          title={i18n('PendingRequests--block--title')}
+          title={i18n('icu:PendingRequests--block--title')}
           actions={[
             {
               action: () => blockGroupLinkRequests(conversationId, detail.uuid),
-              text: i18n('PendingRequests--block--confirm'),
+              text: i18n('icu:PendingRequests--block--confirm'),
               style: 'affirmative',
             },
           ]}
@@ -228,7 +228,7 @@ function GroupV2Detail({
           onClose={() => setModalState(ModalState.None)}
         >
           <Intl
-            id="PendingRequests--block--contents"
+            id="icu:PendingRequests--block--contents"
             i18n={i18n}
             components={{
               name: renderContact(detail.uuid),
@@ -252,7 +252,7 @@ function GroupV2Detail({
         size={ButtonSize.Small}
         variant={ButtonVariant.SystemMessage}
       >
-        {i18n('view')}
+        {i18n('icu:view')}
       </Button>
     );
   } else if (
@@ -274,7 +274,7 @@ function GroupV2Detail({
         size={ButtonSize.Small}
         variant={ButtonVariant.SystemMessage}
       >
-        {i18n('PendingRequests--block--button')}
+        {i18n('icu:PendingRequests--block--button')}
       </Button>
     );
   }

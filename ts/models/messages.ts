@@ -80,7 +80,6 @@ import { migrateLegacySendAttributes } from '../messages/migrateLegacySendAttrib
 import { getOwn } from '../util/getOwn';
 import { markRead, markViewed } from '../services/MessageUpdater';
 import { scheduleOptimizeFTS } from '../services/ftsOptimizer';
-import { isMessageUnread } from '../util/isMessageUnread';
 import {
   isDirectConversation,
   isGroup,
@@ -99,6 +98,7 @@ import {
   hasErrors,
   isCallHistory,
   isChatSessionRefreshed,
+  isContactRemovedNotification,
   isDeliveryIssue,
   isEndSession,
   isExpirationTimerUpdate,
@@ -181,78 +181,10 @@ import {
 } from '../util/attachmentDownloadQueue';
 import { getTitleNoDefault, getNumber } from '../util/getTitle';
 import dataInterface from '../sql/Client';
-
-function isSameUuid(
-  a: UUID | string | null | undefined,
-  b: UUID | string | null | undefined
-): boolean {
-  return a != null && b != null && String(a) === String(b);
-}
-
-async function shouldReplyNotifyUser(
-  message: MessageModel,
-  conversation: ConversationModel
-): Promise<boolean> {
-  // Don't notify if the message has already been read
-  if (!isMessageUnread(message.attributes)) {
-    return false;
-  }
-
-  const storyId = message.get('storyId');
-
-  // If this is not a reply to a story, always notify.
-  if (storyId == null) {
-    return true;
-  }
-
-  // Always notify if this is not a group
-  if (!isGroup(conversation.attributes)) {
-    return true;
-  }
-
-  const matchedStory = window.reduxStore
-    .getState()
-    .stories.stories.find(story => {
-      return story.messageId === storyId;
-    });
-
-  // If we can't find the story, don't notify
-  if (matchedStory == null) {
-    log.warn("Couldn't find story for reply");
-    return false;
-  }
-
-  const currentUserId = window.textsecure.storage.user.getUuid();
-  const storySourceId = matchedStory.sourceUuid;
-
-  const currentUserIdSource = isSameUuid(storySourceId, currentUserId);
-
-  // If the story is from the current user, always notify
-  if (currentUserIdSource) {
-    return true;
-  }
-
-  // If the story is from a different user, only notify if the user has
-  // replied or reacted to the story
-
-  const replies = await dataInterface.getOlderMessagesByConversation({
-    conversationId: conversation.id,
-    limit: 9000,
-    storyId,
-    includeStoryReplies: true,
-  });
-
-  const prevCurrentUserReply = replies.find(replyMessage => {
-    return replyMessage.type === 'outgoing';
-  });
-
-  if (prevCurrentUserReply != null) {
-    return true;
-  }
-
-  // Otherwise don't notify
-  return false;
-}
+import * as Edits from '../messageModifiers/Edits';
+import { handleEditMessage } from '../util/handleEditMessage';
+import { getQuoteBodyText } from '../util/getQuoteBodyText';
+import { shouldReplyNotifyUser } from '../util/shouldReplyNotifyUser';
 
 /* eslint-disable more/no-then */
 
@@ -410,6 +342,7 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
     return (
       !isCallHistory(attributes) &&
       !isChatSessionRefreshed(attributes) &&
+      !isContactRemovedNotification(attributes) &&
       !isConversationMerge(attributes) &&
       !isEndSession(attributes) &&
       !isExpirationTimerUpdate(attributes) &&
@@ -489,7 +422,7 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
     if (isDeliveryIssue(attributes)) {
       return {
         emoji: '⚠️',
-        text: window.i18n('DeliveryIssue--preview'),
+        text: window.i18n('icu:DeliveryIssue--preview'),
       };
     }
 
@@ -521,19 +454,19 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
     if (isChatSessionRefreshed(attributes)) {
       return {
         emoji: '🔁',
-        text: window.i18n('ChatRefresh--notification'),
+        text: window.i18n('icu:ChatRefresh--notification'),
       };
     }
 
     if (isUnsupportedMessage(attributes)) {
       return {
-        text: window.i18n('message--getDescription--unsupported-message'),
+        text: window.i18n('icu:message--getDescription--unsupported-message'),
       };
     }
 
     if (isGroupV1Migration(attributes)) {
       return {
-        text: window.i18n('GroupV1--Migration--was-upgraded'),
+        text: window.i18n('icu:GroupV1--Migration--was-upgraded'),
       };
     }
 
@@ -574,13 +507,16 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
             window.ConversationController.get(conversationId);
           return conversation
             ? conversation.getTitle()
-            : window.i18n('unknownContact');
+            : window.i18n('icu:unknownContact');
         },
         renderString: (
           key: string,
           _i18n: unknown,
-          components: Array<string> | ReplacementValuesType<string> | undefined
-        ) => window.i18n(key, components),
+          components: ReplacementValuesType<string | number> | undefined
+        ) => {
+          // eslint-disable-next-line local-rules/valid-i18n-keys
+          return window.i18n(key, components);
+        },
       });
 
       return { text: changes.map(({ text }) => text).join(' ') };
@@ -606,25 +542,25 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
     if (isTapToView(attributes)) {
       if (this.isErased()) {
         return {
-          text: window.i18n('message--getDescription--disappearing-media'),
+          text: window.i18n('icu:message--getDescription--disappearing-media'),
         };
       }
 
       if (Attachment.isImage(attachments)) {
         return {
-          text: window.i18n('message--getDescription--disappearing-photo'),
+          text: window.i18n('icu:message--getDescription--disappearing-photo'),
           emoji: '📷',
         };
       }
       if (Attachment.isVideo(attachments)) {
         return {
-          text: window.i18n('message--getDescription--disappearing-video'),
+          text: window.i18n('icu:message--getDescription--disappearing-video'),
           emoji: '🎥',
         };
       }
       // There should be an image or video attachment, but we have a fallback just in
       //   case.
-      return { text: window.i18n('mediaMessage'), emoji: '📎' };
+      return { text: window.i18n('icu:mediaMessage'), emoji: '📎' };
     }
 
     if (isGroupUpdate(attributes)) {
@@ -636,13 +572,13 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
       }
 
       if (groupUpdate.left === 'You') {
-        return { text: window.i18n('youLeftTheGroup') };
+        return { text: window.i18n('icu:youLeftTheGroup') };
       }
       if (groupUpdate.left) {
         return {
-          text: window.i18n('leftTheGroup', [
-            this.getNameForNumber(groupUpdate.left),
-          ]),
+          text: window.i18n('icu:leftTheGroup', {
+            name: this.getNameForNumber(groupUpdate.left),
+          }),
         };
       }
 
@@ -651,9 +587,13 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
       }
 
       if (isMe(fromContact.attributes)) {
-        messages.push(window.i18n('youUpdatedTheGroup'));
+        messages.push(window.i18n('icu:youUpdatedTheGroup'));
       } else {
-        messages.push(window.i18n('updatedTheGroup', [fromContact.getTitle()]));
+        messages.push(
+          window.i18n('icu:updatedTheGroup', {
+            name: fromContact.getTitle(),
+          })
+        );
       }
 
       if (groupUpdate.joined && groupUpdate.joined.length) {
@@ -666,13 +606,15 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
 
         if (joinedContacts.length > 1) {
           messages.push(
-            window.i18n('multipleJoinedTheGroup', [
-              joinedWithoutMe.map(contact => contact.getTitle()).join(', '),
-            ])
+            window.i18n('icu:multipleJoinedTheGroup', {
+              names: joinedWithoutMe
+                .map(contact => contact.getTitle())
+                .join(', '),
+            })
           );
 
           if (joinedWithoutMe.length < joinedContacts.length) {
-            messages.push(window.i18n('youJoinedTheGroup'));
+            messages.push(window.i18n('icu:youJoinedTheGroup'));
           }
         } else {
           const joinedContact = window.ConversationController.getOrCreate(
@@ -680,29 +622,35 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
             'private'
           );
           if (isMe(joinedContact.attributes)) {
-            messages.push(window.i18n('youJoinedTheGroup'));
+            messages.push(window.i18n('icu:youJoinedTheGroup'));
           } else {
             messages.push(
-              window.i18n('joinedTheGroup', [joinedContacts[0].getTitle()])
+              window.i18n('icu:joinedTheGroup', {
+                name: joinedContacts[0].getTitle(),
+              })
             );
           }
         }
       }
 
       if (groupUpdate.name) {
-        messages.push(window.i18n('titleIsNow', [groupUpdate.name]));
+        messages.push(
+          window.i18n('icu:titleIsNow', {
+            name: groupUpdate.name,
+          })
+        );
       }
       if (groupUpdate.avatarUpdated) {
-        messages.push(window.i18n('updatedGroupAvatar'));
+        messages.push(window.i18n('icu:updatedGroupAvatar'));
       }
 
       return { text: messages.join(' ') };
     }
     if (isEndSession(attributes)) {
-      return { text: window.i18n('sessionEnded') };
+      return { text: window.i18n('icu:sessionEnded') };
     }
     if (isIncoming(attributes) && hasErrors(attributes)) {
-      return { text: window.i18n('incomingError') };
+      return { text: window.i18n('icu:incomingError') };
     }
 
     const body = (this.get('body') || '').trim();
@@ -714,38 +662,40 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
 
       if (contentType === MIME.IMAGE_GIF || Attachment.isGIF(attachments)) {
         return {
-          text: body || window.i18n('message--getNotificationText--gif'),
+          text: body || window.i18n('icu:message--getNotificationText--gif'),
           emoji: '🎡',
         };
       }
       if (Attachment.isImage(attachments)) {
         return {
-          text: body || window.i18n('message--getNotificationText--photo'),
+          text: body || window.i18n('icu:message--getNotificationText--photo'),
           emoji: '📷',
         };
       }
       if (Attachment.isVideo(attachments)) {
         return {
-          text: body || window.i18n('message--getNotificationText--video'),
+          text: body || window.i18n('icu:message--getNotificationText--video'),
           emoji: '🎥',
         };
       }
       if (Attachment.isVoiceMessage(attachment)) {
         return {
           text:
-            body || window.i18n('message--getNotificationText--voice-message'),
+            body ||
+            window.i18n('icu:message--getNotificationText--voice-message'),
           emoji: '🎤',
         };
       }
       if (Attachment.isAudio(attachments)) {
         return {
           text:
-            body || window.i18n('message--getNotificationText--audio-message'),
+            body ||
+            window.i18n('icu:message--getNotificationText--audio-message'),
           emoji: '🔈',
         };
       }
       return {
-        text: body || window.i18n('message--getNotificationText--file'),
+        text: body || window.i18n('icu:message--getNotificationText--file'),
         emoji: '📎',
       };
     }
@@ -760,7 +710,7 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
         log.warn('Unable to get emoji for sticker');
       }
       return {
-        text: window.i18n('message--getNotificationText--stickers'),
+        text: window.i18n('icu:message--getNotificationText--stickers'),
         emoji: dropNull(emoji),
       };
     }
@@ -784,13 +734,13 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const { expireTimer } = this.get('expirationTimerUpdate')!;
       if (!expireTimer) {
-        return { text: window.i18n('disappearingMessagesDisabled') };
+        return { text: window.i18n('icu:disappearingMessagesDisabled') };
       }
 
       return {
-        text: window.i18n('timerSetTo', [
-          expirationTimer.format(window.i18n, expireTimer),
-        ]),
+        text: window.i18n('icu:timerSetTo', {
+          time: expirationTimer.format(window.i18n, expireTimer),
+        }),
       };
     }
 
@@ -798,16 +748,17 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
       const identifier = this.get('key_changed');
       const conversation = window.ConversationController.get(identifier);
       return {
-        text: window.i18n('safetyNumberChangedGroup', [
-          conversation ? conversation.getTitle() : '',
-        ]),
+        text: window.i18n('icu:safetyNumberChangedGroup', {
+          name: conversation ? conversation.getTitle() : '',
+        }),
       };
     }
     const contacts = this.get('contact');
     if (contacts && contacts.length) {
       return {
         text:
-          EmbeddedContact.getName(contacts[0]) || window.i18n('unknownContact'),
+          EmbeddedContact.getName(contacts[0]) ||
+          window.i18n('icu:unknownContact'),
         emoji: '👤',
       };
     }
@@ -819,24 +770,25 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
 
       if (isOutgoing(this.attributes)) {
         const recipient =
-          fromContact?.getTitle() ?? window.i18n('unknownContact');
+          fromContact?.getTitle() ?? window.i18n('icu:unknownContact');
         return {
           emoji,
-          text: window.i18n('icu:message--giftBadge--preview--sent', {
+          text: window.i18n('icu:message--donation--preview--sent', {
             recipient,
           }),
         };
       }
 
-      const sender = fromContact?.getTitle() ?? window.i18n('unknownContact');
+      const sender =
+        fromContact?.getTitle() ?? window.i18n('icu:unknownContact');
       return {
         emoji,
         text:
           giftBadge.state === GiftBadgeStates.Unopened
-            ? window.i18n('icu:message--giftBadge--preview--unopened', {
+            ? window.i18n('icu:message--donation--preview--unopened', {
                 sender,
               })
-            : window.i18n('icu:message--giftBadge--preview--redeemed'),
+            : window.i18n('icu:message--donation--preview--redeemed'),
       };
     }
 
@@ -864,7 +816,7 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
   getAuthorText(): string | undefined {
     // if it's outgoing, it must be self-authored
     const selfAuthor = isOutgoing(this.attributes)
-      ? window.i18n('you')
+      ? window.i18n('icu:you')
       : undefined;
 
     // if it's not selfAuthor and there's no incoming contact,
@@ -882,14 +834,14 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
 
         if (!name) {
           return window.i18n(
-            'Quote__story-reaction-notification--outgoing--nameless',
+            'icu:Quote__story-reaction-notification--outgoing--nameless',
             {
               emoji: attributes.storyReaction.emoji,
             }
           );
         }
 
-        return window.i18n('Quote__story-reaction-notification--outgoing', {
+        return window.i18n('icu:Quote__story-reaction-notification--outgoing', {
           emoji: attributes.storyReaction.emoji,
           name,
         });
@@ -903,7 +855,7 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
         attributes.type === 'incoming' &&
         attributes.storyReaction.targetAuthorUuid === ourUuid
       ) {
-        return window.i18n('Quote__story-reaction-notification--incoming', {
+        return window.i18n('icu:Quote__story-reaction-notification--incoming', {
           emoji: attributes.storyReaction.emoji,
         });
       }
@@ -912,7 +864,7 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
         return attributes.storyReaction.emoji;
       }
 
-      return window.i18n('Quote__story-reaction--single');
+      return window.i18n('icu:Quote__story-reaction--single');
     }
 
     let modifiedText = text;
@@ -929,7 +881,7 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
     //   the `text`, which can contain emoji.)
     const shouldIncludeEmoji = Boolean(emoji) && !window.Signal.OS.isLinux();
     if (shouldIncludeEmoji) {
-      return window.i18n('message--getNotificationText--text-with-emoji', {
+      return window.i18n('icu:message--getNotificationText--text-with-emoji', {
         text: modifiedText,
         emoji,
       });
@@ -1172,14 +1124,15 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
     }
 
     this.set({
-      isErased: true,
+      attachments: [],
       body: '',
       bodyRanges: undefined,
-      attachments: [],
-      quote: undefined,
       contact: [],
-      sticker: undefined,
+      editHistory: undefined,
+      isErased: true,
       preview: [],
+      quote: undefined,
+      sticker: undefined,
       ...additionalProperties,
     });
     this.getConversation()?.debouncedUpdateLastMessage?.();
@@ -1482,7 +1435,7 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
       storyId: this.id,
       messageId: this.id,
       senderTitle:
-        this.getConversation()?.getTitle() ?? window.i18n('Stories__mine'),
+        this.getConversation()?.getTitle() ?? window.i18n('icu:Stories__mine'),
       message: this.hasSuccessfulDelivery()
         ? window.i18n('icu:Stories__failed-send--partial')
         : window.i18n('icu:Stories__failed-send--full'),
@@ -2033,7 +1986,8 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
       queryMessage = matchingMessage;
     } else {
       log.info('copyFromQuotedMessage: db lookup needed', id);
-      const messages = await window.Signal.Data.getMessagesBySentAt(id);
+      const messages =
+        await window.Signal.Data.getMessagesIncludingEditedBySentAt(id);
       const found = messages.find(item =>
         isQuoteAMatch(item, conversationId, result)
       );
@@ -2051,18 +2005,6 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
     }
 
     return result;
-  }
-
-  getQuoteBodyText(): string | undefined {
-    const storyReactionEmoji = this.get('storyReaction')?.emoji;
-    const body = this.get('body');
-    const embeddedContact = this.get('contact');
-    const embeddedContactName =
-      embeddedContact && embeddedContact.length > 0
-        ? EmbeddedContact.getName(embeddedContact[0])
-        : '';
-
-    return body || embeddedContactName || storyReactionEmoji;
   }
 
   async copyQuoteContentFromOriginal(
@@ -2113,7 +2055,7 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
     quote.isViewOnce = false;
 
     // eslint-disable-next-line no-param-reassign
-    quote.text = originalMessage.getQuoteBodyText();
+    quote.text = getQuoteBodyText(originalMessage.attributes, quote.id);
     if (firstAttachment) {
       firstAttachment.thumbnail = null;
     }
@@ -3325,6 +3267,16 @@ export class MessageModel extends window.Backbone.Model<MessageAttributesType> {
         changed = true;
       })
     );
+
+    // We want to make sure the message is saved first before applying any edits
+    if (!isFirstRun) {
+      const edits = Edits.forMessage(message);
+      await Promise.all(
+        edits.map(editAttributes =>
+          handleEditMessage(message.attributes, editAttributes)
+        )
+      );
+    }
 
     if (changed && !isFirstRun) {
       log.info(

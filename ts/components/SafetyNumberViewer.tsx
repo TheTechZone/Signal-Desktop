@@ -41,14 +41,14 @@ export function SafetyNumberViewer({
   if (!contact.phoneNumber) {
     return (
       <div className="module-SafetyNumberViewer">
-        <div>{i18n('cannotGenerateSafetyNumber')}</div>
+        <div>{i18n('icu:cannotGenerateSafetyNumber')}</div>
         <div className="module-SafetyNumberViewer__buttons">
           <Button
             className="module-SafetyNumberViewer__button"
             onClick={() => onClose?.()}
             variant={ButtonVariant.Primary}
           >
-            {i18n('ok')}
+            {i18n('icu:ok')}
           </Button>
         </div>
       </div>
@@ -73,7 +73,7 @@ export function SafetyNumberViewer({
       <div className="module-SafetyNumberViewer__number">
         {safetyNumber || getPlaceholder()}
       </div>
-      <Intl i18n={i18n} id="verifyHelp" components={[boldName]} />
+      <Intl i18n={i18n} id="icu:verifyHelp" components={{ name: boldName }} />
       <div className="module-SafetyNumberViewer__verification-status">
         {isVerified ? (
           <span className="module-SafetyNumberViewer__icon--verified" />
@@ -81,9 +81,17 @@ export function SafetyNumberViewer({
           <span className="module-SafetyNumberViewer__icon--shield" />
         )}
         {isVerified ? (
-          <Intl i18n={i18n} id="isVerified" components={[boldName]} />
+          <Intl
+            i18n={i18n}
+            id="icu:isVerified"
+            components={{ name: boldName }}
+          />
         ) : (
-          <Intl i18n={i18n} id="isNotVerified" components={[boldName]} />
+          <Intl
+            i18n={i18n}
+            id="icu:isNotVerified"
+            components={{ name: boldName }}
+          />
         )}
       </div>
       <div className="module-SafetyNumberViewer__button">

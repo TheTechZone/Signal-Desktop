@@ -40,6 +40,7 @@ import { hasNetworkDialog } from '../selectors/network';
 import {
   getPreferredLeftPaneWidth,
   getUsernamesEnabled,
+  getContactManagementEnabled,
 } from '../selectors/items';
 import {
   getComposeAvatarData,
@@ -57,7 +58,7 @@ import {
   getMaximumGroupSizeModalState,
   getRecommendedGroupSizeModalState,
   getSelectedConversationId,
-  getSelectedMessage,
+  getTargetedMessage,
   getShowArchived,
   hasGroupCreationError,
   isCreatingGroup,
@@ -230,9 +231,10 @@ const mapStateToProps = (state: StateType) => {
     modeSpecificProps: getModeSpecificProps(state),
     preferredWidthFromStorage: getPreferredLeftPaneWidth(state),
     selectedConversationId: getSelectedConversationId(state),
-    selectedMessageId: getSelectedMessage(state)?.id,
+    targetedMessageId: getTargetedMessage(state)?.id,
     showArchived: getShowArchived(state),
     getPreferredBadge: getPreferredBadgeSelector(state),
+    isContactManagementEnabled: getContactManagementEnabled(state),
     i18n: getIntl(state),
     isMacOS: getIsMacOS(state),
     regionCode: getRegionCode(state),

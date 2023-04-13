@@ -44,7 +44,7 @@ import { createSupportUrl } from '../ts/util/createSupportUrl';
 import { missingCaseError } from '../ts/util/missingCaseError';
 import { strictAssert } from '../ts/util/assert';
 import { drop } from '../ts/util/drop';
-import { consoleLogger } from '../ts/util/consoleLogger';
+import { createBufferedConsoleLogger } from '../ts/util/consoleLogger';
 import type { ThemeSettingType } from '../ts/types/StorageUIKeys';
 import { ThemeType } from '../ts/types/Util';
 import * as Errors from '../ts/types/errors';
@@ -95,7 +95,7 @@ import type { MenuActionType } from '../ts/types/menu';
 import { createTemplate } from './menu';
 import { installFileHandler, installWebHandler } from './protocol_filter';
 import * as OS from '../ts/OS';
-import { isProduction, isStaging } from '../ts/util/version';
+import { isProduction } from '../ts/util/version';
 import {
   isSgnlHref,
   isCaptchaHref,
@@ -135,6 +135,16 @@ let mainWindow: BrowserWindow | undefined;
 let mainWindowCreated = false;
 let loadingWindow: BrowserWindow | undefined;
 
+// Create a buffered logger to hold our log lines until we fully initialize
+// the logger in `app.on('ready')`
+const consoleLogger = createBufferedConsoleLogger();
+
+// These will be set after app fires the 'ready' event
+let logger: LoggerType | undefined;
+let preferredSystemLocales: Array<string> | undefined;
+let resolvedTranslationsLocale: LocaleType | undefined;
+let settingsChannel: SettingsChannel | undefined;
+
 const activeWindows = new Set<BrowserWindow>();
 
 function getMainWindow() {
@@ -169,6 +179,12 @@ const defaultWebPrefs = {
 
 const DISABLE_GPU =
   OS.isLinux() && !process.argv.some(arg => arg === '--enable-gpu');
+
+const FORCE_ENABLE_CRASH_REPORTS = process.argv.some(
+  arg => arg === '--enable-crash-reports'
+);
+
+setupCrashReports(getLogger, FORCE_ENABLE_CRASH_REPORTS);
 
 function showWindow() {
   if (!mainWindow) {
@@ -346,12 +362,6 @@ if (windowFromUserConfig) {
 }
 
 let menuOptions: CreateTemplateOptionsType | undefined;
-
-// These will be set after app fires the 'ready' event
-let logger: LoggerType | undefined;
-let preferredSystemLocales: Array<string> | undefined;
-let resolvedTranslationsLocale: LocaleType | undefined;
-let settingsChannel: SettingsChannel | undefined;
 
 function getLogger(): LoggerType {
   if (!logger) {
@@ -790,7 +800,11 @@ async function createWindow() {
   }
 
   mainWindowCreated = true;
-  setupSpellChecker(mainWindow, getResolvedMessagesLocale());
+  setupSpellChecker(
+    mainWindow,
+    getPreferredSystemLocales(),
+    getResolvedMessagesLocale().i18n
+  );
   if (!startInTray && windowConfig && windowConfig.maximized) {
     mainWindow.maximize();
   }
@@ -920,10 +934,10 @@ async function createWindow() {
 
         const n = new Notification({
           title: getResolvedMessagesLocale().i18n(
-            'minimizeToTrayNotification--title'
+            'icu:minimizeToTrayNotification--title'
           ),
           body: getResolvedMessagesLocale().i18n(
-            'minimizeToTrayNotification--body'
+            'icu:minimizeToTrayNotification--body'
           ),
         });
 
@@ -1189,7 +1203,7 @@ async function showScreenShareWindow(sourceName: string) {
     minimizable: false,
     resizable: false,
     show: false,
-    title: getResolvedMessagesLocale().i18n('screenShareWindow'),
+    title: getResolvedMessagesLocale().i18n('icu:screenShareWindow'),
     titleBarStyle: nonMainTitleBarStyle,
     width,
     webPreferences: {
@@ -1241,7 +1255,7 @@ async function showAbout() {
     width: 500,
     height: 500,
     resizable: false,
-    title: getResolvedMessagesLocale().i18n('aboutSignalDesktop'),
+    title: getResolvedMessagesLocale().i18n('icu:aboutSignalDesktop'),
     titleBarStyle: nonMainTitleBarStyle,
     titleBarOverlay,
     autoHideMenuBar: true,
@@ -1292,7 +1306,7 @@ async function showSettingsWindow() {
     height: 700,
     frame: true,
     resizable: false,
-    title: getResolvedMessagesLocale().i18n('signalDesktopPreferences'),
+    title: getResolvedMessagesLocale().i18n('icu:signalDesktopPreferences'),
     titleBarStyle: mainTitleBarStyle,
     titleBarOverlay,
     autoHideMenuBar: true,
@@ -1342,85 +1356,6 @@ async function getIsLinked() {
   }
 }
 
-let stickerCreatorWindow: BrowserWindow | undefined;
-async function showStickerCreator() {
-  if (!(await getIsLinked())) {
-    const message = getResolvedMessagesLocale().i18n(
-      'StickerCreator--Authentication--error'
-    );
-
-    await dialog.showMessageBox({
-      type: 'warning',
-      message,
-    });
-
-    return;
-  }
-
-  if (stickerCreatorWindow) {
-    stickerCreatorWindow.show();
-    return;
-  }
-
-  const { x = 0, y = 0 } = windowConfig || {};
-
-  const titleBarOverlay = await getTitleBarOverlay();
-
-  const options = {
-    x: x + 100,
-    y: y + 100,
-    width: 800,
-    minWidth: 800,
-    height: 650,
-    title: getResolvedMessagesLocale().i18n('signalDesktopStickerCreator'),
-    titleBarStyle: nonMainTitleBarStyle,
-    titleBarOverlay,
-    autoHideMenuBar: true,
-    backgroundColor: await getBackgroundColor(),
-    show: false,
-    webPreferences: {
-      ...defaultWebPrefs,
-      nodeIntegration: false,
-      nodeIntegrationInWorker: false,
-      sandbox: false,
-      contextIsolation: false,
-      preload: join(__dirname, '../sticker-creator/preload.js'),
-      nativeWindowOpen: true,
-      spellcheck: await getSpellCheckSetting(),
-    },
-  };
-
-  stickerCreatorWindow = new BrowserWindow(options);
-  setupSpellChecker(stickerCreatorWindow, getResolvedMessagesLocale());
-
-  handleCommonWindowEvents(stickerCreatorWindow, titleBarOverlay);
-
-  const appUrl = process.env.SIGNAL_ENABLE_HTTP
-    ? prepareUrl(
-        new URL('http://localhost:6380/sticker-creator/dist/index.html')
-      )
-    : prepareFileUrl([__dirname, '../sticker-creator/dist/index.html']);
-
-  stickerCreatorWindow.on('closed', () => {
-    stickerCreatorWindow = undefined;
-  });
-
-  stickerCreatorWindow.once('ready-to-show', () => {
-    if (!stickerCreatorWindow) {
-      return;
-    }
-
-    stickerCreatorWindow.show();
-
-    if (config.get<boolean>('openDevTools')) {
-      // Open the DevTools.
-      stickerCreatorWindow.webContents.openDevTools();
-    }
-  });
-
-  await safeLoadURL(stickerCreatorWindow, await appUrl);
-}
-
 async function openArtCreator() {
   if (!(await getIsLinked())) {
     const message = getResolvedMessagesLocale().i18n(
@@ -1453,7 +1388,7 @@ async function showDebugLogWindow() {
     width: 700,
     height: 500,
     resizable: false,
-    title: getResolvedMessagesLocale().i18n('debugLog'),
+    title: getResolvedMessagesLocale().i18n('icu:debugLog'),
     titleBarStyle: nonMainTitleBarStyle,
     titleBarOverlay,
     autoHideMenuBar: true,
@@ -1518,7 +1453,7 @@ function showPermissionsPopupWindow(forCalling: boolean, forCamera: boolean) {
       width: Math.min(400, size[0]),
       height: Math.min(150, size[1]),
       resizable: false,
-      title: getResolvedMessagesLocale().i18n('allowAccess'),
+      title: getResolvedMessagesLocale().i18n('icu:allowAccess'),
       titleBarStyle: nonMainTitleBarStyle,
       autoHideMenuBar: true,
       backgroundColor: await getBackgroundColor(),
@@ -1656,13 +1591,13 @@ const onDatabaseError = async (error: string) => {
 
   const buttonIndex = dialog.showMessageBoxSync({
     buttons: [
-      getResolvedMessagesLocale().i18n('deleteAndRestart'),
-      getResolvedMessagesLocale().i18n('copyErrorAndQuit'),
+      getResolvedMessagesLocale().i18n('icu:deleteAndRestart'),
+      getResolvedMessagesLocale().i18n('icu:copyErrorAndQuit'),
     ],
     defaultId: 1,
     cancelId: 1,
     detail: redactAll(error),
-    message: getResolvedMessagesLocale().i18n('databaseError'),
+    message: getResolvedMessagesLocale().i18n('icu:databaseError'),
     noLink: true,
     type: 'error',
   });
@@ -1752,7 +1687,8 @@ app.on('ready', async () => {
 
   logger = await logging.initialize(getMainWindow);
 
-  await setupCrashReports(getLogger);
+  // Write buffered information into newly created logger.
+  consoleLogger.writeBufferInto(logger);
 
   if (!resolvedTranslationsLocale) {
     preferredSystemLocales = resolveCanonicalLocales(
@@ -1900,7 +1836,7 @@ app.on('ready', async () => {
       loadingWindow = new BrowserWindow({
         show: false,
         width: 300,
-        height: 265,
+        height: 280,
         resizable: false,
         frame: false,
         backgroundColor,
@@ -2013,7 +1949,6 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
     devTools: defaultWebPrefs.devTools,
     includeSetup: false,
     isProduction: isProduction(app.getVersion()),
-    isStaging: isStaging(app.getVersion()),
     platform,
 
     // actions
@@ -2030,7 +1965,6 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
     showDebugLog: showDebugLogWindow,
     showKeyboardShortcuts,
     showSettings: showSettingsWindow,
-    showStickerCreator,
     showWindow,
 
     // overrides
@@ -2642,8 +2576,6 @@ ipc.handle('executeMenuAction', async (_event, action: MenuActionType) => {
     showKeyboardShortcuts();
   } else if (action === 'showSettings') {
     drop(showSettingsWindow());
-  } else if (action === 'showStickerCreator') {
-    drop(showStickerCreator());
   } else if (action === 'showWindow') {
     showWindow();
   } else {

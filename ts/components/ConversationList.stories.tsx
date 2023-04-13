@@ -67,9 +67,17 @@ function Wrapper({
       getRow={(index: number) => rows[index]}
       shouldRecomputeRowHeights={false}
       i18n={i18n}
+      blockConversation={action('blockConversation')}
       onSelectConversation={action('onSelectConversation')}
+      onOutgoingAudioCallInConversation={action(
+        'onOutgoingAudioCallInConversation'
+      )}
+      onOutgoingVideoCallInConversation={action(
+        'onOutgoingVideoCallInConversation'
+      )}
       onClickArchiveButton={action('onClickArchiveButton')}
       onClickContactCheckbox={action('onClickContactCheckbox')}
+      removeConversation={action('removeConversation')}
       renderMessageSearchResult={(id: string) => (
         <MessageSearchResult
           body="Lorem ipsum wow"
@@ -138,6 +146,24 @@ export function ContactDirect(): JSX.Element {
 
 ContactDirect.story = {
   name: 'Contact: direct',
+};
+
+export function ContactDirectWithContextMenu(): JSX.Element {
+  return (
+    <Wrapper
+      rows={[
+        {
+          type: RowType.Contact,
+          contact: defaultConversations[0],
+          hasContextMenu: true,
+        },
+      ]}
+    />
+  );
+}
+
+ContactDirectWithContextMenu.story = {
+  name: 'Contact: context menu',
 };
 
 export function ContactDirectWithShortAbout(): JSX.Element {
@@ -604,19 +630,23 @@ export function Headers(): JSX.Element {
       rows={[
         {
           type: RowType.Header,
-          i18nKey: 'conversationsHeader',
+          // eslint-disable-next-line @typescript-eslint/no-shadow
+          getHeaderText: i18n => i18n('icu:conversationsHeader'),
         },
         {
           type: RowType.Header,
-          i18nKey: 'messagesHeader',
+          // eslint-disable-next-line @typescript-eslint/no-shadow
+          getHeaderText: i18n => i18n('icu:messagesHeader'),
         },
         {
           type: RowType.Header,
-          i18nKey: 'findByUsernameHeader',
+          // eslint-disable-next-line @typescript-eslint/no-shadow
+          getHeaderText: i18n => i18n('icu:findByUsernameHeader'),
         },
         {
           type: RowType.Header,
-          i18nKey: 'findByPhoneNumberHeader',
+          // eslint-disable-next-line @typescript-eslint/no-shadow
+          getHeaderText: i18n => i18n('icu:findByPhoneNumberHeader'),
         },
       ]}
     />
@@ -629,7 +659,8 @@ export function FindByPhoneNumber(): JSX.Element {
       rows={[
         {
           type: RowType.Header,
-          i18nKey: 'findByPhoneNumberHeader',
+          // eslint-disable-next-line @typescript-eslint/no-shadow
+          getHeaderText: i18n => i18n('icu:findByPhoneNumberHeader'),
         },
         {
           type: RowType.StartNewConversation,
@@ -673,7 +704,8 @@ export function FindByUsername(): JSX.Element {
       rows={[
         {
           type: RowType.Header,
-          i18nKey: 'findByUsernameHeader',
+          // eslint-disable-next-line @typescript-eslint/no-shadow
+          getHeaderText: i18n => i18n('icu:findByUsernameHeader'),
         },
         {
           type: RowType.UsernameSearchResult,
@@ -745,7 +777,8 @@ export function KitchenSink(): JSX.Element {
         },
         {
           type: RowType.Header,
-          i18nKey: 'contactsHeader',
+          // eslint-disable-next-line @typescript-eslint/no-shadow
+          getHeaderText: i18n => i18n('icu:contactsHeader'),
         },
         {
           type: RowType.Contact,
@@ -753,7 +786,8 @@ export function KitchenSink(): JSX.Element {
         },
         {
           type: RowType.Header,
-          i18nKey: 'messagesHeader',
+          // eslint-disable-next-line @typescript-eslint/no-shadow
+          getHeaderText: i18n => i18n('icu:messagesHeader'),
         },
         {
           type: RowType.Conversation,
@@ -765,7 +799,8 @@ export function KitchenSink(): JSX.Element {
         },
         {
           type: RowType.Header,
-          i18nKey: 'findByUsernameHeader',
+          // eslint-disable-next-line @typescript-eslint/no-shadow
+          getHeaderText: i18n => i18n('icu:findByUsernameHeader'),
         },
         {
           type: RowType.UsernameSearchResult,

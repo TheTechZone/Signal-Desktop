@@ -42,6 +42,7 @@ import { AudioCapture } from './conversation/AudioCapture';
 import { CompositionUpload } from './CompositionUpload';
 import type {
   ConversationType,
+  MessageTimestamps,
   PushPanelForConversationActionType,
   ShowConversationType,
 } from '../state/ducks/conversations';
@@ -65,9 +66,12 @@ import { PanelType } from '../types/Panels';
 import type { SmartCompositionRecordingDraftProps } from '../state/smart/CompositionRecordingDraft';
 import { useEscapeHandling } from '../hooks/useEscapeHandling';
 import type { SmartCompositionRecordingProps } from '../state/smart/CompositionRecording';
+import SelectModeActions from './conversation/SelectModeActions';
+import type { ShowToastAction } from '../state/ducks/toast';
 
 export type OwnProps = Readonly<{
   acceptedMessageRequest?: boolean;
+  removalStage?: 'justNotification' | 'messageRequest';
   addAttachment: (
     conversationId: string,
     attachment: InMemoryAttachmentDraftType
@@ -105,6 +109,7 @@ export type OwnProps = Readonly<{
   messageRequestsEnabled?: boolean;
   onClearAttachments(conversationId: string): unknown;
   onCloseLinkPreview(conversationId: string): unknown;
+  showToast: ShowToastAction;
   processAttachments: (options: {
     conversationId: string;
     files: ReadonlyArray<File>;
@@ -146,18 +151,26 @@ export type OwnProps = Readonly<{
   renderSmartCompositionRecordingDraft: (
     props: SmartCompositionRecordingDraftProps
   ) => JSX.Element | null;
+  selectedMessageIds: ReadonlyArray<string> | undefined;
+  lastSelectedMessage: MessageTimestamps | undefined;
+  toggleSelectMode: (on: boolean) => void;
+  toggleForwardMessagesModal: (
+    messageIds: ReadonlyArray<string>,
+    onForward: () => void
+  ) => void;
 }>;
 
 export type Props = Pick<
   CompositionInputProps,
-  | 'sortedGroupMembers'
-  | 'onEditorStateChange'
-  | 'onTextTooLong'
+  | 'clearQuotedMessage'
   | 'draftText'
   | 'draftBodyRanges'
-  | 'clearQuotedMessage'
   | 'getPreferredBadge'
   | 'getQuotedMessage'
+  | 'onEditorStateChange'
+  | 'onTextTooLong'
+  | 'sendCounter'
+  | 'sortedGroupMembers'
 > &
   Pick<
     EmojiButtonProps,
@@ -192,6 +205,7 @@ export function CompositionArea({
   isDisabled,
   isSignalConversation,
   messageCompositionId,
+  showToast,
   pushPanelForConversation,
   processAttachments,
   removeAttachment,
@@ -218,13 +232,14 @@ export function CompositionArea({
   setMediaQualitySetting,
   shouldSendHighQualityAttachments,
   // CompositionInput
-  onEditorStateChange,
-  onTextTooLong,
+  clearQuotedMessage,
   draftText,
   draftBodyRanges,
-  clearQuotedMessage,
   getPreferredBadge,
   getQuotedMessage,
+  onEditorStateChange,
+  onTextTooLong,
+  sendCounter,
   sortedGroupMembers,
   // EmojiButton
   onPickEmoji,
@@ -253,6 +268,7 @@ export function CompositionArea({
   isMissingMandatoryProfileSharing,
   left,
   messageRequestsEnabled,
+  removalStage,
   acceptConversation,
   blockConversation,
   blockAndReportSpam,
@@ -272,6 +288,11 @@ export function CompositionArea({
   isFetchingUUID,
   renderSmartCompositionRecording,
   renderSmartCompositionRecordingDraft,
+  // Selected messages
+  selectedMessageIds,
+  lastSelectedMessage,
+  toggleSelectMode,
+  toggleForwardMessagesModal,
 }: Props): JSX.Element | null {
   const [dirty, setDirty] = useState(false);
   const [large, setLarge] = useState(false);
@@ -440,7 +461,7 @@ export function CompositionArea({
           type="button"
           className="CompositionArea__attach-file"
           onClick={launchAttachmentPicker}
-          aria-label={i18n('CompositionArea--attach-file')}
+          aria-label={i18n('icu:CompositionArea--attach-file')}
         />
       </div>
     );
@@ -453,7 +474,7 @@ export function CompositionArea({
           type="button"
           className="CompositionArea__send-button"
           onClick={handleForceSend}
-          aria-label={i18n('sendMessageToContact')}
+          aria-label={i18n('icu:sendMessageToContact')}
         />
       </div>
     </>
@@ -529,10 +550,40 @@ export function CompositionArea({
     return <div />;
   }
 
+  if (selectedMessageIds != null) {
+    return (
+      <SelectModeActions
+        i18n={i18n}
+        selectedMessageIds={selectedMessageIds}
+        onExitSelectMode={() => {
+          toggleSelectMode(false);
+        }}
+        onDeleteMessages={() => {
+          window.reduxActions.conversations.deleteMessages({
+            conversationId,
+            lastSelectedMessage,
+            messageIds: selectedMessageIds,
+          });
+          toggleSelectMode(false);
+        }}
+        onForwardMessages={() => {
+          if (selectedMessageIds.length > 0) {
+            toggleForwardMessagesModal(selectedMessageIds, () => {
+              toggleSelectMode(false);
+            });
+          }
+        }}
+        showToast={showToast}
+      />
+    );
+  }
+
   if (
     isBlocked ||
     areWePending ||
-    (messageRequestsEnabled && !acceptedMessageRequest)
+    (messageRequestsEnabled &&
+      !acceptedMessageRequest &&
+      removalStage !== 'justNotification')
   ) {
     return (
       <MessageRequestActions
@@ -544,6 +595,7 @@ export function CompositionArea({
         deleteConversation={deleteConversation}
         i18n={i18n}
         isBlocked={isBlocked}
+        isHidden={removalStage !== undefined}
         title={title}
       />
     );
@@ -560,7 +612,7 @@ export function CompositionArea({
       >
         {isFetchingUUID ? (
           <Spinner
-            ariaLabel={i18n('CompositionArea--sms-only__spinner-label')}
+            ariaLabel={i18n('icu:CompositionArea--sms-only__spinner-label')}
             role="presentation"
             moduleClassName="module-image-spinner"
             svgSize="small"
@@ -568,10 +620,10 @@ export function CompositionArea({
         ) : (
           <>
             <h2 className="CompositionArea--sms-only__title">
-              {i18n('CompositionArea--sms-only__title')}
+              {i18n('icu:CompositionArea--sms-only__title')}
             </h2>
             <p className="CompositionArea--sms-only__body">
-              {i18n('CompositionArea--sms-only__body')}
+              {i18n('icu:CompositionArea--sms-only__body')}
             </p>
           </>
         )}
@@ -582,7 +634,7 @@ export function CompositionArea({
   // If no message request, but we haven't shared profile yet, we show profile-sharing UI
   if (
     !left &&
-    (conversationType === 'direct' ||
+    ((conversationType === 'direct' && removalStage !== 'justNotification') ||
       (conversationType === 'group' && groupVersion === 1)) &&
     isMissingMandatoryProfileSharing
   ) {
@@ -683,7 +735,7 @@ export function CompositionArea({
           // This prevents the user from tabbing here
           tabIndex={-1}
           onClick={handleToggleLarge}
-          aria-label={i18n('CompositionArea--expand')}
+          aria-label={i18n('icu:CompositionArea--expand')}
         />
       </div>
       <div
@@ -755,6 +807,7 @@ export function CompositionArea({
             onPickEmoji={onPickEmoji}
             onSubmit={handleSubmit}
             onTextTooLong={onTextTooLong}
+            sendCounter={sendCounter}
             skinTone={skinTone}
             sortedGroupMembers={sortedGroupMembers}
             theme={theme}

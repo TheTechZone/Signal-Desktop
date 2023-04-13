@@ -19,6 +19,8 @@ import { getEmojiSkinTone } from '../selectors/items';
 import {
   getConversationSelector,
   getGroupAdminsSelector,
+  getLastSelectedMessage,
+  getSelectedMessageIds,
   isMissingRequiredProfileSharing,
 } from '../selectors/conversations';
 import { getPropsForQuote } from '../selectors/message';
@@ -84,10 +86,14 @@ const mapStateToProps = (state: StateType, props: ExternalProps) => {
     linkPreviewResult,
     messageCompositionId,
     quotedMessage,
+    sendCounter,
     shouldSendHighQualityAttachments,
   } = composerStateForConversationIdSelector(id);
 
   const recentEmojis = selectRecentEmojis(state);
+
+  const selectedMessageIds = getSelectedMessageIds(state);
+  const lastSelectedMessage = getLastSelectedMessage(state);
 
   return {
     // Base
@@ -97,6 +103,7 @@ const mapStateToProps = (state: StateType, props: ExternalProps) => {
     i18n: getIntl(state),
     isDisabled,
     messageCompositionId,
+    sendCounter,
     theme: getTheme(state),
 
     // AudioCapture
@@ -160,6 +167,10 @@ const mapStateToProps = (state: StateType, props: ExternalProps) => {
     ) => {
       return <SmartCompositionRecordingDraft {...draftProps} />;
     },
+
+    // Select Mode
+    selectedMessageIds,
+    lastSelectedMessage,
   };
 };
 

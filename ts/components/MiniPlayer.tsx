@@ -1,6 +1,7 @@
 // Copyright 2022 Signal Messenger, LLC
 // SPDX-License-Identifier: AGPL-3.0-only
 
+import classnames from 'classnames';
 import React, { useCallback } from 'react';
 import type { LocalizerType } from '../types/Util';
 import { durationToPlaybackText } from '../util/durationToPlaybackText';
@@ -22,6 +23,8 @@ export type Props = Readonly<{
   duration: number | undefined;
   playbackRate: number;
   state: PlayerState;
+  // if false or not provided, position:absolute. Otherwise, it's position: relative
+  shouldFlow?: boolean;
   onPlay: () => void;
   onPause: () => void;
   onPlaybackRate: (rate: number) => void;
@@ -35,6 +38,7 @@ export function MiniPlayer({
   currentTime,
   duration,
   playbackRate,
+  shouldFlow,
   onPlay,
   onPause,
   onPlaybackRate,
@@ -63,15 +67,15 @@ export function MiniPlayer({
   let mod: 'play' | 'pause' | 'pending';
   switch (state) {
     case PlayerState.playing:
-      label = i18n('MessageAudio--pause');
+      label = i18n('icu:MessageAudio--pause');
       mod = 'pause';
       break;
     case PlayerState.paused:
-      label = i18n('MessageAudio--play');
+      label = i18n('icu:MessageAudio--play');
       mod = 'play';
       break;
     case PlayerState.loading:
-      label = i18n('MessageAudio--pending');
+      label = i18n('icu:MessageAudio--pending');
       mod = 'pending';
       break;
     default:
@@ -79,7 +83,12 @@ export function MiniPlayer({
   }
 
   return (
-    <div className="MiniPlayer">
+    <div
+      className={classnames(
+        'MiniPlayer',
+        shouldFlow ? 'MiniPlayer--flow' : null
+      )}
+    >
       <PlaybackButton
         context="incoming"
         variant="mini"
@@ -112,7 +121,7 @@ export function MiniPlayer({
         type="button"
         className="MiniPlayer__close-button"
         onClick={onClose}
-        aria-label={i18n('close')}
+        aria-label={i18n('icu:close')}
       />
     </div>
   );

@@ -90,6 +90,7 @@ export type PropsActionsType = {
   destroyMessages: (conversationId: string) => void;
   onArchive: (conversationId: string) => void;
   onMarkUnread: (conversationId: string) => void;
+  toggleSelectMode: (on: boolean) => void;
   onMoveToInbox: (conversationId: string) => void;
   onOutgoingAudioCallInConversation: (conversationId: string) => void;
   onOutgoingVideoCallInConversation: (conversationId: string) => void;
@@ -167,7 +168,7 @@ export class ConversationHeader extends React.Component<PropsType, StateType> {
           showBackButton ? 'module-ConversationHeader__back-icon--show' : null
         )}
         disabled={!showBackButton}
-        aria-label={i18n('goBack')}
+        aria-label={i18n('icu:goBack')}
       />
     );
   }
@@ -178,7 +179,7 @@ export class ConversationHeader extends React.Component<PropsType, StateType> {
     if (isMe) {
       return (
         <div className="module-ConversationHeader__header__info__title">
-          {i18n('noteToSelf')}
+          {i18n('icu:noteToSelf')}
           <span className="ContactModal__official-badge" />
         </div>
       );
@@ -203,12 +204,12 @@ export class ConversationHeader extends React.Component<PropsType, StateType> {
     const verifiedNode = this.renderVerifiedIcon();
 
     //if (expirationNode || verifiedNode) {
-      return (
-        <div className="module-ConversationHeader__header__info__subtitle">
-          {expirationNode}
-          {verifiedNode}
-        </div>
-      );
+    return (
+      <div className="module-ConversationHeader__header__info__subtitle">
+        {expirationNode}
+        {verifiedNode}
+      </div>
+    );
     //}
 
     //return null;
@@ -286,22 +287,22 @@ export class ConversationHeader extends React.Component<PropsType, StateType> {
   private renderVerifiedIcon(): ReactNode {
     const { i18n, isVerified, verifiedState } = this.props;
 
-    let verifiedName = "unverified";
-    if (verifiedState !== undefined){
+    let verifiedName = 'unverified';
+    if (verifiedState !== undefined) {
       verifiedName = lookupVerifiedStatus(verifiedState);
     }
-    
+
     if (!isVerified) {
       return (
         <div className="module-ConversationHeader__header__info__subtitle__not_verified">
-          {i18n(verifiedName)}
+          {i18n(`icu:${verifiedName}`)}
         </div>
       );
     }
 
     return (
       <div className="module-ConversationHeader__header__info__subtitle__verified">
-        {i18n(verifiedName)}
+        {i18n(`icu:${verifiedName}`)}
       </div>
     );
   }
@@ -320,7 +321,7 @@ export class ConversationHeader extends React.Component<PropsType, StateType> {
             showBackButton ? null : 'module-ConversationHeader__button--show'
           )}
           disabled={showBackButton}
-          aria-label={i18n('moreInfo')}
+          aria-label={i18n('icu:moreInfo')}
         />
       </ContextMenuTrigger>
     );
@@ -339,7 +340,7 @@ export class ConversationHeader extends React.Component<PropsType, StateType> {
           showBackButton ? null : 'module-ConversationHeader__button--show'
         )}
         disabled={showBackButton}
-        aria-label={i18n('search')}
+        aria-label={i18n('icu:search')}
       />
     );
   }
@@ -361,6 +362,7 @@ export class ConversationHeader extends React.Component<PropsType, StateType> {
       muteExpiresAt,
       onArchive,
       onMarkUnread,
+      toggleSelectMode,
       onMoveToInbox,
       pushPanelForConversation,
       setDisappearingMessages,
@@ -371,7 +373,7 @@ export class ConversationHeader extends React.Component<PropsType, StateType> {
 
     const muteOptions = getMuteOptions(muteExpiresAt, i18n);
 
-    const muteTitle = <span>{i18n('muteNotificationsTitle')}</span>;
+    const muteTitle = <span>{i18n('icu:muteNotificationsTitle')}</span>;
 
     if (isSignalConversation) {
       const isMuted = muteExpiresAt && isConversationMuted({ muteExpiresAt });
@@ -385,7 +387,7 @@ export class ConversationHeader extends React.Component<PropsType, StateType> {
                   setMuteExpiration(id, 0);
                 }}
               >
-                {i18n('unmute')}
+                {i18n('icu:unmute')}
               </MenuItem>
             ) : (
               <MenuItem
@@ -393,7 +395,7 @@ export class ConversationHeader extends React.Component<PropsType, StateType> {
                   setMuteExpiration(id, Number.MAX_SAFE_INTEGER);
                 }}
               >
-                {i18n('muteAlways')}
+                {i18n('icu:muteAlways')}
               </MenuItem>
             )}
           </SubMenu>
@@ -432,7 +434,7 @@ export class ConversationHeader extends React.Component<PropsType, StateType> {
       let text: string;
 
       if (seconds === -1) {
-        text = i18n('customDisappearingTimeOption');
+        text = i18n('icu:customDisappearingTimeOption');
       } else {
         text = expirationTimer.format(i18n, seconds, {
           capitalizeOff: true,
@@ -492,8 +494,8 @@ export class ConversationHeader extends React.Component<PropsType, StateType> {
             }
           >
             {isGroup
-              ? i18n('showConversationDetails')
-              : i18n('showConversationDetails--direct')}
+              ? i18n('icu:showConversationDetails')
+              : i18n('icu:showConversationDetails--direct')}
           </MenuItem>
         ) : null}
         {isGroup && !hasGV2AdminEnabled ? (
@@ -502,41 +504,48 @@ export class ConversationHeader extends React.Component<PropsType, StateType> {
               pushPanelForConversation({ type: PanelType.GroupV1Members })
             }
           >
-            {i18n('showMembers')}
+            {i18n('icu:showMembers')}
           </MenuItem>
         ) : null}
         <MenuItem
           onClick={() => pushPanelForConversation({ type: PanelType.AllMedia })}
         >
-          {i18n('viewRecentMedia')}
+          {i18n('icu:viewRecentMedia')}
         </MenuItem>
         <MenuItem divider />
         {!markedUnread ? (
           <MenuItem onClick={() => onMarkUnread(id)}>
-            {i18n('markUnread')}
+            {i18n('icu:markUnread')}
           </MenuItem>
         ) : null}
+        <MenuItem
+          onClick={() => {
+            toggleSelectMode(true);
+          }}
+        >
+          {i18n('icu:ConversationHeader__menu__selectMessages')}
+        </MenuItem>
         {isArchived ? (
           <MenuItem onClick={() => onMoveToInbox(id)}>
-            {i18n('moveConversationToInbox')}
+            {i18n('icu:moveConversationToInbox')}
           </MenuItem>
         ) : (
           <MenuItem onClick={() => onArchive(id)}>
-            {i18n('archiveConversation')}
+            {i18n('icu:archiveConversation')}
           </MenuItem>
         )}
         <MenuItem
           onClick={() => this.setState({ hasDeleteMessagesConfirmation: true })}
         >
-          {i18n('deleteMessages')}
+          {i18n('icu:deleteMessages')}
         </MenuItem>
         {isPinned ? (
           <MenuItem onClick={() => setPinned(id, false)}>
-            {i18n('unpinConversation')}
+            {i18n('icu:unpinConversation')}
           </MenuItem>
         ) : (
           <MenuItem onClick={() => setPinned(id, true)}>
-            {i18n('pinConversation')}
+            {i18n('icu:pinConversation')}
           </MenuItem>
         )}
       </ContextMenu>
@@ -561,7 +570,7 @@ export class ConversationHeader extends React.Component<PropsType, StateType> {
               destroyMessages(id);
             },
             style: 'negative',
-            text: i18n('delete'),
+            text: i18n('icu:delete'),
           },
         ]}
         i18n={i18n}
@@ -569,7 +578,7 @@ export class ConversationHeader extends React.Component<PropsType, StateType> {
           this.setState({ hasDeleteMessagesConfirmation: false });
         }}
       >
-        {i18n('deleteConversationConfirmation')}
+        {i18n('icu:deleteConversationConfirmation')}
       </ConfirmationDialog>
     );
   }
@@ -753,7 +762,7 @@ function OutgoingCallButtons({
 >): JSX.Element | null {
   const videoButton = (
     <button
-      aria-label={i18n('makeOutgoingVideoCall')}
+      aria-label={i18n('icu:makeOutgoingVideoCall')}
       className={classNames(
         'module-ConversationHeader__button',
         'module-ConversationHeader__button--video',
@@ -792,14 +801,14 @@ function OutgoingCallButtons({
               showBackButton ? null : 'module-ConversationHeader__button--show'
             )}
             disabled={showBackButton}
-            aria-label={i18n('makeOutgoingCall')}
+            aria-label={i18n('icu:makeOutgoingCall')}
           />
         </>
       );
     case OutgoingCallButtonStyle.Join:
       return (
         <button
-          aria-label={i18n('joinOngoingCall')}
+          aria-label={i18n('icu:joinOngoingCall')}
           className={classNames(
             'module-ConversationHeader__button',
             'module-ConversationHeader__button--join-call',
@@ -809,7 +818,7 @@ function OutgoingCallButtons({
           onClick={() => onOutgoingVideoCallInConversation(id)}
           type="button"
         >
-          {isNarrow ? null : i18n('joinOngoingCall')}
+          {isNarrow ? null : i18n('icu:joinOngoingCall')}
         </button>
       );
     default:

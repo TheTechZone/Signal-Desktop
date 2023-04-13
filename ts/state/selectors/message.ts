@@ -66,7 +66,8 @@ import { getAccountSelector } from './accounts';
 import {
   getContactNameColorSelector,
   getConversationSelector,
-  getSelectedMessage,
+  getSelectedMessageIds,
+  getTargetedMessage,
   isMissingRequiredProfileSharing,
 } from './conversations';
 import {
@@ -135,6 +136,10 @@ type FormattedContact = Partial<ConversationType> &
     | 'unblurredAvatarPath'
   >;
 export type PropsForMessage = Omit<TimelineMessagePropsData, 'interactionMode'>;
+export type MessagePropsType = Omit<
+  PropsForMessage,
+  'renderingContext' | 'menu' | 'contextMenu'
+>;
 type PropsForUnsupportedMessage = {
   canProcessNow: boolean;
   contact: FormattedContact;
@@ -146,8 +151,9 @@ export type GetPropsForBubbleOptions = Readonly<{
   ourNumber?: string;
   ourACI?: UUIDStringType;
   ourPNI?: UUIDStringType;
-  selectedMessageId?: string;
-  selectedMessageCounter?: number;
+  targetedMessageId?: string;
+  targetedMessageCounter?: number;
+  selectedMessageIds: ReadonlyArray<string> | undefined;
   regionCode?: string;
   callSelector: CallSelectorType;
   activeCall?: CallStateType;
@@ -550,8 +556,9 @@ export type GetPropsForMessageOptions = Pick<
   | 'ourACI'
   | 'ourPNI'
   | 'ourNumber'
-  | 'selectedMessageId'
-  | 'selectedMessageCounter'
+  | 'targetedMessageId'
+  | 'targetedMessageCounter'
+  | 'selectedMessageIds'
   | 'regionCode'
   | 'accountSelector'
   | 'contactNameColorSelector'
@@ -645,8 +652,9 @@ export const getPropsForMessage = (
     ourNumber,
     ourACI,
     regionCode,
-    selectedMessageId,
-    selectedMessageCounter,
+    targetedMessageId,
+    targetedMessageCounter,
+    selectedMessageIds,
     contactNameColorSelector,
   } = options;
 
@@ -661,7 +669,9 @@ export const getPropsForMessage = (
 
   const isMessageTapToView = isTapToView(message);
 
-  const isSelected = message.id === selectedMessageId;
+  const isTargeted = message.id === targetedMessageId;
+  const isSelected = selectedMessageIds?.includes(message.id) ?? false;
+  const isSelectMode = selectedMessageIds != null;
 
   const selectedReaction = (
     (message.reactions || []).find(re => re.fromId === ourConversationId) || {}
@@ -712,9 +722,12 @@ export const getPropsForMessage = (
     giftBadge: message.giftBadge,
     id: message.id,
     isBlocked: conversation.isBlocked || false,
+    isEditedMessage: Boolean(message.editHistory),
     isMessageRequestAccepted: conversation?.acceptedMessageRequest ?? true,
+    isTargeted,
+    isTargetedCounter: isTargeted ? targetedMessageCounter : undefined,
     isSelected,
-    isSelectedCounter: isSelected ? selectedMessageCounter : undefined,
+    isSelectMode,
     isSticker: Boolean(sticker),
     isTapToView: isMessageTapToView,
     isTapToViewError:
@@ -742,7 +755,8 @@ export const getMessagePropsSelector = createSelector(
   getRegionCode,
   getAccountSelector,
   getContactNameColorSelector,
-  getSelectedMessage,
+  getTargetedMessage,
+  getSelectedMessageIds,
   (
       conversationSelector,
       ourConversationId,
@@ -752,7 +766,8 @@ export const getMessagePropsSelector = createSelector(
       regionCode,
       accountSelector,
       contactNameColorSelector,
-      selectedMessage
+      targetedMessage,
+      selectedMessageIds
     ) =>
     (message: MessageWithUIFieldsType) => {
       return getPropsForMessage(message, {
@@ -764,8 +779,9 @@ export const getMessagePropsSelector = createSelector(
         ourACI,
         ourPNI,
         regionCode,
-        selectedMessageCounter: selectedMessage?.counter,
-        selectedMessageId: selectedMessage?.id,
+        targetedMessageCounter: targetedMessage?.counter,
+        targetedMessageId: targetedMessage?.id,
+        selectedMessageIds,
       });
     }
 );
@@ -851,6 +867,13 @@ export function getPropsForBubble(
   if (isUniversalTimerNotification(message)) {
     return {
       type: 'universalTimerNotification',
+      data: null,
+      timestamp,
+    };
+  }
+  if (isContactRemovedNotification(message)) {
+    return {
+      type: 'contactRemovedNotification',
       data: null,
       timestamp,
     };
@@ -1358,6 +1381,16 @@ export function isUniversalTimerNotification(
   return message.type === 'universal-timer-notification';
 }
 
+// Contact Removed Notification
+
+// Note: smart, so props not generated here
+
+export function isContactRemovedNotification(
+  message: MessageWithUIFieldsType
+): boolean {
+  return message.type === 'contact-removed-notification';
+}
+
 // Change Number Notification
 
 export function isChangeNumberNotification(
@@ -1794,10 +1827,10 @@ export function getLastChallengeError(
   return challengeErrors.pop();
 }
 
-const getSelectedMessageForDetails = (
+const getTargetedMessageForDetails = (
   state: StateType
 ): MessageAttributesType | undefined =>
-  state.conversations.selectedMessageForDetails;
+  state.conversations.targetedMessageForDetails;
 
 const OUTGOING_KEY_ERROR = 'OutgoingIdentityKeyError';
 
@@ -1807,11 +1840,12 @@ export const getMessageDetails = createSelector(
   getConversationSelector,
   getIntl,
   getRegionCode,
-  getSelectedMessageForDetails,
+  getTargetedMessageForDetails,
   getUserACI,
   getUserPNI,
   getUserConversationId,
   getUserNumber,
+  getSelectedMessageIds,
   (
     accountSelector,
     contactNameColorSelector,
@@ -1822,7 +1856,8 @@ export const getMessageDetails = createSelector(
     ourACI,
     ourPNI,
     ourConversationId,
-    ourNumber
+    ourNumber,
+    selectedMessageIds
   ): SmartMessageDetailPropsType | undefined => {
     if (!message || !ourConversationId) {
       return;
@@ -1882,7 +1917,7 @@ export const getMessageDetails = createSelector(
       if (error.name === OUTGOING_KEY_ERROR) {
         return {
           ...error,
-          message: i18n('newIdentity'),
+          message: i18n('icu:newIdentity'),
         };
       }
 
@@ -1957,6 +1992,7 @@ export const getMessageDetails = createSelector(
         ourNumber,
         ourPNI,
         regionCode,
+        selectedMessageIds,
       }),
       receivedAt: Number(message.received_at_ms || message.received_at),
     };

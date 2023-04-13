@@ -66,10 +66,14 @@ export class GroupNotification extends React.Component<Props> {
     switch (type) {
       case 'name':
         return (
-          <Intl i18n={i18n} id="titleIsNow" components={[newName || '']} />
+          <Intl
+            i18n={i18n}
+            id="icu:titleIsNow"
+            components={{ name: newName || '' }}
+          />
         );
       case 'avatar':
-        return <Intl i18n={i18n} id="updatedGroupAvatar" />;
+        return <Intl i18n={i18n} id="icu:updatedGroupAvatar" />;
       case 'add':
         if (!contacts || !contacts.length) {
           throw new Error('Group update is missing contacts');
@@ -82,28 +86,28 @@ export class GroupNotification extends React.Component<Props> {
                 {otherPeople.length === 1 ? (
                   <Intl
                     i18n={i18n}
-                    id="joinedTheGroup"
-                    components={[otherPeopleWithCommas]}
+                    id="icu:joinedTheGroup"
+                    components={{ name: otherPeopleWithCommas }}
                   />
                 ) : (
                   <Intl
                     i18n={i18n}
-                    id="multipleJoinedTheGroup"
-                    components={[otherPeopleWithCommas]}
+                    id="icu:multipleJoinedTheGroup"
+                    components={{ names: otherPeopleWithCommas }}
                   />
                 )}
               </>
             )}
             {contactsIncludesMe && (
               <div className="module-group-notification__change">
-                <Intl i18n={i18n} id="youJoinedTheGroup" />
+                <Intl i18n={i18n} id="icu:youJoinedTheGroup" />
               </div>
             )}
           </>
         );
       case 'remove':
         if (from && from.isMe) {
-          return i18n('youLeftTheGroup');
+          return i18n('icu:youLeftTheGroup');
         }
 
         if (!contacts || !contacts.length) {
@@ -112,15 +116,15 @@ export class GroupNotification extends React.Component<Props> {
 
         return contacts.length > 1 ? (
           <Intl
-            id="multipleLeftTheGroup"
+            id="icu:multipleLeftTheGroup"
             i18n={i18n}
-            components={[otherPeopleWithCommas]}
+            components={{ name: otherPeopleWithCommas }}
           />
         ) : (
           <Intl
-            id="leftTheGroup"
+            id="icu:leftTheGroup"
             i18n={i18n}
-            components={[otherPeopleWithCommas]}
+            components={{ name: otherPeopleWithCommas }}
           />
         );
       case 'general':
@@ -142,12 +146,12 @@ export class GroupNotification extends React.Component<Props> {
     const isLeftOnly = changes.length === 1 && firstChange?.type === 'remove';
 
     const fromLabel = from.isMe ? (
-      <Intl i18n={i18n} id="youUpdatedTheGroup" />
+      <Intl i18n={i18n} id="icu:youUpdatedTheGroup" />
     ) : (
       <Intl
         i18n={i18n}
-        id="updatedTheGroup"
-        components={[<ContactName title={from.title} />]}
+        id="icu:updatedTheGroup"
+        components={{ name: <ContactName title={from.title} /> }}
       />
     );
 

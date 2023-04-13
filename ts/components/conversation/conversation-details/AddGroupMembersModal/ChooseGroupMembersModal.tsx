@@ -1,8 +1,6 @@
 // Copyright 2021 Signal Messenger, LLC
 // SPDX-License-Identifier: AGPL-3.0-only
 
-/* eslint-disable local-rules/valid-i18n-keys */
-
 import React, {
   useEffect,
   useMemo,
@@ -212,7 +210,8 @@ export function ChooseGroupMembersModal({
       if (virtualIndex === 0) {
         return {
           type: RowType.Header,
-          i18nKey: 'contactsHeader',
+          // eslint-disable-next-line @typescript-eslint/no-shadow
+          getHeaderText: i18n => i18n('icu:contactsHeader'),
         };
       }
 
@@ -250,7 +249,8 @@ export function ChooseGroupMembersModal({
       if (virtualIndex === 0) {
         return {
           type: RowType.Header,
-          i18nKey: 'findByPhoneNumberHeader',
+          // eslint-disable-next-line @typescript-eslint/no-shadow
+          getHeaderText: i18n => i18n('icu:findByPhoneNumberHeader'),
         };
       }
       if (virtualIndex === 1) {
@@ -268,7 +268,8 @@ export function ChooseGroupMembersModal({
       if (virtualIndex === 0) {
         return {
           type: RowType.Header,
-          i18nKey: 'findByUsernameHeader',
+          // eslint-disable-next-line @typescript-eslint/no-shadow
+          getHeaderText: i18n => i18n('icu:findByUsernameHeader'),
         };
       }
       if (virtualIndex === 1) {
@@ -307,16 +308,18 @@ export function ChooseGroupMembersModal({
 
     let item;
     switch (row?.type) {
-      case RowType.Header:
+      case RowType.Header: {
+        const headerText = row.getHeaderText(i18n);
         item = (
           <div
             className="module-conversation-list__item--header"
-            aria-label={i18n(row.i18nKey)}
+            aria-label={headerText}
           >
-            {i18n(row.i18nKey)}
+            {headerText}
           </div>
         );
         break;
+      }
       case RowType.ContactCheckbox:
         item = (
           <ContactCheckbox
@@ -380,7 +383,7 @@ export function ChooseGroupMembersModal({
     >
       <div className="module-AddGroupMembersModal module-AddGroupMembersModal--choose-members">
         <button
-          aria-label={i18n('close')}
+          aria-label={i18n('icu:close')}
           className="module-AddGroupMembersModal__close-button"
           type="button"
           onClick={() => {
@@ -388,11 +391,11 @@ export function ChooseGroupMembersModal({
           }}
         />
         <h1 className="module-AddGroupMembersModal__header">
-          {i18n('AddGroupMembersModal--title')}
+          {i18n('icu:AddGroupMembersModal--title')}
         </h1>
         <SearchInput
           i18n={i18n}
-          placeholder={i18n('contactSearchPlaceholder')}
+          placeholder={i18n('icu:contactSearchPlaceholder')}
           onChange={event => {
             setSearchTerm(event.target.value);
           }}
@@ -480,16 +483,16 @@ export function ChooseGroupMembersModal({
           </Measure>
         ) : (
           <div className="module-AddGroupMembersModal__no-candidate-contacts">
-            {i18n('noContactsFound')}
+            {i18n('icu:noContactsFound')}
           </div>
         )}
         <div className="module-AddGroupMembersModal__button-container">
           <Button onClick={onClose} variant={ButtonVariant.Secondary}>
-            {i18n('cancel')}
+            {i18n('icu:cancel')}
           </Button>
 
           <Button disabled={!canContinue} onClick={confirmAdds}>
-            {i18n('AddGroupMembersModal--continue-to-confirm')}
+            {i18n('icu:AddGroupMembersModal--continue-to-confirm')}
           </Button>
         </div>
       </div>

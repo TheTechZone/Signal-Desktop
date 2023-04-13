@@ -218,6 +218,7 @@ export async function toContactRecord(
     contactRecord.systemNickname = systemNickname;
   }
   contactRecord.blocked = conversation.isBlocked();
+  contactRecord.hidden = conversation.get('removalStage') !== undefined;
   contactRecord.whitelisted = Boolean(conversation.get('profileSharing'));
   contactRecord.archived = Boolean(conversation.get('isArchived'));
   contactRecord.markedUnread = Boolean(conversation.get('markedUnread'));
@@ -1078,8 +1079,11 @@ export async function mergeContactRecord(
       details.push('adding a verified notification');
       await conversation.addVerifiedChange(
         conversation.id,
-        newVerified === VERIFIED_ENUM.VERIFIED || newVerified === VERIFIED_ENUM.MANUALLY_VERIFIED || newVerified === VERIFIED_ENUM.DIRECTLY_VERIFIED
-          || newVerified === VERIFIED_ENUM.INTRODUCED || newVerified === VERIFIED_ENUM.DUPLEX_VERIFIED,
+        newVerified === VERIFIED_ENUM.VERIFIED ||
+          newVerified === VERIFIED_ENUM.MANUALLY_VERIFIED ||
+          newVerified === VERIFIED_ENUM.DIRECTLY_VERIFIED ||
+          newVerified === VERIFIED_ENUM.INTRODUCED ||
+          newVerified === VERIFIED_ENUM.DUPLEX_VERIFIED,
         { local: false }
       );
     }
@@ -1099,6 +1103,18 @@ export async function mergeContactRecord(
     storageID,
     storageVersion,
   });
+
+  if (contactRecord.hidden) {
+    await conversation.removeContact({
+      viaStorageServiceSync: true,
+      shouldSave: false,
+    });
+  } else {
+    await conversation.restoreContact({
+      viaStorageServiceSync: true,
+      shouldSave: false,
+    });
+  }
 
   conversation.setMuteExpiration(
     getTimestampFromLong(contactRecord.mutedUntilTimestamp),
