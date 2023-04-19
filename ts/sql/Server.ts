@@ -133,6 +133,8 @@ import type {
   UnprocessedType,
   UnprocessedUpdateType,
   GetNearbyMessageFromDeletedSetOptionsType,
+  TrustedIntroductionsType,
+  StoredTrustedIntroductionType
 } from './Interface';
 import { SeenStatus } from '../MessageSeenStatus';
 
@@ -363,6 +365,8 @@ const dataInterface: ServerInterface = {
 
   optimizeFTS,
 
+  insertTrustedIntroduction,
+  getAllIntroductions,
   // Server-only
 
   initialize,
@@ -5816,4 +5820,35 @@ async function getUnreadEditedMessagesAndMarkRead({
       };
     });
   })();
+}
+
+async function insertTrustedIntroduction({state, introducerServiceId, serviceId, name, number, identityKey, predictedFingerprint, timestamp } : TrustedIntroductionsType): 
+Promise<void> {
+  const db = getInstance();
+
+  db.prepare<Query>(
+    `
+      INSERT INTO trusted_introductions
+      (state, introducer_service_id, introducee_service_id, introducee_identity_key, introducee_name, introducee_number, predicted_fingerprint, timestamp)
+      VALUES
+      ($state, $introducerServiceId, $serviceId, $identityKey, $name, $number, $predictedFingerprint, $timestamp);
+    `
+  ).run({
+    state: state,
+    introducerServiceId: introducerServiceId,
+    serviceId: serviceId,
+    identityKey: identityKey,
+    name: name,
+    number: number,
+    predictedFingerprint: predictedFingerprint,
+    timestamp: timestamp,
+  });
+}
+
+async function getAllIntroductions(): Promise<Array<StoredTrustedIntroductionType>> {
+  const db = getInstance();
+
+  const rows = prepare<EmptyQuery>(db, 'SELECT * FROM trusted_introductions').all();
+
+  return rows;
 }

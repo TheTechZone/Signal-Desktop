@@ -394,6 +394,28 @@ export type EditedMessageType = Readonly<{
   readStatus: MessageType['readStatus'];
 }>;
 
+export type TrustedIntroductionsType = Readonly<{
+  state: number;
+  introducerServiceId: string;
+  serviceId: string;
+  name: string;
+  number: string;
+  identityKey: string; 
+  predictedFingerprint: string;
+  timestamp: number;
+}>;
+
+export type StoredTrustedIntroductionType = {
+  state: number;
+  introducerServiceId: string;
+  serviceId: string;
+  name: string;
+  number: string;
+  identityKey: string; 
+  predictedFingerprint: string;
+  timestamp: number;
+}
+
 export type DataInterface = {
   close: () => Promise<void>;
   removeDB: () => Promise<void>;
@@ -768,6 +790,9 @@ export type DataInterface = {
   optimizeFTS: (
     state?: FTSOptimizationStateType
   ) => Promise<FTSOptimizationStateType | undefined>;
+
+  insertTrustedIntroduction(opts: TrustedIntroductionsType):  Promise<void>;
+  getAllIntroductions(): Promise<Array<StoredTrustedIntroductionType>>;
 };
 
 export type ServerInterface = DataInterface & {
