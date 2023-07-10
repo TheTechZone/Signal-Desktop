@@ -13,6 +13,9 @@ import type { ConversationModel } from '../models/conversations';
 import { validateConversation } from '../util/validateConversation';
 import { isDirectConversation, isMe } from '../util/whatTypeOfConversation';
 import * as log from '../logging/log';
+import dataInterface from '../sql/Client';
+import { TrustedIntroductionsType } from '../sql/Interface';
+const { insertTrustedIntroduction } = dataInterface;
 
 // When true - we are running the very first storage and contact sync after
 // linking.
@@ -103,6 +106,28 @@ async function doContactSync({
       );
       continue;
     }
+
+    details.introductions.forEach(intro => {
+        console.log(intro);
+
+        // todo: this is too coupled...
+        debugger;
+        
+        const stateValue = intro.state ?? 0;
+        const dbId = intro.introductionId?.toNumber() ?? null;
+        // todo: a bit ugly... 
+        const ti: TrustedIntroductionsType = {
+            state: stateValue,
+            introducerServiceId: intro.introducerServiceId!,
+            serviceId: intro.serviceId!,
+            name: intro.name!,
+            number: intro.number!,
+            identityKey: intro.identityKey!,
+            predictedFingerprint: intro.predictedFingerprint!,
+            timestamp: intro.timestamp?.toNumber()!,
+        }
+        insertTrustedIntroduction(ti, dbId);
+    });
 
     const { conversation } = window.ConversationController.maybeMergeContacts({
       e164: details.number,

@@ -76,6 +76,7 @@ import {
   numberToAddressType,
 } from '../types/EmbeddedContact';
 import type { StickerWithHydratedData } from '../types/Stickers';
+import { StoredTrustedIntroductionType } from '../sql/Interface';
 
 export type SendMetadataType = {
   [identifier: string]: {
@@ -1988,6 +1989,45 @@ export default class MessageSender {
       urgent: false,
     };
   }
+
+  // todo: clean up this function, it has gotten quite messy
+  static getIntroductionSync(destinationE164: string, updateType: Proto.Introduced.SyncType, data: StoredTrustedIntroductionType): SingleProtoJobData {
+      debugger;
+      console.log(`todo: introSync for -- ${destinationE164}`);
+      const myUuid = window.textsecure.storage.user.getCheckedUuid();
+            
+      const intro = new Proto.Introduced();
+      intro.introductionId = Long.fromInt(data._id);
+      intro.introducerServiceId = data.introducee_service_id;
+      intro.identityKey = data.introducee_identity_key;
+      intro.name = data.introducee_name;
+      intro.number = data.introducee_number;
+      intro.predictedFingerprint = data.predicted_fingerprint;
+      intro.state = data.state
+      intro.syncType = updateType;
+      // intro.destination = destinationE164;
+      // intro.nullMessage = padding;
+      
+      const syncMessage = MessageSender.createSyncMessage();
+      syncMessage.introduced = intro;
+      
+      const contentMessage = new Proto.Content();
+      contentMessage.syncMessage = syncMessage;
+      
+      const { ContentHint } = Proto.UnidentifiedSenderMessage.Message;
+      
+      return {
+        contentHint: ContentHint.RESENDABLE,
+        identifier: myUuid.toString(),
+        isSyncMessage: true,
+        protoBase64: Bytes.toBase64(
+          Proto.Content.encode(contentMessage).finish()
+        ),
+        type: 'introductionSync',
+        urgent: false,
+      };
+    }
+  
 
   // Sending messages to contacts
 

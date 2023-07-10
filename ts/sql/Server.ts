@@ -367,6 +367,11 @@ const dataInterface: ServerInterface = {
 
   insertTrustedIntroduction,
   getAllIntroductions,
+  getIntroductionsFrom,
+  getIntroductionById,
+  changeIntroductionState,
+  maskIntroduction,
+  deleteIntroduction,
   // Server-only
 
   initialize,
@@ -5822,18 +5827,19 @@ async function getUnreadEditedMessagesAndMarkRead({
   })();
 }
 
-async function insertTrustedIntroduction({state, introducerServiceId, serviceId, name, number, identityKey, predictedFingerprint, timestamp } : TrustedIntroductionsType): 
+async function insertTrustedIntroduction({state, introducerServiceId, serviceId, name, number, identityKey, predictedFingerprint, timestamp } : TrustedIntroductionsType, id: number | null): 
 Promise<void> {
   const db = getInstance();
 
   db.prepare<Query>(
     `
       INSERT INTO trusted_introductions
-      (state, introducer_service_id, introducee_service_id, introducee_identity_key, introducee_name, introducee_number, predicted_fingerprint, timestamp)
+      (_id, state, introducer_service_id, introducee_service_id, introducee_identity_key, introducee_name, introducee_number, predicted_fingerprint, timestamp)
       VALUES
-      ($state, $introducerServiceId, $serviceId, $identityKey, $name, $number, $predictedFingerprint, $timestamp);
+      ($id, $state, $introducerServiceId, $serviceId, $identityKey, $name, $number, $predictedFingerprint, $timestamp);
     `
   ).run({
+    id: id,
     state: state,
     introducerServiceId: introducerServiceId,
     serviceId: serviceId,
@@ -5851,4 +5857,43 @@ async function getAllIntroductions(): Promise<Array<StoredTrustedIntroductionTyp
   const rows = prepare<EmptyQuery>(db, 'SELECT * FROM trusted_introductions').all();
 
   return rows;
+}
+
+async function getIntroductionsFrom(uuid: UUIDStringType): Promise<Array<StoredTrustedIntroductionType>> {
+  const db = getInstance();
+
+  return prepare(db, 'SELECT * FROM trusted_introductions WHERE introducer_service_id IS $uuid;').all({
+    uuid,
+  });
+}
+
+async function getIntroductionById(id: number): Promise<StoredTrustedIntroductionType> {
+  const db = getInstance();
+
+  return prepare(db, 'SELECT * FROM trusted_introductions WHERE _id IS $id;').get({
+    id,
+  });
+}
+
+async function changeIntroductionState(id: number, state: number): Promise<void> {
+  const db = getInstance();
+  
+  db.prepare<Query>("UPDATE trusted_introductions SET state = $state WHERE _id = $id").run({
+    state: state,
+    id: id,
+  });
+}
+
+async function maskIntroduction(id: number): Promise<void> {
+  const db = getInstance();
+  db.prepare<Query>("UPDATE trusted_introductions SET introducer_service_id = '' WHERE _id = $id").run({
+    id: id,
+  });
+}
+
+async function deleteIntroduction(id: number): Promise<void> {
+  const db = getInstance();
+  db.prepare<Query>('DELETE FROM trusted_introductions WHERE _id IS $id;').run({
+    id,
+  });
 }

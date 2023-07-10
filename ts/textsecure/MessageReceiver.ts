@@ -57,6 +57,9 @@ import * as Errors from '../types/errors';
 
 import { SignalService as Proto } from '../protobuf';
 import { deriveGroupFields, MASTER_KEY_LENGTH } from '../groups';
+import { TrustedIntroductionsType } from '../sql/Interface';
+import dataInterface from '../sql/Client';
+const { insertTrustedIntroduction } = dataInterface;
 
 import createTaskWithTimeout from './TaskWithTimeout';
 import {
@@ -124,6 +127,7 @@ import { isNotNil } from '../util/isNotNil';
 import { chunk } from '../util/iterables';
 import { isOlderThan } from '../util/timestamp';
 import { inspectUnknownFieldTags } from '../util/inspectProtobufs';
+import { signalservice } from '../protobuf/compiled';
 
 const GROUPV1_ID_LENGTH = 16;
 const GROUPV2_ID_LENGTH = 32;
@@ -357,6 +361,7 @@ export default class MessageReceiver
       return;
     }
 
+    debugger;
     const job = async () => {
       const headers = request.headers || [];
 
@@ -418,6 +423,8 @@ export default class MessageReceiver
             ? decoded.reportingToken
             : undefined,
         };
+        
+        debugger;
 
         // After this point, decoding errors are not the server's
         //   fault, and we should handle them gracefully and tell the
@@ -970,6 +977,7 @@ export default class MessageReceiver
       }>
     > = [];
 
+    debugger;
     const storageProtocol = this.storage.protocol;
 
     try {
@@ -2935,6 +2943,8 @@ export default class MessageReceiver
     }
 
     const ourDeviceId = this.storage.user.getDeviceId();
+
+    debugger;
     // eslint-disable-next-line eqeqeq
     if (envelope.sourceDevice == ourDeviceId) {
       throw new Error('Received sync message from our own device');
@@ -3031,8 +3041,14 @@ export default class MessageReceiver
     }
     if (syncMessage.verified) {
       log.info('Got verified sync message, dropping');
+      console.error("SYNC MESSAGE", syncMessage, envelope)
       this.removeFromCache(envelope);
       return;
+    }
+    if (syncMessage.introduced) {
+      debugger;
+      console.log(`processing introduction event: ${syncMessage.introduced.syncType}`)
+      return this.handleIntroduction(envelope, syncMessage.introduced);
     }
     if (syncMessage.configuration) {
       return this.handleConfiguration(envelope, syncMessage.configuration);
@@ -3066,6 +3082,9 @@ export default class MessageReceiver
     }
     if (syncMessage.callEvent) {
       return this.handleCallEvent(envelope, syncMessage.callEvent);
+    }
+    if (syncMessage.introduced) {
+      console.log("TODO: handle introduced")
     }
 
     this.removeFromCache(envelope);
@@ -3467,7 +3486,7 @@ export default class MessageReceiver
 
     const attachmentPointer = await this.handleAttachment(blob);
     const contactBuffer = new ContactBuffer(attachmentPointer.data);
-
+    
     const contactSync = new ContactSyncEvent(
       Array.from(contactBuffer),
       Boolean(contacts.complete),
@@ -3479,6 +3498,91 @@ export default class MessageReceiver
     log.info('handleContacts: finished');
   }
 
+  private async handleIntroduction(
+    envelope: ProcessedEnvelope,
+    intro: signalservice.IIntroduced
+  ): Promise<void> {
+    const logId = getEnvelopeId(envelope);
+    log.info(`MessageReceiver: handleIntroduction ${logId}`);
+    if (!intro){
+      //todo: change me 
+      throw new Error('MessageReceiver.handleIntroduction: introduction field was missing');
+    }
+    const introId = intro.introductionId?.toNumber() ?? -1;
+    let oldIntro;
+
+    debugger;
+    // introductions.forEach(intro => {
+      switch(intro.syncType){
+        case signalservice.Introduced.SyncType.CREATED:
+          console.log("NEW INTRODUCTION");
+          const stateValue = intro.state ?? 0;
+          const dbId = intro.introductionId?.toNumber() ?? null;
+          // todo: a bit ugly... 
+          const ti: TrustedIntroductionsType = {
+              state: stateValue,
+              introducerServiceId: intro.introducerServiceId!,
+              serviceId: intro.serviceId!,
+              name: intro.name!,
+              number: intro.number!,
+              identityKey: intro.identityKey!,
+              predictedFingerprint: intro.predictedFingerprint!,
+              timestamp: intro.timestamp?.toNumber()!,
+          }
+          await insertTrustedIntroduction(ti, dbId);
+
+          break;
+        case signalservice.Introduced.SyncType.UPDATED_STATE:
+          oldIntro = await window.Signal.Data.getIntroductionById(introId);
+          const oldState:signalservice.Introduced.State = oldIntro.state;
+          console.log(`old intro: ${oldIntro}`);
+
+          console.log(`UPDATING INTRODUCTION WITH ID ${intro.introductionId}`);
+          if(!intro.state || !this.validIntroTransition(oldState, intro.state!)){
+            console.warn(`Update is not a valid transition: ${oldState} -> ${intro.state}`);
+            throw new Error(`MessageReceiver.handleIntroduction: cannot update introduction state to ${intro.state}`);
+          }
+          await window.Signal.Data.changeIntroductionState(introId, intro.state);
+          break;
+        case signalservice.Introduced.SyncType.MASKED:
+          oldIntro = await window.Signal.Data.getIntroductionById(introId);
+          if(!oldIntro){
+            throw new Error(`MessageReceiver.handleIntroduction: cannot mask deleted intro.`);
+          }
+          console.log(`MASKING INTRODUCTION WITH ID ${intro.introductionId}`);
+          await window.Signal.Data.maskIntroduction(introId);
+          break;
+        case signalservice.Introduced.SyncType.DELETED:
+          console.log(`DELETING INTRODUCTION WITH ID ${intro.introductionId}`);
+          oldIntro = await window.Signal.Data.getIntroductionById(introId);
+          if(!oldIntro){
+            throw new Error(`MessageReceiver.handleIntroduction: cannot deleted intro.`);
+          }
+          await window.Signal.Data.deleteIntroduction(introId);
+          break;
+        default:
+          throw new Error(`MessageReceiver.handleIntroduction: unknown sync type ${intro.syncType}`);
+      }
+    // })
+  }
+
+  private validIntroTransition(currentState: signalservice.Introduced.State, targetState: signalservice.Introduced.State){
+    if (currentState == signalservice.Introduced.State.PENDING){
+      // We can accept a pending introduction
+      // return targetState == signalservice.Introduced.State.ACCEPTED || targetState == signalservice.Introduced.State.REJECTED;
+      return targetState.valueOf() > currentState.valueOf();
+    }
+    if (currentState == signalservice.Introduced.State.ACCEPTED){
+      return targetState.valueOf() > currentState.valueOf();
+    }
+    if (currentState == signalservice.Introduced.State.REJECTED){
+      return targetState === signalservice.Introduced.State.ACCEPTED || targetState.valueOf() > currentState.valueOf();
+    }
+    if (currentState == signalservice.Introduced.State.CONFLICTING){
+      return false; // stuck there
+    }
+    return targetState.valueOf() > currentState.valueOf();
+  }
   private async handleGroups(
     envelope: ProcessedEnvelope,
     groups: Proto.SyncMessage.IGroups

@@ -405,14 +405,16 @@ export type TrustedIntroductionsType = Readonly<{
   timestamp: number;
 }>;
 
+// todo: maybe rename
 export type StoredTrustedIntroductionType = {
+  _id: number;
   state: number;
-  introducerServiceId: string;
-  serviceId: string;
-  name: string;
-  number: string;
-  identityKey: string; 
-  predictedFingerprint: string;
+  introducer_service_id: string;
+  introducee_service_id: string;
+  introducee_name: string;
+  introducee_number: string;
+  introducee_identity_key: string; 
+  predicted_fingerprint: string;
   timestamp: number;
 }
 
@@ -791,8 +793,13 @@ export type DataInterface = {
     state?: FTSOptimizationStateType
   ) => Promise<FTSOptimizationStateType | undefined>;
 
-  insertTrustedIntroduction(opts: TrustedIntroductionsType):  Promise<void>;
+  insertTrustedIntroduction(opts: TrustedIntroductionsType, id:number|null):  Promise<void>;
   getAllIntroductions(): Promise<Array<StoredTrustedIntroductionType>>;
+  getIntroductionsFrom(uuid: UUIDStringType): Promise<Array<StoredTrustedIntroductionType>>;
+  getIntroductionById(id: number): Promise<StoredTrustedIntroductionType>;
+  changeIntroductionState(id: number, state: number): Promise<void>;
+  maskIntroduction(id: number): Promise<void>;
+  deleteIntroduction(id:number): Promise<void>;
 };
 
 export type ServerInterface = DataInterface & {
