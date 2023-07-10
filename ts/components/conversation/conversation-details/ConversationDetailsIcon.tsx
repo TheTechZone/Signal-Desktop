@@ -25,6 +25,7 @@ export enum IconType {
   'timer' = 'timer',
   'trash' = 'trash',
   'verify' = 'verify',
+  'introduce' = 'introduce',
 }
 
 export type Props = {

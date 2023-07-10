@@ -2837,6 +2837,11 @@ export class ConversationModel extends window.Backbone
     return this.queueJob('setVerified', () => this._setVerified(INTRODUCED));
   }
 
+  setDirectlyVerified(): Promise<boolean> {
+    const { DIRECTLY_VERIFIED } = this.verifiedEnum;
+    return this.queueJob('setVerified', () => this._setVerified(DIRECTLY_VERIFIED));
+  }
+
   setUnverified(): Promise<boolean> {
     const { UNVERIFIED } = this.verifiedEnum;
     return this.queueJob('setUnverified', () => this._setVerified(UNVERIFIED));
@@ -3141,7 +3146,8 @@ export class ConversationModel extends window.Backbone
       return this.setVerifiedDefault();
     }
     //return this.setVerified();
-    return this.setIntroduced();
+    // return this.setIntroduced();
+    return this.setDirectlyVerified();
   }
 
   async addChatSessionRefreshed({

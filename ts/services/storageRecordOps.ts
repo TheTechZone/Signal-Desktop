@@ -1055,7 +1055,6 @@ export async function mergeContactRecord(
 
   // https://github.com/signalapp/Signal-Android/blob/fc3db538bcaa38dc149712a483d3032c9c1f3998/app/src/main/java/org/thoughtcrime/securesms/database/RecipientDatabase.kt#L921-L936
   if (contactRecord.identityKey) {
-    debugger;
     const verified = await conversation.safeGetVerified();
     const newVerified = fromRecordVerified(contactRecord.identityState ?? 0);
 

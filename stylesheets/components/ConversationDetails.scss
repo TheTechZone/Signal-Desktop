@@ -440,6 +440,21 @@
           }
         }
       }
+
+      &--introduce {
+        &::after {
+          -webkit-mask: url(../images/icons/v2/trusted-introduction-24.png)
+            no-repeat center;
+          // todo: replace with svg
+          @include light-theme {
+            background-color: $color-gray-75;
+          }
+
+          @include dark-theme {
+            background-color: $color-gray-15;
+          }
+        }
+      }
     }
   }
 

@@ -474,6 +474,26 @@ export function ConversationDetails({
             }
           />
         )}
+        {!isGroup && !conversation.isMe && (<PanelRow
+            onClick={() => {
+              pushPanelForConversation({
+                type: PanelType.TrustedIntroductions,
+              });
+            }}
+            icon={
+              <ConversationDetailsIcon
+                ariaLabel={i18n('icu:ConversationDetails__viewSafetyNumber')}
+                icon={IconType.introduce}
+              />
+            }
+            // todo: add to locale
+            label={
+              <div className="ConversationDetails__trusted-introduction">
+                Trusted Introductions
+              </div>
+            }
+        />
+        )}
         {!isGroup && !conversation.isMe && (
           <PanelRow
             onClick={() => toggleSafetyNumberModal(conversation.id)}

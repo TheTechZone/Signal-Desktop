@@ -21,6 +21,10 @@ export function getConversationTitleForPanelType(
     return i18n('icu:ChatColorPicker__menu-title');
   }
 
+  if (panelType === PanelType.TrustedIntroductions) {
+    return 'Introductions';
+  }
+
   if (panelType === PanelType.ContactDetails) {
     return '';
   }

@@ -30,6 +30,7 @@ import {
 } from '../selectors/conversations';
 import { useComposerActions } from '../ducks/composer';
 import { useConversationsActions } from '../ducks/conversations';
+import { SmartTrustedIntroductions } from './TrustedIntroductions';
 
 export function SmartConversationView(): JSX.Element {
   const conversationId = useSelector(getSelectedConversationId);
@@ -88,6 +89,15 @@ export function SmartConversationView(): JSX.Element {
           return (
             <div className="panel">
               <SmartChatColorPicker conversationId={conversationId} />
+            </div>
+          );
+        }
+
+        if (topPanel.type === PanelType.TrustedIntroductions) {
+          // TODO: see what state is needed besides convoId
+          return (
+            <div className="panel">
+              <SmartTrustedIntroductions conversationId={conversationId}/>
             </div>
           );
         }

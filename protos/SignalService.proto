@@ -445,6 +445,43 @@ message Verified {
   optional bytes  nullMessage     = 4;
 }
 
+message Introduced {
+  enum State {
+    PENDING = 0;
+    ACCEPTED = 1;
+    REJECTED = 2;
+    CONFLICTING = 4;
+    STALE_PENDING = 5;
+    STALE_ACCEPTED = 6;
+    STALE_REJECTED = 7;
+    STALE_CONFLICTING = 8;
+  }
+  enum SyncType {
+    CREATED = 0;
+    UPDATED_STATE = 1;
+    MASKED = 2;
+    DELETED = 3;
+  }
+  optional uint64 introductionId = 1;
+  // @required
+  optional string introducerServiceId = 2;
+  // @required
+  optional string serviceId = 3;
+  // @required
+  optional string identityKey = 4;
+  // @required
+  optional string name = 5;
+  // @required
+  optional string number = 6;
+  // @required
+  optional string predictedFingerprint = 7;
+  // @required
+  optional State state = 8;
+  // @required
+  optional uint64 timestamp = 9;
+  optional SyncType syncType = 10;
+}
+
 message SyncMessage {
   message Sent {
     message UnidentifiedDeliveryStatus {
@@ -495,6 +532,7 @@ message SyncMessage {
       CONFIGURATION = 4;
       KEYS          = 5;
       PNI_IDENTITY  = 6;
+      INTRODUCTION  = 7;
     }
 
     optional Type type = 1;
@@ -625,6 +663,7 @@ message SyncMessage {
   optional PniIdentity            pniIdentity            = 17;
   optional PniChangeNumber        pniChangeNumber        = 18;
   optional CallEvent              callEvent              = 19;
+  optional Introduced             introduced             = 20;
 }
 
 message AttachmentPointer {
@@ -695,6 +734,8 @@ message ContactDetails {
   optional bool     blocked       = 7;
   optional uint32   expireTimer   = 8;
   optional uint32   inboxPosition = 10;
+  optional bool     archived      = 11;
+  repeated Introduced introductions = 12;
 }
 
 message GroupDetails {

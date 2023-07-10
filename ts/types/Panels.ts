@@ -8,6 +8,7 @@ import type { UUIDStringType } from './UUID';
 export enum PanelType {
   AllMedia = 'AllMedia',
   ChatColorEditor = 'ChatColorEditor',
+  TrustedIntroductions = 'TrustedIntroductions',
   ContactDetails = 'ContactDetails',
   ConversationDetails = 'ConversationDetails',
   GroupInvites = 'GroupInvites',
@@ -22,6 +23,7 @@ export enum PanelType {
 export type PanelRequestType =
   | { type: PanelType.AllMedia }
   | { type: PanelType.ChatColorEditor }
+  | { type: PanelType.TrustedIntroductions }
   | {
       type: PanelType.ContactDetails;
       args: {
@@ -44,6 +46,7 @@ export type PanelRequestType =
 export type PanelRenderType =
   | { type: PanelType.AllMedia }
   | { type: PanelType.ChatColorEditor }
+  | { type: PanelType.TrustedIntroductions }
   | {
       type: PanelType.ContactDetails;
       args: {

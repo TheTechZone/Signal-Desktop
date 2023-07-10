@@ -328,6 +328,8 @@ export async function startApp(): Promise<void> {
       };
     }
 
+    // todo: remove once done
+    // debugger;
     messageReceiver.addEventListener(
       'envelope',
       queuedEventListener(onEnvelopeReceived, false)

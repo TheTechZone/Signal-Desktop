@@ -285,11 +285,18 @@ export class ConversationHeader extends React.Component<PropsType, StateType> {
   }
 
   private renderVerifiedIcon(): ReactNode {
-    const { i18n, isVerified, verifiedState } = this.props;
+    const { i18n, isVerified, verifiedState, isMe, type } = this.props;
 
     let verifiedName = 'unverified';
     if (verifiedState !== undefined) {
       verifiedName = lookupVerifiedStatus(verifiedState);
+    }
+
+    const isGroup = type === "group";
+    if (isMe || isGroup) {
+      // todo: this applies to the "Note to Self" contact. A bit hacky but a better
+      // workaround would take too much effort right now.
+      return null;
     }
 
     if (!isVerified) {
