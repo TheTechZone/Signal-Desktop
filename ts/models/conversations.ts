@@ -2832,9 +2832,19 @@ export class ConversationModel extends window.Backbone
     return this.queueJob('setVerified', () => this._setVerified(VERIFIED));
   }
 
+  setVerifiedInternal(): Promise<boolean> {
+    const { VERIFIED } = this.verifiedEnum;
+    return this.queueJob('setVerified', () => this._setVerifiedInternally(VERIFIED));
+  }
+
   setIntroduced(): Promise<boolean> {
     const { INTRODUCED } = this.verifiedEnum;
     return this.queueJob('setVerified', () => this._setVerified(INTRODUCED));
+  }
+
+  setIntroducedInternal(): Promise<boolean> {
+    const { INTRODUCED } = this.verifiedEnum;
+    return this.queueJob('setVerified', () => this._setVerifiedInternally(INTRODUCED));
   }
 
   setDirectlyVerified(): Promise<boolean> {
@@ -2842,12 +2852,22 @@ export class ConversationModel extends window.Backbone
     return this.queueJob('setVerified', () => this._setVerified(DIRECTLY_VERIFIED));
   }
 
+  setDirectlyVerifiedInternal(): Promise<boolean> {
+    const { DIRECTLY_VERIFIED } = this.verifiedEnum;
+    return this.queueJob('setVerified', () => this._setVerifiedInternally(DIRECTLY_VERIFIED));
+  }
+
   setUnverified(): Promise<boolean> {
     const { UNVERIFIED } = this.verifiedEnum;
     return this.queueJob('setUnverified', () => this._setVerified(UNVERIFIED));
   }
 
-  private async _setVerified(verified: number): Promise<boolean> {
+  setUnverifiedInternal(): Promise<boolean> {
+    const { UNVERIFIED } = this.verifiedEnum;
+    return this.queueJob('setUnverified', () => this._setVerifiedInternally(UNVERIFIED));
+  }
+
+  private async _setVerified(verified: number, isExplicitUserAction = true): Promise<boolean> {
     const {
       VERIFIED,
       MANUALLY_VERIFIED,
@@ -2903,7 +2923,7 @@ export class ConversationModel extends window.Backbone
     }
 
     const didVerifiedChange = beginningVerified !== verified;
-    const isExplicitUserAction = true;
+    // const isExplicitUserAction = true;
     if (
       // The message came from an explicit verification in a client (not
       // storage service sync)
@@ -2932,6 +2952,10 @@ export class ConversationModel extends window.Backbone
     }
 
     return keyChange;
+  }
+
+  private async _setVerifiedInternally(verified: number) : Promise<boolean> {
+    return this._setVerified(verified, false);
   }
 
   async sendVerifySyncMessage(

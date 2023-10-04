@@ -57,9 +57,10 @@ import * as Errors from '../types/errors';
 
 import { SignalService as Proto } from '../protobuf';
 import { deriveGroupFields, MASTER_KEY_LENGTH } from '../groups';
-import { TrustedIntroductionsType } from '../sql/Interface';
+import { TrustedIntroductionsType, StoredTrustedIntroductionType } from '../sql/Interface';
 import dataInterface from '../sql/Client';
-const { insertTrustedIntroduction } = dataInterface;
+const { insertTrustedIntroduction, multipleAcceptedIntroductions, } = dataInterface;
+import { StoredTrustedIntroductionType } from '../sql/Interface';
 
 import createTaskWithTimeout from './TaskWithTimeout';
 import {
@@ -3535,6 +3536,7 @@ export default class MessageReceiver
         case signalservice.Introduced.SyncType.UPDATED_STATE:
           oldIntro = await window.Signal.Data.getIntroductionById(introId);
           const oldState:signalservice.Introduced.State = oldIntro.state;
+          const introduceeId = oldIntro.introducee_service_id;
           console.log(`old intro: ${oldIntro}`);
 
           console.log(`UPDATING INTRODUCTION WITH ID ${intro.introductionId}`);
@@ -3542,7 +3544,60 @@ export default class MessageReceiver
             console.warn(`Update is not a valid transition: ${oldState} -> ${intro.state}`);
             throw new Error(`MessageReceiver.handleIntroduction: cannot update introduction state to ${intro.state}`);
           }
-          await window.Signal.Data.changeIntroductionState(introId, intro.state);
+          
+          debugger;
+          await window.Signal.Data.changeIntroductionState(introId, intro.state).then(
+            async () => {
+              // check to update the verification state
+              const hasOtherAccepts = await multipleAcceptedIntroductions(intro.serviceId ?? "");
+              const convo = await window.ConversationController.get(introduceeId);
+              if (convo === undefined){
+                return;
+              }
+              const prevState = convo.attributes.verified ?? signalservice.Verified.State.DEFAULT;
+              const newState = intro.state;
+              let verified = prevState;
+              switch(prevState){
+              // copied from the java code
+                case signalservice.Verified.State.DEFAULT:
+                case signalservice.Verified.State.UNVERIFIED:
+                case signalservice.Verified.State.VERIFIED:
+                  if(newState === signalservice.Introduced.State.ACCEPTED){
+                    verified = signalservice.Verified.State.INTRODUCED;
+                  }
+                  break;
+                case signalservice.Verified.State.DUPLEX_VERIFIED:
+                  if(newState === signalservice.Introduced.State.REJECTED){
+                    verified = hasOtherAccepts ? signalservice.Verified.State.DUPLEX_VERIFIED : signalservice.Verified.State.DIRECTLY_VERIFIED;
+                  }
+                  break;
+                case signalservice.Verified.State.DIRECTLY_VERIFIED:
+                  if(newState === signalservice.Introduced.State.ACCEPTED){
+                    verified = signalservice.Verified.State.DUPLEX_VERIFIED;
+                  }
+                  break;
+                case signalservice.Verified.State.INTRODUCED:
+                  if(newState === signalservice.Introduced.State.REJECTED){
+                    verified = hasOtherAccepts ? signalservice.Verified.State.INTRODUCED : signalservice.Verified.State.UNVERIFIED;
+                  }
+                  break;
+                default:
+                  throw new Error(`MessageReceiver.handleIntroduction: Invalid verification status ${prevState}`);
+              }
+              if (verified !== prevState){
+                // hopefully not trigger a sync job
+                // let newConv = new window.Whisper.Conversation(convo);
+                convo.set({ verified });
+                window.Signal.Data.updateConversation(convo.attributes);
+              }
+              // switch(oldState.valueOf()) {
+              //   case signalservice.Verified.State.DEFAULT:
+              //   case
+              //     break
+                
+              // }
+            }
+          );
           break;
         case signalservice.Introduced.SyncType.MASKED:
           oldIntro = await window.Signal.Data.getIntroductionById(introId);

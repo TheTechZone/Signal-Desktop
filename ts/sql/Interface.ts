@@ -800,6 +800,7 @@ export type DataInterface = {
   changeIntroductionState(id: number, state: number): Promise<void>;
   maskIntroduction(id: number): Promise<void>;
   deleteIntroduction(id:number): Promise<void>;
+  multipleAcceptedIntroductions(uuid: string): Promise<boolean>;
 };
 
 export type ServerInterface = DataInterface & {

@@ -137,6 +137,7 @@ import type {
   StoredTrustedIntroductionType
 } from './Interface';
 import { SeenStatus } from '../MessageSeenStatus';
+import { signalservice } from '../protobuf/compiled';
 
 type ConversationRow = Readonly<{
   json: string;
@@ -372,6 +373,7 @@ const dataInterface: ServerInterface = {
   changeIntroductionState,
   maskIntroduction,
   deleteIntroduction,
+  multipleAcceptedIntroductions,
   // Server-only
 
   initialize,
@@ -5896,4 +5898,14 @@ async function deleteIntroduction(id: number): Promise<void> {
   db.prepare<Query>('DELETE FROM trusted_introductions WHERE _id IS $id;').run({
     id,
   });
+}
+
+async function multipleAcceptedIntroductions(uuid: string): Promise<boolean> {
+  const db = getInstance();
+  const acceptedState = signalservice.Introduced.State.ACCEPTED;
+  const results = db.prepare<Query>('SELECT * FROM trusted_introductions WHERE introducee_service_id = $uuid AND state = $acceptedState').all({
+    uuid,
+    acceptedState
+  });
+  return results.length > 1;
 }

@@ -46,7 +46,6 @@ function buildOptions(intro: StoredTrustedIntroductionType, idx:number, updateFn
         menuOptions.unshift({
             label: "Mask",
             onClick: async () => {
-                console.log("TODO: implement mask");
                 await window.Signal.Data.maskIntroduction(intro._id);
                 intro.introducer_service_id = "";
                 updateFn(idx, intro);
@@ -60,6 +59,28 @@ function buildOptions(intro: StoredTrustedIntroductionType, idx:number, updateFn
                 label: "Reject",
                 onClick: async () => {
                     console.log("TODO: implement reject");
+                    const convo = window.ConversationController.get(intro.introducee_service_id);
+                    if(!convo){
+                        console.warn(`failed to retrieve convo with uid ${intro.introducee_service_id} from intro with id ${intro._id}`)
+                        return;
+                    }
+                    
+                    // update state
+                    const hasOtherAccepts = await window.Signal.Data.multipleAcceptedIntroductions(intro.introducee_service_id ?? "");
+                    if(!hasOtherAccepts){
+                        if(convo.attributes.verified == Proto.Verified.State.DUPLEX_VERIFIED){
+                            // bump down to Manual verified
+                            await convo.setIntroducedInternal()
+                                .then((result) => console.log("got result: ", result))
+                                .catch(error => console.error(error));
+                        }else if(convo.attributes.verified == Proto.Verified.State.INTRODUCED){
+                            // bump down to Manual verified
+                            await convo.setUnverifiedInternal()
+                                .then((result) => console.log("got result: ", result))
+                                .catch(error => console.error(error));
+                        }
+                    }
+
                     await window.Signal.Data.changeIntroductionState(intro._id, Proto.Introduced.State.REJECTED);
                     intro.state = Proto.Introduced.State.REJECTED;
                     updateFn(idx, intro);
@@ -81,7 +102,7 @@ function buildOptions(intro: StoredTrustedIntroductionType, idx:number, updateFn
                 }
                 
                 // update state
-                await convo.setIntroduced()
+                await convo.setIntroducedInternal()
                     .then((result) => console.log("got result: ", result))
                     .catch(error => console.error(error));
                 // and the introduction
